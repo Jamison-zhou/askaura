@@ -1,0 +1,5456 @@
+/* ------------------------------------------------------------------
+   此镜 (RiLL) Design Tokens — 当代东方极简
+   见 DESIGN.md。所有色用 OKLCH。
+   - 夜墨底 80% + 暖白宣纸 15% + 朱砂落款 ≤ 5%
+   - 旧 token (--bg/--fg/--accent/...) 重新映射到新色板，
+     让旧规则自动获得中国风外观；后续 phase 把具体规则切到新 token。
+   ------------------------------------------------------------------ */
+:root {
+  /* === 夜墨基底 === */
+  --ink-night: oklch(0.15 0.012 240);
+  --ink-night-soft: oklch(0.18 0.012 240);
+  --ink-night-lift: oklch(0.22 0.010 240);
+
+  /* === 暖白 / 宣纸 === */
+  --paper: oklch(0.94 0.015 75);
+  --paper-soft: oklch(0.82 0.015 75);
+  --paper-dim: oklch(0.62 0.012 75);
+  --paper-mute: oklch(0.45 0.010 75);
+
+  /* === 朱砂 (落款型点睛 ≤ 5%) === */
+  --vermilion: oklch(0.52 0.16 28);
+  --vermilion-deep: oklch(0.42 0.15 28);
+  --vermilion-soft: oklch(0.65 0.12 28);
+
+  /* === 分割线 === */
+  --line: oklch(0.94 0.015 75 / 0.20);
+  --line-soft: oklch(0.94 0.015 75 / 0.08);
+  --line-ghost: oklch(0.94 0.015 75 / 0.04);
+
+  /* === 字体栈 === */
+  --font-display-cn: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-display-en: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", serif;
+  --font-body-cn: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-body-en: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", serif;
+  --font-stamp: "FZShuTi", "STKaiti", "Kaiti SC", "Songti SC", serif;
+
+  /* === Spacing scale (8-base, 偏稀疏) === */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+  --space-7: 64px;
+  --space-8: 104px;
+  --space-9: 168px;
+
+  /* === Motion === */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 180ms;
+  --motion-base: 320ms;
+  --motion-slow: 600ms;
+  --motion-veil: 1200ms;
+
+  /* === 旧 token 重映射 (兼容层，让现有规则自动跟新色板) === */
+  --bg: var(--ink-night);
+  --fg: var(--paper);
+  --fg-soft: var(--paper-soft);
+  --fg-dim: var(--paper-dim);
+  --accent: var(--vermilion); /* 原西式金色 → 朱砂 */
+  --transition-page: 580ms;
+}
+
+/* 全局：减少动画时把所有装饰动画关掉，仅保留透明度过渡 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* 涟漪 canvas 整个关掉 */
+  #ripple-canvas { display: none !important; }
+
+}
+
+/* ============================================================
+   :focus-visible — 键盘 a11y 焦点样式
+   仅在键盘 Tab 切换时显示，鼠标点击不出现（focus-visible 标准行为）
+   WCAG 2.4.7 Focus Visible (Level AA)
+   ============================================================ */
+*:focus { outline: none; }
+
+*:focus-visible {
+  outline: 2px solid var(--vermilion);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* input 本身有 border，focus-visible 改用 border-color 指示，不加轮廓 */
+.intent-entry-input:focus-visible {
+  outline-offset: 0;
+  border-bottom-color: var(--vermilion);
+  outline: none;
+  box-shadow: 0 1px 0 0 var(--vermilion);
+}
+
+* { box-sizing: border-box; }
+[hidden] {
+  display: none !important;
+}
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.app, .hero { width: 100%; height: 100%; }
+.hero { position: relative; }
+
+#ripple-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* === Hero 背景：CSS + SVG 水墨晕染 ====================================
+   - 基底：夜墨 var(--ink-night)
+   - 噪点纸纹层：SVG feTurbulence 内联 data URI（overlay 混合，模拟宣纸质感）
+   - 墨晕层 ×2：::before / ::after 大半径 radial-gradient + blur，
+     反向缓慢漂移（32s / 28s）模拟"墨已晕开"的呼吸
+   - 顶 / 底 vignette：linear-gradient 框定中央留白
+   - reduced-motion：全局 catch-all 已覆盖动画关闭
+   ====================================================================== */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    /* 顶 / 底 vignette */
+    linear-gradient(
+      to bottom,
+      var(--ink-night) 0%,
+      transparent 18%,
+      transparent 82%,
+      var(--ink-night) 100%
+    ),
+    /* 月辉：右上角云后月光，暖白柔光不刺眼 */
+    radial-gradient(
+      ellipse 60vw 45vh at 76% 16%,
+      oklch(0.86 0.022 75 / 0.13) 0%,
+      oklch(0.78 0.018 75 / 0.07) 30%,
+      transparent 60%
+    ),
+    /* 宣纸噪点：SVG feTurbulence 内联 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.59  0 0 0 0 0.54  0 0 0 0.5 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>"),
+    /* 夜墨基底 */
+    var(--ink-night);
+  background-blend-mode: normal, screen, overlay, normal;
+}
+
+/* 墨晕 1 — 左上偏中央，缓慢漂移 */
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  width: 140%;
+  height: 110%;
+  top: -10%;
+  left: -20%;
+  background: radial-gradient(
+    ellipse 50% 40% at center,
+    oklch(0.34 0.024 240 / 0.85) 0%,
+    oklch(0.24 0.016 240 / 0.45) 35%,
+    transparent 65%
+  );
+  filter: blur(48px);
+  animation: ink-drift-1 32s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* 墨晕 2 — 右下偏中央，反向漂移 */
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  width: 130%;
+  height: 110%;
+  bottom: -20%;
+  right: -30%;
+  background: radial-gradient(
+    ellipse 45% 35% at center,
+    oklch(0.32 0.022 240 / 0.78) 0%,
+    oklch(0.22 0.015 240 / 0.4) 40%,
+    transparent 72%
+  );
+  filter: blur(64px);
+  animation: ink-drift-2 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes ink-drift-1 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(7%, 4%) scale(1.04); }
+}
+
+@keyframes ink-drift-2 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-6%, -5%) scale(0.96); }
+}
+
+/* Mobile 性能：blur 半径降低（手机 GPU 算 60px+ blur 吃力） */
+@media (max-width: 767px) {
+  .hero-bg::before { filter: blur(24px); }
+  .hero-bg::after { filter: blur(32px); }
+}
+
+/* === 远山剪影 — hero 底部两层山轮廓 ============================
+   远山（浅）+ 近山（深），SVG inline data URI，无外部资源。
+   只在 desktop / tablet 显示；mobile 隐藏避免遮住流程入口。 */
+.hero-mountains {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38vh;
+  max-height: 320px;
+  z-index: 1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 400' preserveAspectRatio='xMidYMax slice'><path d='M0,200 L160,140 L320,170 L480,130 L640,160 L800,120 L960,150 L1120,110 L1280,140 L1440,130 L1440,400 L0,400 Z' fill='%231d2330' opacity='0.55'/><path d='M0,280 L120,240 L260,260 L420,220 L580,250 L720,230 L880,260 L1040,210 L1200,240 L1360,220 L1440,250 L1440,400 L0,400 Z' fill='%23141821' opacity='0.85'/></svg>");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+}
+
+@media (max-width: 767px) {
+  .hero-mountains { display: none; }
+}
+
+.hero-content {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1440px;
+  height: 1024px;
+  transform-origin: top center;
+  z-index: 4;
+}
+
+/* Ribbon SVG 退为装饰层：保留原位置/尺寸，仅降透明度。
+   不再是品牌主体，是"此镜"主标背后的水波装饰。
+   filter: 去饱和 + 提亮，将内嵌 PNG 的橙色/金色中性化为暖白单色调（paper-dim 风格水墨纹理感）。
+   DESIGN.md §6：禁止任何金色出现。 */
+.hero-logo-ribbon {
+  position: absolute;
+  width: 246.5px;
+  height: 984px;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0.28;
+  filter: grayscale(1) brightness(0.9) contrast(1.15) opacity(0.5);
+}
+
+/* "此镜" — 品牌主视觉 ID。
+   所有语言下都显示（不再受 :lang(zh) 限制）。
+   仅在 home 默认状态显示（JS 控制 [hidden] 属性）。
+   下方用 ::after 注入小号英文 caption "RiLL — A mirror for clarity"。 */
+.hero-logo-subtitle {
+  display: none;
+}
+.hero-logo-subtitle:not([hidden]) {
+  display: block;
+  position: absolute;
+  top: 220px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: var(--font-display-cn);
+  font-size: 96px;
+  font-weight: 600;
+  color: var(--paper);
+  letter-spacing: 0.20em;
+  line-height: 1;
+  text-indent: 0.20em; /* 抵消最后字符的 letter-spacing 视觉偏移，让块真正居中 */
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+}
+.hero-logo-subtitle:not([hidden])::after {
+  content: "RiLL — A mirror for clarity";
+  display: block;
+  margin-top: var(--space-5);
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: var(--paper-dim);
+  text-indent: 0;
+  white-space: nowrap;
+}
+
+.home-hit {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 120px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 50;
+}
+
+.top-link {
+  position: absolute;
+  top: 48px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--paper-soft);
+  font-family: var(--font-display-en);
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: 0.18em;
+  transition: color var(--motion-fast) var(--ease-out-quart);
+}
+.top-link-left { left: 72px; }
+.top-link-right { right: 72px; }
+
+/* Menu toggle picks up the same hover/transition treatment as the lang opts. */
+#menu-toggle {
+  cursor: pointer;
+}
+#menu-toggle:hover { color: var(--paper); }
+
+/* v1: Auth / 用户系统入口未实现，整体隐藏。前端 DOM 保留以便 v1.5 重新启用。
+   Letters + Archive 均隐藏，menu 无内容，故 menu-toggle 整体隐藏。*/
+.arc-gate { display: none !important; }
+.menu-item[data-target="archive"] { display: none !important; }
+.menu-item[data-target="letters"] { display: none !important; }
+#menu-toggle { display: none !important; }
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0;
+}
+
+.lang-opt {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--paper-soft);
+  font-family: var(--font-display-en);
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-out-quart);
+}
+
+.lang-sep {
+  color: var(--paper-dim);
+  letter-spacing: 0;
+  font-weight: 300;
+}
+
+#lang-zh {
+  font-family: var(--font-display-cn);
+  font-size: 17px;
+  letter-spacing: 0.20em;
+}
+
+.lang-opt:hover { color: var(--paper); }
+.lang-opt.is-active { color: var(--paper); }
+
+.back-arrow {
+  position: absolute;
+  top: 228px;
+  left: 60px;
+  z-index: 120;
+  pointer-events: auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--paper);
+  font-size: 36px;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity var(--transition-page) ease, transform var(--transition-page) ease;
+}
+
+.back-arrow:hover {
+  opacity: 0.82;
+  transform: translateX(-3px);
+}
+
+.hero-quote,
+.hero-philosophy,
+.reflection-kicker,
+.reflection-title {
+  margin: 0;
+  text-align: center;
+  transition: opacity var(--transition-page) ease, transform var(--transition-page) ease;
+}
+
+/* hero-quote 退为副标 — "此镜" 主标已占 96px 视觉中心，
+   引文降至 36px display-m + paper-soft，作呼吸式 caption。
+   日 / 中混排时字距正向（0.12em），呼应东方排版节奏。 */
+.hero-quote {
+  position: absolute;
+  top: 460px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 760px;
+  font-family: var(--font-display-en);
+  font-size: 36px;
+  font-style: normal;
+  line-height: 1.35;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--paper-soft);
+}
+:lang(zh) .hero-quote {
+  font-family: var(--font-display-cn);
+  letter-spacing: 0.18em;
+}
+
+/* hero-philosophy — 长文学化段落，max-width 720px，body-l (20px, lh 1.85) */
+.hero-philosophy {
+  position: absolute;
+  top: 300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 80px));
+  font-family: var(--font-body-en);
+  font-size: 20px;
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+  text-align: left;
+  color: var(--paper-soft);
+}
+:lang(zh) .hero-philosophy {
+  font-family: var(--font-body-cn);
+  line-height: 1.95;
+  letter-spacing: 0.06em;
+  text-align: justify;
+}
+
+/* hero-philosophy-more — 次级按钮（DESIGN.md §5 "Button — 次级"）
+   仅文本 + 底部 border-bottom，不用 text-transform uppercase（西方风格）。
+   EN 走 --font-display-en，:lang(zh) 走 --font-display-cn。 */
+.hero-philosophy-more {
+  position: absolute;
+  top: 610px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  padding: var(--space-2) 0;
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--paper-dim);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-out-quart),
+              border-bottom-color var(--motion-fast) var(--ease-out-quart);
+}
+.hero-philosophy-more:hover {
+  color: var(--paper);
+  border-bottom-color: var(--line);
+}
+body.is-philosophy .hero-philosophy-more { display: inline-block; }
+:lang(zh) .hero-philosophy-more {
+  top: 580px;
+  font-family: var(--font-display-cn);
+}
+
+.reflection-kicker {
+  position: absolute;
+  top: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  font-family: var(--font-display-en);
+  font-size: 22px;
+  font-style: italic;
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--paper-soft);
+  white-space: nowrap;
+  text-align: center;
+}
+:lang(zh) .reflection-kicker {
+  font-family: var(--font-display-cn);
+  font-style: normal;
+  letter-spacing: 0.20em;
+  font-size: 21px;
+}
+
+.reflection-title {
+  position: absolute;
+  top: 400px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(820px, calc(100% - 80px));
+  font-family: var(--font-display-en);
+  font-size: 48px;
+  font-style: normal;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: 0.10em;
+  color: var(--paper);
+  text-align: center;
+}
+:lang(zh) .reflection-title {
+  font-family: var(--font-display-cn);
+  font-size: 44px;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+}
+
+/* 主行动按钮：无背景，仅上下双细横线夹文字。东方版式风骨。
+   hover 横线变朱砂；文字不变色。无 box-shadow。 */
+.enter-btn {
+  position: absolute;
+  top: 588px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: auto;
+  min-width: 140px;
+  padding: var(--space-4) var(--space-6);
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.22em;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--motion-base) var(--ease-out-quart),
+              color var(--motion-fast) var(--ease-out-quart),
+              opacity var(--motion-base) var(--ease-out-quart);
+}
+:lang(zh) .enter-btn {
+  font-family: var(--font-display-cn);
+  font-size: 17px;
+  letter-spacing: 0.30em;
+  text-transform: none;
+}
+
+.enter-btn:hover {
+  border-top-color: var(--vermilion);
+  border-bottom-color: var(--vermilion);
+}
+
+.mode-select {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(calc(-50% - 10px), -50%);
+  width: auto;
+  display: flex;
+  justify-content: center;
+  gap: 190px;
+  align-items: center;
+}
+
+.mode-card {
+  width: 199px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.mode-card-left {
+  width: 196px;
+}
+
+.mode-icon {
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.mode-icon-tarot {
+  width: 208px;
+  height: 212px;
+  aspect-ratio: 49 / 50;
+}
+
+.mode-icon-meihua {
+  width: 211px;
+  height: 212px;
+  aspect-ratio: 199 / 200;
+}
+
+.mode-title {
+  margin: var(--space-5) 0 0;
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.10em;
+}
+
+.mode-title-cn {
+  font-family: var(--font-display-cn);
+  letter-spacing: 0.18em;
+  font-weight: 600;
+}
+
+.mode-subtext {
+  margin: var(--space-3) 0 0;
+  color: var(--paper-dim);
+  text-align: center;
+  font-family: var(--font-body-en);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.05em;
+}
+:lang(zh) .mode-subtext {
+  font-family: var(--font-body-cn);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.mode-enter-btn {
+  position: static;
+  transform: none;
+  margin-top: 32px;
+}
+
+.mode-enter-btn:hover {
+  transform: translateY(-1px);
+}
+
+.mode-soon {
+  margin: var(--space-6) 0 0;
+  color: var(--paper-mute);
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+}
+:lang(zh) .mode-soon {
+  font-family: var(--font-body-cn);
+  font-style: normal;
+  letter-spacing: 0.30em;
+  text-transform: none;
+}
+
+.intent-select {
+  position: absolute;
+  top: 56%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 980px;
+  display: flex;
+  justify-content: center;
+  gap: 130px;
+  align-items: center;
+}
+
+.intent-card {
+  position: relative;
+  width: 240px;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  padding: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.45s ease, opacity 0.45s ease;
+}
+
+/* 移除原金色 radial-gradient 光晕动画 —— 违反 DESIGN.md：
+   禁止 box-shadow / glow 浮起 + 禁止渐变背景。
+   intent-card 不再需要伪元素光晕；hover 由 image 自身透明度承担。 */
+.intent-card > * { position: relative; z-index: 1; }
+
+.intent-card:hover {
+  transform: translateY(-6px);
+  opacity: 1;
+}
+
+.intent-card:active {
+  transform: translateY(-4px);
+}
+
+.intent-image {
+  display: block;
+  width: 240px;
+  height: 384px;
+  object-fit: contain;
+  margin: 0 auto;
+  animation: intent-float 5.5s ease-in-out infinite;
+  transition: filter 0.45s ease;
+  will-change: transform;
+}
+
+.intent-card:nth-child(1) .intent-image { animation-delay: 0s; }
+.intent-card:nth-child(2) .intent-image { animation-delay: 0.7s; }
+.intent-card:nth-child(3) .intent-image { animation-delay: 1.4s; }
+
+@keyframes intent-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.intent-card:hover .intent-image {
+  filter: drop-shadow(0 6px 14px oklch(0.52 0.16 28 / 0.18));
+}
+
+.intent-caption {
+  position: relative;
+  display: inline-block;
+  margin-top: var(--space-5);
+  padding-bottom: var(--space-2);
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 18px;
+  line-height: 1.6;
+  letter-spacing: 0.10em;
+  font-weight: 400;
+  white-space: nowrap;
+  transition: opacity var(--motion-base) var(--ease-out-quart);
+}
+:lang(zh) .intent-caption {
+  font-family: var(--font-display-cn);
+  font-size: 17px;
+  letter-spacing: 0.20em;
+  font-weight: 500;
+}
+
+.intent-caption::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 28px;
+  height: 1px;
+  background: var(--line);
+  transform: translateX(-50%);
+  transition: width var(--motion-base) var(--ease-out-quart),
+              background var(--motion-base) var(--ease-out-quart);
+  animation: intent-underline-pulse 4s ease-in-out infinite;
+}
+
+@keyframes intent-underline-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.intent-card:hover .intent-caption::after {
+  width: 88%;
+  background: var(--accent);
+  opacity: 1;
+  animation: none;
+}
+
+.intent-num {
+  color: var(--paper);
+  transition: color var(--transition-page) ease;
+}
+
+.intent-card:hover .intent-num {
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intent-image,
+  .intent-caption::after,
+  .intent-card::before {
+    animation: none;
+  }
+}
+
+.intent-entry {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1440px;
+  height: 1024px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.intent-entry-title {
+  margin: 170px 0 0;
+  width: min(720px, calc(100% - 80px));
+  color: var(--paper);
+  text-align: center;
+  font-family: var(--font-display-en);
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+}
+:lang(zh) .intent-entry-title {
+  font-family: var(--font-display-cn);
+  font-size: 36px;
+  letter-spacing: 0.20em;
+  font-weight: 500;
+}
+
+.intent-entry-copy {
+  margin: var(--space-7) 0 0;
+  width: min(640px, calc(100% - 80px));
+  color: var(--paper-soft);
+  text-align: center;
+  font-family: var(--font-body-en);
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+}
+:lang(zh) .intent-entry-copy {
+  font-family: var(--font-body-cn);
+  font-size: 19px;
+  line-height: 1.85;
+  letter-spacing: 0.08em;
+}
+
+.intent-entry-hints {
+  margin: var(--space-6) 0 0;
+  color: var(--paper-dim);
+  font-family: var(--font-body-en);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+}
+:lang(zh) .intent-entry-hints {
+  font-family: var(--font-body-cn);
+  font-style: normal;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+/* Input：无 border，仅底部 1px line-soft；focus 时变 paper。 */
+.intent-entry-input {
+  margin-top: var(--space-7);
+  width: min(560px, calc(100% - 80px));
+  height: auto;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-body-cn);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+  padding: var(--space-3) var(--space-2);
+  outline: none;
+  text-align: center;
+  transition: border-color var(--motion-base) var(--ease-out-quart);
+}
+
+.intent-entry-input::placeholder {
+  color: var(--paper-dim);
+  opacity: 1;
+}
+
+.intent-entry-input:focus {
+  border-bottom-color: var(--paper);
+}
+
+.intent-entry-begin {
+  position: static;
+  transform: none;
+  margin-top: 59px;
+}
+
+.intent-entry-begin:hover {
+  transform: translateY(-1px);
+}
+
+.intent-animation-stage {
+  margin-top: var(--space-5);
+  width: min(560px, calc(100% - 80px));
+  height: 120px;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pre-stage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1440px;
+  height: 1024px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.pre-stage-title {
+  margin: 170px 0 0;
+  width: 641px;
+  color: var(--paper);
+  text-align: center;
+  font-family: var(--font-body-en);
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 1.089px;
+}
+
+.pre-stage-copy {
+  position: absolute;
+  top: 426px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  width: 800px;
+  color: var(--paper);
+  text-align: center;
+  font-family: var(--font-body-en);
+  font-size: 48px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 57.6px;
+  letter-spacing: -0.128px;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  z-index: 2;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+.pre-stage.show-guide .pre-stage-copy {
+  opacity: 1;
+}
+
+.pre-stage-pick-hint {
+  position: absolute;
+  top: 300px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: rgba(250, 244, 230, 0.85);
+  font-family: var(--font-body-en);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 28px;
+  letter-spacing: -0.249px;
+  opacity: 0;
+  transition: opacity 280ms ease;
+  z-index: 2;
+}
+
+.pre-stage.show-deck .pre-stage-pick-hint {
+  opacity: 1;
+}
+
+.pre-deck {
+  position: absolute;
+  top: 57%;
+  left: 50%;
+  width: calc(100% - 180px);
+  max-width: 1220px;
+  height: 620px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+  z-index: 2;
+}
+
+.pre-stage.show-deck .pre-deck {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pre-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 158px;
+  height: 258px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transform: translate(-50%, -50%) scale(0.9);
+  transform-origin: center 148%;
+  transition: transform 650ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 420ms ease;
+  will-change: transform, opacity;
+  opacity: 0;
+}
+
+.pre-stage.show-deck .pre-card {
+  transform: translate(calc(-50% + (var(--i) - 10.5) * 39px), calc(-50% + var(--y, 0px))) rotate(calc((var(--i) - 10.5) * 3.6deg));
+  opacity: 1;
+}
+
+.pre-stage.show-deck .pre-card:hover {
+  transform: translate(calc(-50% + (var(--i) - 10.5) * 39px), calc(-50% + var(--y, 0px) - 11px)) rotate(calc((var(--i) - 10.5) * 3.6deg)) scale(1.03);
+}
+
+.pre-card:nth-child(1), .pre-card:nth-child(22) { --y: -86px; }
+.pre-card:nth-child(2), .pre-card:nth-child(21) { --y: -72px; }
+.pre-card:nth-child(3), .pre-card:nth-child(20) { --y: -60px; }
+.pre-card:nth-child(4), .pre-card:nth-child(19) { --y: -49px; }
+.pre-card:nth-child(5), .pre-card:nth-child(18) { --y: -39px; }
+.pre-card:nth-child(6), .pre-card:nth-child(17) { --y: -30px; }
+.pre-card:nth-child(7), .pre-card:nth-child(16) { --y: -22px; }
+.pre-card:nth-child(8), .pre-card:nth-child(15) { --y: -16px; }
+.pre-card:nth-child(9), .pre-card:nth-child(14) { --y: -10px; }
+.pre-card:nth-child(10), .pre-card:nth-child(13) { --y: -5px; }
+.pre-card:nth-child(11), .pre-card:nth-child(12) { --y: 0px; }
+
+.pre-card.is-faded {
+  opacity: 0;
+}
+
+.pre-card.is-selected {
+  z-index: 6;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1.08) !important;
+}
+
+.pre-card-inner {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1100ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.pre-card.is-revealed .pre-card-inner {
+  transform: rotateY(180deg);
+}
+
+.pre-card-face {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  backface-visibility: hidden;
+}
+
+.pre-card-back {
+  border: 1.6px solid rgba(250, 244, 230, 0.52);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0 1px, rgba(255, 255, 255, 0) 1px 7px),
+    linear-gradient(145deg, var(--ink-night-soft), var(--ink-night));
+  box-shadow: none;
+}
+
+.pre-card-front {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: var(--ink-night-soft);
+  transform: rotateY(180deg);
+  border: 1px solid oklch(0.52 0.16 28 / 0.45); /* 朱砂细边线 */
+  box-shadow: none;
+  /* 烛光滤镜：让 22 张西方塔罗 PNG 与夜墨底融洽（DESIGN.md §6） */
+  filter: sepia(0.18) saturate(0.85) brightness(0.94) contrast(1.05);
+}
+
+.pre-card-front.is-reversed {
+  transform: rotateY(180deg) rotate(180deg);
+}
+
+/* ── Meihua Yishu: casting stage ─────────────────────────────── */
+
+.meihua-stage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1440px;
+  height: 1024px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.meihua-stage-title {
+  margin: 170px 0 0;
+  font-family: var(--font-display-en);
+  font-size: 40px;
+  letter-spacing: 0.12em;
+  color: var(--paper);
+}
+
+:lang(zh) .meihua-stage-title {
+  font-family: var(--font-display-cn);
+  font-size: 36px;
+  letter-spacing: 0.20em;
+  font-weight: 500;
+}
+
+.meihua-stage-copy {
+  margin: var(--space-7) 0 0;
+  font-family: var(--font-body-cn);
+  font-size: 19px;
+  line-height: 1.85;
+  letter-spacing: 0.08em;
+  color: var(--paper-soft);
+}
+
+.meihua-gua-stage {
+  margin: var(--space-8) 0 0;
+  width: 160px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+/* Smaller version inside reading-left panel */
+.meihua-gua-stage-sm {
+  margin: 0;
+  width: 100px;
+  height: 130px;
+  gap: 10px;
+}
+
+.meihua-gua-line {
+  width: 100%;
+  height: 6px;
+  display: flex;
+  gap: 8%;
+}
+
+.meihua-gua-line-yang {
+  background: var(--paper);
+  height: 100%;
+  width: 100%;
+}
+
+.meihua-gua-line-yin {
+  display: flex;
+  gap: 8%;
+  height: 100%;
+  width: 100%;
+}
+
+.meihua-gua-line-half {
+  flex: 1;
+  background: var(--paper);
+  height: 100%;
+}
+
+.meihua-gua-name {
+  margin: var(--space-6) 0 0;
+  font-family: var(--font-display-cn);
+  font-size: 32px;
+  letter-spacing: 0.30em;
+  color: var(--paper);
+}
+
+.meihua-gua-name-cn {
+  color: var(--vermilion);
+  font-weight: 600;
+}
+
+.meihua-cast-btn {
+  margin-top: var(--space-7);
+}
+
+/* Reading-left meihua display */
+.reading-card-meihua {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+}
+
+.reading-meihua-gua-label {
+  font-family: var(--font-display-cn);
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  color: var(--paper-soft);
+  text-align: center;
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .meihua-stage {
+    width: 100%;
+    height: auto;
+  }
+
+  .meihua-stage-title {
+    margin-top: var(--space-6);
+    font-size: 28px;
+  }
+
+  .meihua-stage-copy {
+    font-size: 17px;
+  }
+
+  .meihua-gua-stage {
+    width: 120px;
+    height: 150px;
+  }
+
+  .meihua-gua-name {
+    font-size: 24px;
+  }
+}
+
+/* ── End Meihua casting stage ────────────────────────────────── */
+
+.reading-result,
+.guidance-result {
+  --rill-reading-primary: var(--paper);
+  --rill-reading-secondary: var(--paper-soft);
+  --rill-reading-soft: oklch(0.82 0.015 75 / 0.92);
+}
+
+.guidance-result,
+.guidance-result * {
+  font-family: var(--font-body-en);
+}
+:lang(zh) .guidance-result,
+:lang(zh) .guidance-result * {
+  font-family: var(--font-body-cn);
+}
+
+.reading-result {
+  position: absolute;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1160px;
+  animation: result-scroll-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.guidance-result {
+  position: absolute;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1160px;
+  animation: result-scroll-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes result-scroll-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.reading-title {
+  margin: 0;
+  color: var(--rill-reading-primary);
+  text-align: center;
+  font-family: var(--font-display-en);
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+}
+:lang(zh) .reading-title {
+  font-family: var(--font-display-cn);
+  font-size: 26px;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+}
+
+.reading-layout {
+  margin-top: 44px;
+  display: flex;
+  gap: 64px;
+  align-items: flex-start;
+}
+
+.reading-left {
+  width: 320px;
+  margin-top: -32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reading-card-image {
+  display: block;
+  flex-shrink: 0;
+  width: min(210px, 100%);
+  max-width: 100%;
+  height: auto;
+  max-height: min(420px, 70vh);
+  object-fit: contain;
+  object-position: center;
+  border: 1px solid oklch(0.94 0.015 75 / 0.20); /* paper@0.20 — 内敛，不抢卡面焦点 */
+  background: transparent;
+  /* 烛光滤镜 */
+  filter: sepia(0.18) saturate(0.85) brightness(0.94) contrast(1.05);
+  transition: border-color var(--transition-page) ease;
+}
+
+/* 选中 / 加载中 → 朱砂边线作为状态指示 */
+.reading-card-image.is-selected,
+.reading-card-image.is-reading-loading {
+  border-color: oklch(0.52 0.16 28 / 0.5);
+}
+
+.reading-card-image.is-reversed {
+  transform: rotate(180deg);
+}
+
+.reading-card-name {
+  margin: var(--space-6) 0 0; /* 与卡牌图拉开距离，"题字"感 */
+  color: var(--rill-reading-primary);
+  font-family: var(--font-display-en);
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+:lang(zh) .reading-card-name {
+  font-family: var(--font-display-cn);
+  font-size: 24px;
+  letter-spacing: 0.22em;
+  font-weight: 500;
+}
+
+.reading-card-keywords {
+  margin: 16px 0 0;
+  color: var(--paper-dim); /* 略亮于旧 fg-dim */
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.22em; /* 关键词"散开"感 */
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.reading-card-summary {
+  margin: 24px 0 0;
+  color: var(--paper);
+  font-family: var(--font-body-en);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 30px;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.reading-right {
+  width: 776px;
+}
+
+.reading-main-flow {
+  position: relative;
+}
+
+.reading-core {
+  margin: 0 0 var(--space-6);
+  color: var(--paper);
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: 30px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  max-width: 640px;
+  transition: opacity 0.35s ease;
+}
+
+/* 中文 CORE：display-cn，字号稍大，非斜体，更"题辞"感 */
+:lang(zh) .reading-core {
+  font-family: var(--font-display-cn);
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.6;
+}
+
+.reading-result.is-reading-loading .reading-core.is-reading-loading,
+.reading-scroll.is-reading-loading .reading-core.is-reading-loading {
+  animation: reading-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes reading-pulse {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.reading-body {
+  margin-top: 8px;
+}
+
+.reading-error-wrap {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.reading-error-msg {
+  margin: 0;
+  color: var(--rill-reading-secondary);
+  font-family: var(--font-body-en);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.advice-loading.is-reading-loading {
+  animation: reading-pulse 2.4s ease-in-out infinite;
+  margin: 0;
+  color: var(--rill-reading-secondary);
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Advice Card — Layer 2 opening (italic serif, matches .reading-core so the
+ * first sentence of every reading is visually unified) */
+.advice-closing {
+  margin: 0 0 32px 0;
+  color: var(--fg-soft);
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: 30px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  max-width: 640px;
+}
+.advice-closing:empty {
+  display: none;
+}
+
+/* Advice Card — Layer 3 body paragraphs */
+.advice-body {
+  margin: 0 0 30px 0;
+  max-width: 640px;
+}
+
+.advice-body .advice-block p {
+  margin: 0 0 var(--space-3);
+  color: var(--paper-soft);
+  font-family: var(--font-body-en);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.9;
+  letter-spacing: 0.02em;
+}
+
+:lang(zh) .advice-body .advice-block p {
+  font-family: var(--font-body-cn);
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  line-height: 1.95;
+}
+
+.advice-body .advice-block p:last-child {
+  margin-bottom: 0;
+}
+
+/* Advice Card — Layer 4 takeaway (action) with vermilion left bar — 卷轴落款感.
+   position: relative 供 .stamp-corner-br 印章定位。 */
+.advice-action {
+  margin: 0;
+  padding: 6px 0 6px var(--space-5); /* 24px left — 落款感加强 */
+  border-left: 2px solid var(--vermilion);
+  color: var(--paper);
+  font-family: var(--font-body-en);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+  max-width: 640px;
+  position: relative;
+}
+
+:lang(zh) .advice-action {
+  font-family: var(--font-body-cn);
+  font-size: 19px;
+  letter-spacing: 0.08em;
+  line-height: 1.85;
+}
+.advice-action:empty {
+  display: none;
+}
+
+/* 极简版：一句话行动建议为唯一可见的 reading 输出 */
+.reading-action {
+  display: block;
+  max-width: 640px;
+  margin: var(--space-7) 0 var(--space-6);
+  padding: 8px 0 8px var(--space-4);
+  border-left: 2px solid var(--vermilion);
+  font-family: var(--font-display-en);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  text-align: left;
+}
+
+:lang(zh) .reading-action {
+  font-family: var(--font-display-cn);
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  line-height: 1.75;
+}
+
+.reading-action:empty {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .reading-action {
+    font-size: 19px;
+    padding: var(--space-3) 0 var(--space-3) var(--space-4);
+    margin: var(--space-6) 0 var(--space-5);
+  }
+}
+
+.guidance-inline-action {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+}
+
+#session-end-quote:empty::before {
+  content: "";
+  display: block;
+  min-height: 2.8em;
+}
+
+.reading-scroll.is-scroll-locked,
+.reading-scroll.is-reading-loading,
+.reading-scroll.is-advice-loading {
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  overflow: hidden;
+}
+
+.reading-scroll {
+  position: relative;
+  height: 620px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 169, 110, 0) rgba(255, 255, 255, 0);
+  transition: scrollbar-color 220ms ease;
+}
+
+.reading-result .reading-scroll::after {
+  content: "";
+  position: sticky;
+  display: block;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  margin-top: -72px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: 3;
+}
+
+.guidance-result .reading-scroll {
+  scroll-snap-type: none;
+}
+
+.guidance-result .reading-main-flow {
+  min-height: 620px;
+}
+
+.guidance-result .reading-screen {
+  min-height: 620px;
+}
+
+.guidance-result .reading-screen-main {
+  display: flex;
+  flex-direction: column;
+  position: relative; /* 供 .stamp-corner-br "愿"印定位 */
+}
+
+.guidance-result .guidance-inline-action {
+  width: 100%;
+  max-width: 640px;
+  justify-content: center;
+}
+
+.reading-screen {
+  min-height: 0;
+}
+
+.reading-point + .reading-point {
+  margin-top: var(--space-7); /* 64px — ANGLES 之间呼吸 */
+  padding-top: var(--space-6); /* 40px */
+  border-top: 1px solid var(--line-soft); /* 极弱分割线 */
+}
+
+.reading-point::before {
+  content: "◇";
+  display: block;
+  color: var(--vermilion-soft);
+  font-size: 10px;
+  line-height: 1;
+  margin-bottom: var(--space-3);
+  letter-spacing: 0;
+  opacity: 0.6;
+}
+
+.reading-point h4 {
+  margin: 0;
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 21px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+}
+
+:lang(zh) .reading-point h4 {
+  font-family: var(--font-display-cn);
+  font-size: 20px;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+}
+
+.reading-point p {
+  margin: var(--space-3) 0 0;
+  color: var(--paper-soft);
+  font-family: var(--font-body-en);
+  font-size: 17px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.95;
+  letter-spacing: 0.02em;
+}
+
+:lang(zh) .reading-point p {
+  font-family: var(--font-body-cn);
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  line-height: 1.95;
+}
+
+.reading-hook {
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-display-en);
+  font-size: 17px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.10em;
+  color: var(--paper-soft); /* 从朱砂降至 paper-soft，视觉让位给正文 */
+}
+:lang(zh) .reading-hook {
+  font-family: var(--font-body-cn);
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: var(--paper-dim);
+}
+.reading-hook:empty {
+  display: none;
+}
+
+.reading-point strong {
+  color: var(--rill-reading-primary);
+  font-weight: 600;
+}
+
+/* Angle titles arrive wrapped in **bold** markdown — keep the h4's own weight */
+.reading-point h4 strong {
+  font-weight: inherit;
+  color: inherit;
+}
+
+.reading-core strong {
+  font-weight: 600;
+}
+
+.takeaway-title strong {
+  font-weight: 600;
+}
+
+.reading-next {
+  margin-top: 14px;
+}
+
+.reading-result .reading-screen-takeaway {
+  display: block;
+  min-height: 0;
+  margin-top: 36px;
+  padding-bottom: 90px;
+}
+
+.guidance-result .reading-screen-takeaway {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 620px;
+  margin-top: 0;
+  padding-bottom: 10px;
+}
+
+.takeaway-panel {
+  width: 100%;
+  padding: 0;
+  position: relative; /* 供 .stamp-corner-br "读"印定位 */
+}
+
+.takeaway-title {
+  margin: 0;
+  padding: 8px 0 8px var(--space-4); /* 16px left — 卷轴落款感 */
+  border-left: 2px solid var(--vermilion);
+  color: var(--paper);
+  text-align: left;
+  font-family: var(--font-display-en);
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  max-width: 640px;
+}
+
+:lang(zh) .takeaway-title {
+  font-family: var(--font-display-cn);
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  line-height: 1.65;
+}
+
+.takeaway-actions {
+  margin-top: var(--space-7); /* 64px — 克制留白 */
+  display: flex;
+  justify-content: center;
+  gap: var(--space-7); /* 64px — 按钮不挤 */
+}
+
+.takeaway-btn {
+  min-width: 160px;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-6);
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-body-en);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  transition: border-color var(--transition-page) ease;
+  box-sizing: border-box;
+}
+
+.takeaway-btn-wide {
+  min-width: 200px;
+}
+
+.takeaway-btn:hover {
+  border-top-color: var(--vermilion);
+  border-bottom-color: var(--vermilion);
+}
+
+.takeaway-btn.is-primary {
+  /* 克制：不用实底填充，双横线朱砂加粗代替边框 */
+  background: transparent;
+  border-top: 2px solid var(--vermilion);
+  border-bottom: 2px solid var(--vermilion);
+  color: var(--paper);
+  font-weight: 500;
+  letter-spacing: 0.20em;
+}
+
+.takeaway-btn.is-primary:hover {
+  border-top-color: var(--vermilion-soft);
+  border-bottom-color: var(--vermilion-soft);
+}
+
+.takeaway-btn.is-ghost {
+  opacity: 0.5;
+  border-top-color: var(--line-soft);
+  border-bottom-color: var(--line-soft);
+}
+
+.takeaway-btn.is-ghost:hover {
+  opacity: 0.78;
+  border-top-color: var(--line);
+  border-bottom-color: var(--line);
+}
+
+.round-dots {
+  margin: 0 0 26px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.round-dots .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(250, 244, 230, 0.22);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.round-dots .dot.done {
+  background: rgba(250, 244, 230, 0.45);
+}
+
+.round-dots .dot.active {
+  background: var(--vermilion);
+  box-shadow: none;
+  transform: scale(1.4);
+}
+
+.ending-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+}
+
+.ending-title {
+  margin: 0;
+  color: var(--paper);
+  text-align: center;
+  font-family: var(--font-display-cn);
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.3px;
+}
+
+.guidance-farewell-screen .guidance-farewell-text {
+  margin: 0;
+  max-width: 960px;
+  padding: 0 28px;
+  color: var(--paper);
+  text-align: center;
+  font-family: var(--font-display-en);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.ending-return-btn {
+  position: static;
+  transform: none;
+  width: 100px;
+  border: 1px solid var(--paper);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.ending-return-btn:hover {
+  transform: translateY(-1px);
+}
+
+.reading-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.reading-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  transition: background 220ms ease;
+}
+
+.reading-scroll::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 110, 0);
+  border-radius: 10px;
+  transition: background 220ms ease;
+}
+
+.reading-scroll:hover {
+  scrollbar-color: rgba(201, 169, 110, 0.65) rgba(255, 255, 255, 0.08);
+}
+
+.reading-scroll:hover::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.reading-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 110, 0.65);
+}
+
+.reading-scroll:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 169, 110, 0.9);
+}
+
+
+.chapter-row {
+  position: absolute;
+  top: 680px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 628px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.chapter-index {
+  position: relative;
+  border: 0;
+  background: transparent;
+  padding: 0 0 8px;
+  color: var(--paper);
+  font-family: var(--font-body-en);
+  font-size: 20px;
+  line-height: 46.8px;
+  letter-spacing: 1.089px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: transform 0.45s ease, opacity 0.45s ease, font-weight var(--transition-page) ease;
+}
+
+.chapter-index::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24px;
+  height: 1px;
+  background: rgba(250, 244, 230, 0.35);
+  transform: translateX(-50%);
+  transition: width 0.45s ease, background 0.45s ease, opacity 0.45s ease;
+  animation: chapter-underline-pulse 4s ease-in-out infinite;
+}
+
+.chapter-row .chapter-index:nth-child(1)::after { animation-delay: 0s; }
+.chapter-row .chapter-index:nth-child(2)::after { animation-delay: 0.7s; }
+.chapter-row .chapter-index:nth-child(3)::after { animation-delay: 1.4s; }
+
+@keyframes chapter-underline-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.chapter-index:hover {
+  transform: translateY(-6px);
+  opacity: 1;
+}
+
+.chapter-index:active {
+  transform: translateY(-2px);
+}
+
+.chapter-index:hover::after {
+  width: 92%;
+  background: var(--accent);
+  opacity: 1;
+  animation: none;
+}
+
+.chapter-index:hover .chapter-num {
+  color: var(--accent);
+}
+
+.chapter-num { color: var(--paper); transition: color var(--transition-page) ease; }
+.chapter-label { color: var(--paper); }
+
+.chapter-index.is-active .chapter-num { color: var(--accent); }
+.chapter-index.is-active::after {
+  width: 100%;
+  background: var(--accent);
+  opacity: 1;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapter-index::after { animation: none; }
+}
+
+.hero-proverb {
+  position: absolute;
+  top: 934px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 334px;
+  margin: 0;
+  text-align: center;
+  color: var(--paper);
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 30px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.hero-proverb.is-small-note {
+  font-family: var(--font-body-en);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0.3px;
+  color: var(--paper-dim);
+}
+
+.home-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: none;
+}
+.home-flash.is-on {
+  opacity: 0;
+  visibility: hidden;
+  transition: none;
+}
+
+/* ==========================================================================
+   Daily Anchor — postcard version (Design Library §8, §9 example B)
+   Accessed via homepage chapter-03 click.
+   ========================================================================== */
+
+.daily-anchor {
+  position: absolute;
+  top: 170px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 980px;
+  max-height: 824px;
+  padding-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: visible;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 169, 110, 0) rgba(255, 255, 255, 0);
+  transition: scrollbar-color 220ms ease;
+}
+.daily-anchor::-webkit-scrollbar {
+  width: 8px;
+}
+.daily-anchor::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  transition: background 220ms ease;
+}
+.daily-anchor::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 110, 0);
+  border-radius: 10px;
+  transition: background 220ms ease;
+}
+.daily-anchor:hover {
+  scrollbar-color: rgba(201, 169, 110, 0.65) rgba(255, 255, 255, 0.08);
+}
+.daily-anchor:hover::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+.daily-anchor:hover::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 110, 0.65);
+}
+
+.postcard {
+  position: relative;
+  width: 980px;
+  padding: 54px 60px 36px 54px;
+  border: 1px solid var(--line-soft);
+  background: var(--ink-night-soft);
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 56px;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+body.is-daily .hero-logo-ribbon {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.postcard::before,
+.postcard::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+.postcard::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.postcard::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+}
+
+.postcard-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.postcard-card-frame {
+  position: relative;
+  width: 240px;
+  height: 400px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  overflow: hidden;
+  background: #000;
+}
+.postcard-card-frame::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.postcard-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.postcard-card-image.is-reversed {
+  transform: rotate(180deg);
+}
+
+.postcard-date-stamp {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.stamp-line-top {
+  font-family: var(--font-display-en);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+.stamp-line-bot {
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: var(--fg-dim);
+  opacity: 0.85;
+}
+
+.postcard-right {
+  display: block;
+}
+
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ * DAILY ANCHOR POSTCARD — DESIGN LIBRARY (canonical hierarchy)
+ * ═══════════════════════════════════════════════════════════════════
+ * Reading order (right column, top → bottom):
+ *   ① Card name + orientation  → .postcard-name
+ *   ② 3 keywords (UPPERCASE)    → .postcard-keywords
+ *   ③ Takeaway / core proverb   → .postcard-core      (italic serif, opens the card)
+ *   ④ Color / Object / Moment   → .postcard-anchors   (3-column anchor grid)
+ *   ⑤ Final takeaway (vermilion 朱砂线) → .postcard-takeaway  (closing CTA sentence)
+ *
+ * Also applied to the reading-result page in parallel:
+ *   .reading-core        ≈ ③ (Cormorant italic, serves same role)
+ *   .takeaway-title      ≈ ⑤ (vermilion 朱砂线, closing sentence)
+ * Keep these two sets in visual parity whenever the spec moves.
+ */
+
+/* ① Card name — 20/500, --fg */
+.postcard-name {
+  margin: 0 0 20px 0;
+  font-family: var(--font-display-en);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--fg);
+}
+
+/* ② Keywords — 14/400, UPPERCASE, letter-spacing 1.8, --fg-dim */
+.postcard-keywords {
+  margin: 0 0 32px 0;
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+/* ③ Takeaway / core proverb — Cormorant Italic 29/400/1.4, --fg-soft, max-width 560 */
+.postcard-core {
+  margin: 0 0 44px 0;
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-style: italic;
+  font-size: 29px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--fg-soft);
+  max-width: 560px;
+}
+.postcard-core:empty {
+  display: none;
+}
+
+/* ④ Color / Object / Moment — 3-column anchor grid.
+ *    Spec note: Color value may optionally be +1 size step (16 → 17/18)
+ *    for quick scanning. Not currently applied. */
+.postcard-anchors {
+  border-top: 1px solid var(--line-soft);
+  padding-top: 24px;
+  padding-bottom: 6px;
+  margin: 0 0 32px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.6fr;
+  gap: 32px;
+}
+.anchor-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.anchor-key {
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.anchor-val {
+  margin: 0;
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--fg-soft);
+}
+
+/* ⑤ Final takeaway — 22/500/1.45, 1px left bar, --fg, max-width 580.
+ *    Always one line, never split into paragraphs; closing sentence of the card. */
+.postcard-takeaway {
+  margin: 0;
+  padding: 4px 0 4px 18px;
+  border-left: 1px solid var(--accent);
+  font-family: var(--font-display-en);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.1px;
+  color: var(--fg);
+  max-width: 580px;
+}
+.postcard-takeaway:empty {
+  display: none;
+}
+
+/* Got it button — pill style via .takeaway-btn, only override margin for layout */
+.daily-got-it {
+  margin-top: 36px;
+}
+
+/* "Already opened today" reminder */
+.daily-come-back {
+  margin: 14px 0 0 0;
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--fg-dim);
+  opacity: 0.6;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+/* Chinese-only font rules. EN UI is intentionally untouched.
+   Excludes top-left lang toggle and top-right Menu (always EN). */
+:lang(zh) .hero-quote,
+:lang(zh) .reflection-kicker,
+:lang(zh) .reflection-title,
+:lang(zh) .hero-proverb,
+:lang(zh) .pre-stage-title,
+:lang(zh) .pre-stage-copy,
+:lang(zh) .intent-entry-title,
+:lang(zh) .intent-entry-copy {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", serif;
+}
+
+:lang(zh) .hero-philosophy,
+:lang(zh) .intent-entry-hints,
+:lang(zh) .intent-entry-input,
+:lang(zh) .pre-stage-pick-hint {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+}
+
+/* Buttons: CN sans (黑体 / 苹方), never serif. Weight inherits from each
+   button's own rule (typically 500). */
+:lang(zh) .enter-btn,
+:lang(zh) .mode-enter-btn,
+:lang(zh) .intent-entry-begin,
+:lang(zh) .takeaway-btn,
+:lang(zh) .daily-got-it,
+:lang(zh) .ending-return-btn,
+:lang(zh) #guidance-back-btn,
+:lang(zh) #guidance-farewell-home-btn,
+:lang(zh) .mode-title,
+:lang(zh) .mode-subtext,
+:lang(zh) .mode-soon {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+}
+
+/* takeaway-btn in CN: wider letter-spacing for Eastern button rhythm */
+:lang(zh) .takeaway-btn {
+  letter-spacing: 0.30em;
+}
+
+/* No italic in CN — applies to <em> from inline markdown AND elements that
+   default to italic (reading-core, advice-closing, postcard-core). */
+:lang(zh) em,
+:lang(zh) .reading-core,
+:lang(zh) .advice-closing,
+:lang(zh) .postcard-core {
+  font-style: normal;
+}
+
+/* Session-end / closing lines use 宋体 in CN.
+   .advice-closing  — last line in advice card body
+   .ending-title    — final takeaway after a normal session ends
+   .guidance-farewell-text — final closing line after advice card flow */
+:lang(zh) .advice-closing,
+:lang(zh) .ending-title,
+:lang(zh) .guidance-farewell-text {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", serif;
+}
+
+/* Chapter labels (01/02/03 序·照见·当下) feel small in CN; bump up. */
+:lang(zh) .chapter-index {
+  font-size: 24px;
+}
+
+/* === 落款 / 印章（DESIGN.md §5） ===
+   朱砂方块，2-4 字楷书白色阴文反白。
+   用于：行动卡片右下角"愿"印 / 完成页"读"印。
+   不用于：装饰性铺满页面（绝对禁止）。
+   父容器必须 position: relative（下方已对 .advice-action 补充）。 */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--vermilion);
+  color: var(--paper);
+  font-family: var(--font-stamp);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  border: 1px solid var(--vermilion-deep);
+  border-radius: 0;
+  user-select: none;
+  pointer-events: none;
+  /* 不允许任何 box-shadow */
+}
+
+.stamp-corner-br {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+}
+
+/* ============================================================
+   Menu (overlay + panel with internal nav ↔ detail switching)
+   Lives OUTSIDE design-canvas → uses raw viewport units.
+   Detail views (Traces / Archive / Taya) render INSIDE the panel
+   on the same pearl background; Back returns to nav, Close closes
+   the whole menu.
+   ============================================================ */
+
+body.menu-open {
+  overflow: hidden;
+}
+
+/* Overlay covers the full viewport but fades in from transparent (top)
+   to 0.20 dark, so the top-bar stays untouched and the boundary is a
+   soft gradient instead of a hard horizontal line. */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(7px) saturate(85%);
+  -webkit-backdrop-filter: blur(7px) saturate(85%);
+  /* Mask the top so the RiLL logo + chrome row stay fully clear.
+     Below the panel-top zone, the dim + blur fade in. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 120px,
+    black 220px,
+    black 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 120px,
+    black 220px,
+    black 100%
+  );
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+.menu-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-panel {
+  position: fixed;
+  top: 170px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 620px;
+  /* Pearl image, with a heavier dark layer on top so the panel fully
+     obscures any homepage text behind it and reads moodier. */
+  background:
+    linear-gradient(oklch(0.10 0.012 240 / 0.55), oklch(0.10 0.012 240 / 0.55)),
+    url('./assets/menu-bg-pearl.png') center center / cover no-repeat,
+    var(--ink-night-lift);
+  /* 弱化的 vignette：把面板硬边融入夜墨周围。保留是因为这是 menu 弹层
+     的"环境化"，不是浮起式 shadow。降至 0.30 alpha 以减低戏剧性。 */
+  box-shadow: 0 0 120px 40px oklch(0.10 0.012 240 / 0.30);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 450ms ease;
+  overflow: hidden;
+}
+.menu-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Back button (only visible when a detail view is active).
+   Minimal text + underline accent — no pill background. */
+.menu-back {
+  position: absolute;
+  top: 37px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  padding: 4px 6px 6px;
+  cursor: pointer;
+  transition: opacity var(--transition-page) ease, transform var(--transition-page) ease;
+  z-index: 4;
+  opacity: 0.7;
+}
+.menu-back::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  height: 1px;
+  background: var(--paper);
+  opacity: 0.18;
+}
+.menu-back:hover {
+  opacity: 1;
+}
+.menu-back-label { line-height: 1; }
+
+/* ----------------------------------------
+   Nav state (3 items, vertically distributed below header)
+---------------------------------------- */
+.menu-items {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 72px;
+  padding: 80px 0 60px;
+  box-sizing: border-box;
+}
+.menu-item {
+  display: block;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: -0.2px;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  padding: 12px 24px;
+  transition: color 0.3s ease;
+}
+.menu-item:hover {
+  color: var(--accent);
+}
+
+/* ----------------------------------------
+   Detail views (rendered inside the panel, scrollable)
+---------------------------------------- */
+.menu-detail {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 95px 60px 60px;
+  box-sizing: border-box;
+  color: var(--paper);
+}
+/* Native scrollbar hidden — we render our own moon indicator instead. */
+.menu-detail { scrollbar-width: none; }
+.menu-detail::-webkit-scrollbar { width: 0; display: none; }
+
+/* Moon phase scroll indicator — drifts down the right edge and waxes
+   from new moon to full as you scroll. Only shown when content overflows. */
+.menu-moon {
+  position: absolute;
+  top: 80px;
+  right: 22px;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+  transform: translateY(0);
+  transition: opacity 280ms ease;
+  will-change: transform;
+}
+.menu-moon.is-visible { opacity: 1; }
+.menu-moon-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(201, 169, 110, 0.25));
+}
+.menu-moon-dark {
+  fill: rgba(250, 244, 230, 0.1);
+  stroke: rgba(250, 244, 230, 0.25);
+  stroke-width: 1.2;
+}
+.menu-moon-lit {
+  fill: var(--paper-soft);
+}
+
+/* ========================================
+   Letters — index list + article view
+   ======================================== */
+
+/* Index (table of contents) */
+.letters-index {
+  max-width: 460px;
+  margin: 0 auto;
+}
+.letters-eyebrow {
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 40px;
+  text-align: center;
+}
+.letters-eyebrow-zh { display: none; }
+:lang(zh) .letters-eyebrow-en { display: none; }
+:lang(zh) .letters-eyebrow-zh { display: block; }
+:lang(zh) .letters-eyebrow {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 17px;
+  letter-spacing: 6px;
+  text-transform: none;
+}
+
+.letters-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.letters-list li {
+  border-top: 1px solid rgba(250, 244, 230, 0.10);
+}
+.letters-list li:last-child {
+  border-bottom: 1px solid rgba(250, 244, 230, 0.10);
+}
+.letter-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 22px 4px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--paper);
+  transition: padding-left 250ms ease;
+}
+.letter-link:hover {
+  padding-left: 12px;
+}
+.letter-link-meta {
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: rgba(201, 169, 110, 0.78);
+  transition: color 0.3s ease;
+}
+.letter-link-title {
+  font-family: var(--font-display-en);
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.1px;
+  line-height: 1.2;
+  color: var(--paper);
+  transition: color 0.3s ease;
+}
+.letter-link:hover .letter-link-title,
+.letter-link:hover .letter-link-meta {
+  color: var(--accent);
+}
+.letter-link-title-zh { display: none; }
+:lang(zh) .letter-link-title-en { display: none; }
+:lang(zh) .letter-link-title-zh { display: block; }
+:lang(zh) .letter-link-title {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 28px;
+}
+
+/* Article (single Letter) */
+.letter-article {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.letter-eyebrow {
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.letter-headline {
+  font-family: var(--font-display-en);
+  font-size: 38px;
+  font-weight: 300;
+  color: var(--paper);
+  margin: 0 0 56px;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+.letter-headline-zh { display: none; }
+:lang(zh) .letter-headline-en { display: none; }
+:lang(zh) .letter-headline-zh { display: block; }
+:lang(zh) .letter-headline {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+
+.letter-body p {
+  font-family: var(--font-display-en);
+  font-size: 20px;
+  line-height: 1.75;
+  color: var(--paper);
+  margin: 0 0 24px;
+}
+:lang(zh) .letter-body p {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 20px;
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+.letter-body-zh { display: none; }
+:lang(zh) .letter-body-zh { display: block; }
+:lang(zh) .letter-body-en { display: none; }
+
+.letter-section {
+  font-family: var(--font-display-en);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--vermilion);
+  margin: 48px 0 18px;
+}
+.letter-body > .letter-section:first-child { margin-top: 0; }
+:lang(zh) .letter-section {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 17px;
+  letter-spacing: 3px;
+  text-transform: none;
+  font-weight: 500;
+}
+
+.letter-quote {
+  margin: 0 0 22px;
+  padding-left: 18px;
+  border-left: 1px solid rgba(201, 169, 110, 0.5);
+  color: rgba(250, 244, 230, 0.82);
+}
+.letter-quote p { margin: 0 0 10px; font-size: 19px; }
+.letter-quote p:last-child { margin-bottom: 0; }
+
+.letter-sign {
+  margin-top: 32px !important;
+  color: rgba(250, 244, 230, 0.75);
+  font-size: 17px !important;
+}
+
+.letter-contact {
+  list-style: none;
+  padding: 32px 0 0;
+  margin: 64px 0 0;
+  border-top: 1px solid rgba(250, 244, 230, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.letter-contact li {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 24px;
+  align-items: baseline;
+}
+.letter-contact-label {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(250, 244, 230, 0.45);
+}
+.letter-contact-label-zh { display: none; }
+:lang(zh) .letter-contact-label-en { display: none; }
+:lang(zh) .letter-contact-label-zh { display: inline; }
+:lang(zh) .letter-contact-label {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 1px;
+  text-transform: none;
+  font-size: 12px;
+}
+.letter-contact-value {
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  color: var(--paper);
+  text-decoration: none;
+  transition: color 250ms ease;
+}
+.letter-contact-value:hover { color: var(--vermilion); }
+
+/* ========================================
+   Archive — sign-in gate + signed-in account strip
+   ======================================== */
+.archive-gate {
+  max-width: 380px;
+  margin: 24px auto 0;
+  text-align: center;
+}
+.archive-gate-eyebrow {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 22px;
+}
+.archive-gate-eyebrow-zh { display: none; }
+:lang(zh) .archive-gate-eyebrow-en { display: none; }
+:lang(zh) .archive-gate-eyebrow-zh { display: block; }
+:lang(zh) .archive-gate-eyebrow {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 13px;
+  letter-spacing: 6px;
+  text-transform: none;
+}
+.archive-gate-title {
+  font-family: var(--font-display-en);
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--paper);
+  line-height: 1.4;
+  margin: 0 0 44px;
+  letter-spacing: -0.1px;
+}
+.archive-gate-title-zh { display: none; }
+:lang(zh) .archive-gate-title-en { display: none; }
+:lang(zh) .archive-gate-title-zh { display: block; }
+:lang(zh) .archive-gate-title {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  text-align: left;
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.auth-label {
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: rgba(250, 244, 230, 0.82);
+}
+.auth-input {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(250, 244, 230, 0.28);
+  padding: 10px 2px;
+  color: var(--paper);
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  letter-spacing: 0.2px;
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.3s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.auth-input:focus {
+  border-bottom-color: var(--accent);
+}
+.auth-input:-webkit-autofill {
+  -webkit-text-fill-color: var(--paper);
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 99999s ease-in-out 0s;
+}
+.auth-message {
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--vermilion-soft);
+  margin: 0;
+}
+.auth-message.is-success {
+  color: var(--paper-soft);
+}
+.auth-submit {
+  margin-top: 6px;
+  background: transparent;
+  border: 1px solid rgba(201, 169, 110, 0.55);
+  color: var(--accent);
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 14px 0;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.auth-submit:hover:not(:disabled) {
+  background: rgba(201, 169, 110, 0.10);
+  color: var(--paper);
+  border-color: var(--accent);
+}
+.auth-submit:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.auth-toggle {
+  text-align: center;
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  color: rgba(250, 244, 230, 0.55);
+  margin: 8px 0 0;
+}
+.auth-toggle-btn {
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+  transition: color 0.3s ease;
+}
+.auth-toggle-btn:hover {
+  color: var(--paper);
+}
+
+/* Signed-in account strip (bottom of Archive content) */
+.archive-account {
+  border-top: 1px solid rgba(250, 244, 230, 0.10);
+  margin: 56px auto 0;
+  max-width: 460px;
+  padding: 22px 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  letter-spacing: 1.6px;
+}
+.archive-account-email {
+  color: rgba(250, 244, 230, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+.archive-account-signout {
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 0 4px 12px;
+  transition: color 0.3s ease;
+}
+.archive-account-signout:hover {
+  color: var(--paper);
+}
+
+/* ============================================================
+   Archive page — full-state view (peer of hero/reflection/daily)
+   Uses arc-* / anc-* class namespace per design ref.
+   ============================================================ */
+.archive-page {
+  position: absolute;
+  inset: 0;
+  padding: 130px 60px 60px;
+  color: var(--paper);
+  z-index: 5;
+  overflow: hidden;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.18));
+}
+/* Only apply display:flex when not hidden — otherwise the class rule beats
+   the [hidden] UA rule (same specificity, author wins) and the section leaks. */
+.archive-page:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+}
+body.is-archive .hero-bg { opacity: 0.5; }
+
+.arc-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(250,244,230,0.06);
+  margin-bottom: 44px;
+  /* Locked height — keeps the tab labels at the exact same Y regardless of
+     which tab is active or what content sits below. */
+  height: 60px;
+  box-sizing: border-box;
+}
+
+/* Back-to-home arrow now lives where the Archive title used to. */
+.arc-back-btn {
+  background: transparent;
+  border: 0;
+  color: rgba(250, 244, 230, 0.7);
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.arc-back-btn:hover {
+  color: var(--accent);
+  transform: translateX(-3px);
+}
+
+.arc-tabs {
+  display: flex;
+  gap: 36px;
+  align-items: baseline;
+}
+.arc-tab {
+  background: transparent;
+  border: 0;
+  /* Always 2px so the box never changes height between active/inactive — the
+     bottom border color is what swaps, not its width. */
+  border-bottom: 2px solid rgba(250,244,230,0.12);
+  color: rgba(250,244,230,0.7);
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 2px;
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+.arc-tab:hover {
+  color: var(--paper);
+  border-bottom-color: rgba(201, 169, 110, 0.5);
+}
+.arc-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.arc-tab-zh { display: none; }
+:lang(zh) .arc-tab-en { display: none; }
+:lang(zh) .arc-tab-zh { display: inline; }
+/* Chinese characters in the EN font stack fall back to a thin system font
+   and read far smaller than the EN setting. Force a serif Chinese face +
+   bigger size + tighter caps treatment for ZH. */
+:lang(zh) .arc-tab {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", serif;
+  font-size: 22px;
+  letter-spacing: 4px;
+  text-transform: none;
+  font-weight: 500;
+}
+
+/* Sign-in gate inside archive page */
+.arc-gate {
+  max-width: 380px;
+  margin: 32px auto 0;
+  text-align: center;
+  flex: 1;
+}
+.arc-gate-eyebrow {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 22px;
+}
+.arc-gate-eyebrow-zh { display: none; }
+:lang(zh) .arc-gate-eyebrow-en { display: none; }
+:lang(zh) .arc-gate-eyebrow-zh { display: block; }
+:lang(zh) .arc-gate-eyebrow {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 13px;
+  letter-spacing: 6px;
+  text-transform: none;
+}
+.arc-gate-title {
+  font-family: var(--font-display-en);
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--paper);
+  line-height: 1.4;
+  margin: 0 0 44px;
+  letter-spacing: -0.1px;
+}
+.arc-gate-title-zh { display: none; }
+:lang(zh) .arc-gate-title-en { display: none; }
+:lang(zh) .arc-gate-title-zh { display: block; }
+:lang(zh) .arc-gate-title {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+
+/* A1 Anchor tab */
+.arc-tab-pane { flex: 1; }
+.arc-anchor {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  flex: 1;
+}
+
+.anc-day-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+.anc-view-all {
+  justify-self: start;
+  background: transparent;
+  border: 0;
+  color: rgba(250,244,230,0.55);
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  transition: color 0.3s ease;
+}
+.anc-view-all:hover { color: var(--accent); }
+.anc-view-all-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+.anc-view-all-zh { display: none; }
+:lang(zh) .anc-view-all-en { display: none; }
+:lang(zh) .anc-view-all-zh { display: inline; letter-spacing: 4px; }
+:lang(zh) .anc-view-all {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", serif;
+  font-size: 17px;
+  letter-spacing: 4px;
+  text-transform: none;
+  font-weight: 400;
+}
+
+/* Scrubber + arrows live together as a single centered group. */
+.anc-scrubber-wrap {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.anc-scrubber {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 880px;
+}
+.anc-ds-day {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 6px;
+  cursor: pointer;
+  opacity: 0.55;
+  border-bottom: 1px solid transparent;
+  transition: opacity 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  min-width: 0;
+  color: inherit;
+  position: relative;
+}
+/* New-month marker — small accent label floating above the day-1 cell. */
+.anc-ds-month {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+  opacity: 1;
+}
+:lang(zh) .anc-ds-month {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: none;
+}
+.anc-ds-day:hover { opacity: 0.9; }
+.anc-ds-day.has::after {
+  content: "";
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+  margin-top: -2px;
+}
+.anc-ds-day.active {
+  opacity: 1;
+  border-bottom-color: var(--accent);
+  background: rgba(201,169,110,0.06);
+}
+.anc-moon { width: 28px; height: 28px; display: block; transition: filter 0.3s ease; }
+.anc-ds-num {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  color: rgba(250,244,230,0.7);
+  letter-spacing: 1px;
+}
+.anc-ds-day.active .anc-ds-num { color: var(--paper); font-weight: 500; }
+/* Today gets a clearly distinct treatment: vermilion 朱砂-bold number + a soft
+   vermilion 朱砂晕 around the moon. Strong enough to read at a glance even
+   when today happens not to be the active selection. */
+.anc-ds-day.is-today .anc-ds-num { color: var(--accent); font-weight: 600; }
+.anc-ds-day.is-today .anc-moon {
+  filter: drop-shadow(0 0 6px rgba(201, 169, 110, 0.55));
+}
+
+.anc-day-nav-btn {
+  background: transparent;
+  border: 0;
+  color: rgba(250,244,230,0.55);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 10px;
+  transition: color 0.3s ease, opacity 0.3s ease;
+  font-family: inherit;
+  opacity: 0.85;
+}
+.anc-day-nav-btn:hover { color: var(--accent); opacity: 1; }
+
+/* Presence card */
+.anc-presence {
+  background: rgba(20,20,22,0.55);
+  border: 1px solid rgba(250,244,230,0.06);
+  border-radius: 4px;
+  padding: 56px 64px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 64px;
+  align-items: start;
+  flex: 1;
+}
+.anc-presence-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.anc-card-img-frame {
+  width: 260px;
+  height: 420px;
+  background: var(--ink-night-soft);
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+.anc-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.anc-card-img.is-reversed { transform: rotate(180deg); }
+.anc-card-date {
+  margin-top: 18px;
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-align: center;
+  color: var(--paper);
+}
+.anc-card-date-top { display: block; }
+.anc-card-date-bot {
+  display: block;
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 5px;
+  margin-top: 6px;
+}
+
+.anc-presence-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.anc-pb-name {
+  font-family: var(--font-display-en);
+  font-size: 26px;
+  font-weight: 500;
+  margin: 0;
+}
+.anc-pb-keys {
+  color: rgba(250,244,230,0.55);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: var(--font-display-en);
+}
+.anc-pb-quote {
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.45;
+  color: var(--paper);
+  margin: 6px 0;
+  max-width: 600px;
+}
+.anc-pb-divider {
+  height: 1px;
+  background: rgba(250,244,230,0.06);
+  margin: 4px 0;
+}
+.anc-pb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 28px;
+  max-width: 620px;
+}
+.anc-pb-col-key {
+  color: rgba(250,244,230,0.55);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  font-weight: 400;
+  font-family: var(--font-display-en);
+}
+.anc-pb-col-val {
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--paper);
+  margin: 0;
+}
+.anc-pb-proverb {
+  margin-top: 8px;
+  padding-left: 16px;
+  border-left: 2px solid var(--accent);
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-size: 18px;
+  color: var(--paper);
+  line-height: 1.5;
+  max-width: 580px;
+}
+
+.anc-empty {
+  text-align: center;
+  padding: 100px 20px;
+  color: rgba(250,244,230,0.55);
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.anc-empty-line { margin: 0; }
+.anc-empty-zh { display: none; }
+:lang(zh) .anc-empty-en { display: none; }
+:lang(zh) .anc-empty-zh { display: block; }
+:lang(zh) .anc-empty-line {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+.anc-empty-pull {
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.anc-empty-pull:hover {
+  color: var(--paper);
+  transform: translateX(3px);
+}
+.anc-empty-pull-zh { display: none; }
+:lang(zh) .anc-empty-pull-en { display: none; }
+:lang(zh) .anc-empty-pull-zh {
+  display: inline;
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.anc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: rgba(250,244,230,0.55);
+  font-family: var(--font-display-en);
+  padding-top: 4px;
+  margin-top: auto;  /* pin to bottom of arc-anchor so the share row aligns
+                        with Reflection's Expand button across tab switches */
+}
+/* Count line is intentionally hidden — Tong asked to drop the "共 X 个锚" string. */
+.anc-count { display: none; }
+.anc-share-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+.anc-share-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(250,244,230,0.12);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(250,244,230,0.7);
+  transition: all 0.25s ease;
+  padding: 0;
+}
+.anc-share-ic:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.anc-share-ic svg { width: 18px; height: 18px; display: block; }
+
+/* ========================================
+   A2 — Reflection tab (day moon timeline + selected day's questions)
+   ======================================== */
+.arc-reflection { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.ref-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 80px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* === LEFT: day moon timeline + Expand button === */
+.ref-days {
+  border-right: 1px solid rgba(250, 244, 230, 0.06);
+  padding-right: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(250,244,230,0.12) transparent;
+}
+.ref-days::-webkit-scrollbar { width: 4px; }
+.ref-days::-webkit-scrollbar-thumb { background: rgba(250,244,230,0.12); }
+
+.ref-days-header {
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(250, 244, 230, 0.55);
+  margin: 0 0 32px;
+}
+.ref-days-header-zh { display: none; }
+:lang(zh) .ref-days-header-en { display: none; }
+:lang(zh) .ref-days-header-zh {
+  display: inline;
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 16px;
+  letter-spacing: 3px;
+  text-transform: none;
+}
+
+/* Fixed month header above the day list — shows today's month so the
+   number-only rows always have orientation context. */
+.ref-days-month {
+  margin: 0 0 14px;
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+:lang(zh) .ref-days-month {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-style: normal;
+  font-size: 19px;
+  letter-spacing: 2px;
+}
+
+.ref-days-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+/* Vertical line through moon centers (moon 22px → center 11px from left edge). */
+.ref-days-list::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: rgba(250, 244, 230, 0.10);
+  z-index: 0;
+}
+
+.ref-day-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  opacity: 0.4;
+  transition: opacity 0.25s ease, padding-left 0.25s ease;
+  color: inherit;
+  font-family: inherit;
+}
+.ref-day-row.has { opacity: 0.78; }
+.ref-day-row:hover { opacity: 0.95; padding-left: 4px; }
+.ref-day-row.is-active { opacity: 1; }
+.ref-day-row .anc-moon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  background: var(--bg);  /* mask the connecting line */
+  border-radius: 50%;
+  transition: filter 0.3s ease;
+}
+.ref-day-row.has .anc-moon {
+  filter: drop-shadow(0 0 4px rgba(201, 169, 110, 0.35));
+}
+.ref-day-row.is-active .anc-moon {
+  filter: drop-shadow(0 0 8px rgba(201, 169, 110, 0.7));
+}
+/* Vermilion 朱砂 dot at the right end of any day-row with sessions — visible content marker. */
+.ref-day-row.has::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--vermilion);
+  box-shadow: none;
+}
+.ref-day-num {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: rgba(250, 244, 230, 0.78);
+  font-weight: 500;
+  min-width: 24px;
+}
+.ref-day-row.is-today .ref-day-num {
+  color: var(--accent);
+}
+.ref-day-row.is-active .ref-day-num {
+  color: var(--accent);
+  font-weight: 600;
+}
+.ref-day-month {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(201, 169, 110, 0.7);
+  margin-left: 4px;
+}
+:lang(zh) .ref-day-month {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 1px;
+  text-transform: none;
+  font-size: 12px;
+}
+
+/* Per-day empty state (right pane when selected day has no sessions) */
+.ref-day-pane-empty {
+  padding: 24px 0 0;
+}
+.ref-day-empty-block {
+  text-align: left;
+}
+
+/* Scroll-down affordance — sits between the day list and the Expand button.
+   Click bumps the list down; hovering kicks off a continuous slow scroll.
+   margin-top:auto pins this + the Expand below it to the bottom of the rail. */
+.ref-days-scroll-down {
+  margin-top: auto;
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(250, 244, 230, 0.4);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.ref-days-scroll-down:hover {
+  color: var(--accent);
+  transform: translateY(2px);
+}
+.ref-days-scroll-down svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Expand button — pinned at bottom of the day axis, opens a fuller date picker */
+.ref-days-expand {
+  margin-top: 4px;
+  padding: 18px 0 8px;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(250, 244, 230, 0.08);
+  color: rgba(250, 244, 230, 0.55);
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.3s ease;
+}
+.ref-days-expand:hover { color: var(--accent); }
+.ref-days-expand-ic svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  opacity: 0.85;
+}
+/* EN / ZH single-language toggle — never both at once. */
+.ref-days-expand-zh { display: none; }
+:lang(zh) .ref-days-expand-en { display: none; }
+:lang(zh) .ref-days-expand-zh {
+  display: inline;
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 2px;
+  text-transform: none;
+  font-size: 14px;
+}
+:lang(zh) .ref-days-expand { letter-spacing: 2px; text-transform: none; }
+
+/* Empty state (no sessions at all yet) */
+.ref-days-empty {
+  padding: 24px 0;
+  text-align: left;
+}
+.ref-empty-line {
+  margin: 0 0 12px;
+  color: rgba(250, 244, 230, 0.55);
+  font-family: var(--font-display-en);
+  font-size: 14px;
+}
+.ref-empty-zh { display: none; }
+:lang(zh) .ref-empty-en { display: none; }
+:lang(zh) .ref-empty-zh {
+  display: block;
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+.ref-empty-begin {
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.ref-empty-begin:hover { color: var(--paper); transform: translateX(3px); }
+.ref-empty-begin-zh { display: none; }
+:lang(zh) .ref-empty-begin-en { display: none; }
+:lang(zh) .ref-empty-begin-zh {
+  display: inline;
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+/* === RIGHT: selected day's session rows === */
+.ref-day-pane {
+  overflow-y: auto;
+  padding: 0 0 60px;
+  min-height: 0;
+}
+.ref-day-eyebrow {
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 28px;
+}
+:lang(zh) .ref-day-eyebrow {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: none;
+}
+
+.ref-questions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ref-question-row {
+  display: grid;
+  grid-template-columns: 84px 1fr auto;
+  gap: 28px;
+  align-items: baseline;
+  padding: 22px 8px 22px 0;
+  border: 0;
+  border-top: 1px solid rgba(250, 244, 230, 0.08);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  color: inherit;
+  font-family: inherit;
+  transition: padding-left 0.25s ease, background 0.25s ease;
+}
+.ref-question-row:last-child {
+  border-bottom: 1px solid rgba(250, 244, 230, 0.08);
+}
+.ref-question-row:hover {
+  padding-left: 10px;
+  background: rgba(201, 169, 110, 0.04);
+}
+.ref-question-time {
+  font-family: var(--font-display-en);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ref-question-text {
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--paper);
+}
+:lang(zh) .ref-question-text {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-size: 22px;
+  font-style: normal;
+  letter-spacing: 1px;
+}
+.ref-question-meta {
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(250, 244, 230, 0.5);
+  white-space: nowrap;
+}
+:lang(zh) .ref-question-meta {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 1px;
+  text-transform: none;
+  font-size: 13px;
+}
+
+/* Subtle visual when the tab has content — gentle vermilion 朱砂染 on the right pane */
+body.is-archive .arc-reflection:has(.ref-day-content:not([hidden])) .ref-day-pane {
+  background: linear-gradient(180deg, rgba(201,169,110,0.025), transparent 60%);
+}
+
+/* Account strip — quietly tucked into the bottom-left of the Archive page.
+   Format: tong0701@uw.edu | Sign Out */
+.arc-account {
+  position: absolute;
+  bottom: 36px;
+  left: 60px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 0;
+  z-index: 6;
+  font-family: var(--font-display-en);
+}
+.arc-account-email {
+  color: rgba(250, 244, 230, 0.6);
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 360px;
+}
+.arc-account-sep {
+  color: rgba(250, 244, 230, 0.28);
+  font-size: 15px;
+  line-height: 1;
+}
+.arc-account-signout {
+  background: transparent;
+  border: 0;
+  color: rgba(250, 244, 230, 0.7);
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+.arc-account-signout:hover { color: var(--accent); }
+.arc-account-signout-zh { display: none; }
+:lang(zh) .arc-account-signout-en { display: none; }
+:lang(zh) .arc-account-signout-zh {
+  display: inline;
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+  letter-spacing: 3px;
+  text-transform: none;
+  font-size: 16px;
+}
+
+/* The Archive page has its own back affordance (.arc-back-btn) inside
+   the title row, so the global ← chrome arrow is hidden here. */
+body.is-archive .back-arrow { display: none; }
+
+/* Archive (Coming Soon) */
+.coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 0 20px;
+  gap: 32px;
+}
+.cs-title {
+  font-family: var(--font-display-en);
+  font-size: 56px;
+  font-weight: 500;
+  color: var(--paper);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+.cs-body {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--paper-dim);
+  margin: 0;
+  max-width: 380px;
+}
+:lang(zh) .cs-body {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", serif;
+}
+.cs-zh { display: none; }
+:lang(zh) .cs-zh { display: block; }
+:lang(zh) .cs-en { display: none; }
+
+/* ============================================================
+   A4 · VFR — Full Reading Replay
+   Independent page reached from Archive → Reflection → View All.
+   Lives inside #design-canvas, so it inherits applyScale().
+   ============================================================ */
+.vfr-page {
+  position: absolute;
+  inset: 0;
+  padding: 170px 60px 60px;
+  color: var(--paper);
+  z-index: 5;
+  overflow: hidden;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.18));
+}
+.vfr-page:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+}
+body.is-vfr .hero-bg { opacity: 0.5; }
+body.is-vfr .back-arrow { display: none; }
+
+.vfr-back-btn {
+  position: absolute;
+  top: 90px;
+  left: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: rgba(250, 244, 230, 0.7);
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.3s ease, transform 0.3s ease;
+  z-index: 6;
+}
+.vfr-back-btn:hover {
+  color: var(--accent);
+  transform: translateX(-3px);
+}
+
+.vfr-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  padding-bottom: 40px;
+  scrollbar-width: none;
+}
+.vfr-scroll::-webkit-scrollbar { width: 0; display: none; }
+
+.vfr-head {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.vfr-ek {
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+:lang(zh) .vfr-ek {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 3px;
+  text-transform: none;
+}
+.vfr-q {
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--paper);
+  margin: 0;
+}
+:lang(zh) .vfr-q {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", serif;
+  font-style: normal;
+  font-size: 32px;
+  letter-spacing: 0.05em;
+}
+.vfr-meta {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(250, 244, 230, 0.55);
+  margin: 0;
+}
+:lang(zh) .vfr-meta {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 2px;
+  text-transform: none;
+}
+
+.vfr-rounds {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  align-items: stretch;
+}
+.vfr-round {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.vfr-round-label {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(250, 244, 230, 0.7);
+  text-align: center;
+}
+:lang(zh) .vfr-round-label {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 2px;
+  text-transform: none;
+  font-size: 17px;
+}
+.vfr-round-body {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 44px;
+  align-items: flex-start;
+}
+.vfr-round-cardcol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.vfr-round-imgframe {
+  width: 180px;
+  aspect-ratio: 7 / 11;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+  box-shadow: none;
+}
+.vfr-round-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.vfr-round-img.is-reversed { transform: rotate(180deg); }
+.vfr-round-name {
+  font-family: var(--font-body-en);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 30px;
+  letter-spacing: -0.249px;
+  color: var(--paper);
+  margin: 0;
+  text-align: center;
+}
+:lang(zh) .vfr-round-name {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+.vfr-round-keys {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: rgba(250,244,230,0.65);
+  margin: 0;
+  text-align: center;
+}
+:lang(zh) .vfr-round-keys {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: none;
+  font-size: 17px;
+}
+.vfr-round-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vfr-round-quote {
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(250,244,230,0.92);
+  margin: 0 0 4px;
+}
+:lang(zh) .vfr-round-quote {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", serif;
+  font-style: normal;
+  font-size: 24px;
+  letter-spacing: 0.05em;
+}
+.vfr-round-angles {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.vfr-round-angles article {
+  margin: 0;
+}
+.vfr-round-angles h4 {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+:lang(zh) .vfr-round-angles h4 {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 2px;
+  text-transform: none;
+  font-size: 17px;
+}
+.vfr-round-angles p {
+  font-family: var(--font-display-en);
+  font-size: 18px;
+  line-height: 1.7;
+  color: rgba(250,244,230,0.9);
+  margin: 0 0 6px;
+}
+:lang(zh) .vfr-round-angles p {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.85;
+}
+.vfr-round-hook,
+.vfr-round-take {
+  font-family: var(--font-display-en);
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(250,244,230,0.85);
+  margin: 8px 0 0;
+  padding-left: 14px;
+  border-left: 1px solid rgba(201, 169, 110, 0.4);
+}
+:lang(zh) .vfr-round-hook,
+:lang(zh) .vfr-round-take {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+.vfr-closing {
+  max-width: 960px;
+  width: 100%;
+  margin: 16px auto 0;
+  padding-top: 48px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.vfr-closing-label {
+  font-family: var(--font-display-en);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+  text-align: center;
+}
+:lang(zh) .vfr-closing-label {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  letter-spacing: 2px;
+  text-transform: none;
+  font-size: 17px;
+}
+
+/* Horizontal layout — mirrors .vfr-round-body so the guidance card reads as
+   "another round" rather than a separate vertical stack. Matches the live
+   guidance-result panel: card on the left, written advice on the right. */
+.vfr-closing-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 44px;
+  align-items: flex-start;
+}
+.vfr-closing-cardcol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.vfr-closing-img {
+  width: 180px;
+  aspect-ratio: 7 / 11;
+  object-fit: cover;
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+  display: block;
+}
+.vfr-closing-name {
+  font-family: var(--font-body-en);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 30px;
+  letter-spacing: -0.249px;
+  color: var(--paper);
+  margin: 0;
+  text-align: center;
+}
+:lang(zh) .vfr-closing-name {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+
+.vfr-closing-textcol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.vfr-closing-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.vfr-closing-body p {
+  font-family: var(--font-display-en);
+  font-size: 18px;
+  line-height: 1.7;
+  color: rgba(250,244,230,0.9);
+  margin: 0;
+}
+:lang(zh) .vfr-closing-body p {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.85;
+}
+.vfr-closing-action {
+  font-family: var(--font-display-en);
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--accent);
+  margin: 8px 0 0;
+  padding-left: 14px;
+  border-left: 1px solid rgba(201, 169, 110, 0.5);
+}
+:lang(zh) .vfr-closing-action {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.85;
+}
+.vfr-closing-farewell {
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(250,244,230,0.85);
+  margin: 16px 0 0;
+}
+:lang(zh) .vfr-closing-farewell {
+  font-family: "Songti SC", "STSong", "Source Han Serif SC", serif;
+  font-style: normal;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+}
+.vfr-return-btn {
+  margin: 60px auto 0;
+  display: block;
+  width: 260px;
+  height: 56px;
+  font-size: 17px;
+  letter-spacing: 1.5px;
+}
+
+/* Side rail — subtle round index, sticky-positioned on the left.
+   Click an item to jump to that round. Hover lifts the whole rail. */
+.vfr-nav {
+  position: absolute;
+  top: 260px;
+  left: 28px;
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 6;
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+.vfr-nav:hover { opacity: 1; }
+.vfr-nav-item {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--line-soft);
+  padding: 14px 12px;
+  text-align: left;
+  cursor: pointer;
+  color: rgba(250,244,230,0.7);
+  transition: color 0.2s ease, border-color 0.2s ease, padding-left 0.2s ease;
+}
+.vfr-nav-item:hover {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  padding-left: 14px;
+}
+.vfr-nav-num {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1.4;
+}
+.vfr-nav-name {
+  font-family: var(--font-body-en);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: inherit;
+}
+:lang(zh) .vfr-nav-name {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 14px;
+}
+.vfr-nav-item.is-closing {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line-soft);
+}
+.vfr-nav-item.is-closing .vfr-nav-num {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+/* ============================================================
+   Support · tip jar page (WeChat / Alipay / Ko-fi).
+   Lives inside #design-canvas like archive-page / vfr-page so it
+   inherits applyScale(). Lifted from Tong's standalone mock at
+   /Users/tong/Downloads/Support RiLL.html — values trimmed to fit
+   the 1440-design coord system.
+   ============================================================ */
+.support-page {
+  position: absolute;
+  inset: 0;
+  padding: 130px 60px 60px;
+  color: var(--paper);
+  z-index: 5;
+  overflow: hidden;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.18));
+}
+.support-page:not([hidden]) { display: flex; flex-direction: column; }
+body.is-support .hero-bg { opacity: 0.5; }
+body.is-support .back-arrow { display: none; }
+
+.support-back-btn {
+  position: absolute;
+  top: 90px;
+  left: 60px;
+  background: transparent;
+  border: 0;
+  color: rgba(250, 244, 230, 0.7);
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.3s ease, transform 0.3s ease;
+  z-index: 6;
+}
+.support-back-btn:hover { color: var(--accent); transform: translateX(-3px); }
+
+.support-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 0;
+  scrollbar-width: none;
+}
+.support-scroll::-webkit-scrollbar { width: 0; display: none; }
+
+.support-stack {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* === Title (subtitle removed — title is now a casual full sentence) === */
+.support-title {
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+  color: var(--paper);
+  text-align: center;
+  margin: 0 0 56px;
+  max-width: 760px;
+}
+.support-title-zh {
+  font-family: "Songti SC", "Noto Serif SC", "STSong", serif;
+  font-style: normal;
+  font-size: 30px;
+  letter-spacing: 2px;
+  line-height: 1.5;
+  max-width: 680px;
+}
+.support-title-zh { display: none; }
+:lang(zh) .support-title-en { display: none; }
+:lang(zh) .support-title-zh { display: block; }
+
+/* === Three columns === */
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.support-card {
+  position: relative;
+  border: 1px solid rgba(250, 244, 230, 0.12);
+  border-radius: 2px;
+  padding: 26px 20px 22px;
+  background: rgba(250, 244, 230, 0.012);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 350ms ease, background 350ms ease, transform 350ms ease, box-shadow 450ms ease;
+}
+.support-card:hover {
+  border-color: var(--vermilion);
+  background: oklch(0.52 0.16 28 / 0.04);
+  box-shadow: none;
+}
+a.support-card:hover { transform: translateY(-2px); }
+
+.support-card-label {
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+  font-weight: 500;
+}
+.support-card-label-cn {
+  display: inline-block;
+  margin-left: 6px;
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: rgba(201, 169, 110, 0.7);
+  font-weight: 400;
+  text-transform: none;
+}
+
+/* QR slot — wraps the actual QR image */
+.support-qr {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  background: linear-gradient(180deg, rgba(250,244,230,0.04), rgba(250,244,230,0.015));
+  border: 1px solid rgba(250, 244, 230, 0.12);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.support-qr img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.support-card-caption {
+  margin: 16px 0 0;
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: rgba(250, 244, 230, 0.62);
+  font-weight: 300;
+}
+.support-card-caption-en {
+  font-family: var(--font-display-en);
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+.support-card-caption-zh { display: none; }
+:lang(zh) .support-card-caption-en { display: none; }
+:lang(zh) .support-card-caption-zh { display: block; }
+
+/* Ko-fi card */
+.support-kofi-art {
+  width: 148px;
+  height: 148px;
+  border: 1px solid rgba(250, 244, 230, 0.12);
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(201,169,110,0.08), transparent 60%),
+    linear-gradient(180deg, rgba(250,244,230,0.025), rgba(250,244,230,0.005));
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition: border-color 350ms ease;
+}
+.support-card:hover .support-kofi-art { border-color: rgba(201, 169, 110, 0.35); }
+.support-kofi-cup {
+  width: 64px;
+  height: 64px;
+  display: block;
+  color: var(--accent);
+  opacity: 0.92;
+}
+.support-kofi-steam {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent);
+  opacity: 0.5;
+}
+.support-kofi-title {
+  margin: 14px 0 4px;
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--paper);
+  font-weight: 400;
+}
+.support-kofi-title-zh {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-style: normal;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+.support-kofi-title-zh { display: none; }
+:lang(zh) .support-kofi-title-en { display: none; }
+:lang(zh) .support-kofi-title-zh { display: block; }
+.support-kofi-url {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: rgba(250, 244, 230, 0.62);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color 250ms ease, border-color 250ms ease;
+}
+.support-kofi:hover .support-kofi-url {
+  color: var(--accent);
+  border-bottom-color: rgba(201,169,110,0.5);
+}
+
+/* Bottom italic line */
+.support-footer-line {
+  margin: 72px 0 0;
+  font-family: "EB Garamond", "Cormorant Garamond", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--paper-dim);
+  text-align: center;
+  line-height: 1.7;
+  letter-spacing: 0.2px;
+  max-width: 560px;
+}
+.support-footer-line-zh {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+  font-style: normal;
+  font-size: 15px;
+  letter-spacing: 3px;
+}
+.support-footer-line-zh { display: none; }
+:lang(zh) .support-footer-line-en { display: none; }
+:lang(zh) .support-footer-line-zh { display: block; }
+
+.support-return-btn {
+  margin: 48px auto 0;
+  display: block;
+  width: 220px;
+  height: 50px;
+  font-size: 15px;
+  letter-spacing: 1.5px;
+}
+.support-return-zh { display: none; }
+:lang(zh) .support-return-en { display: none; }
+:lang(zh) .support-return-zh { display: inline; }
+
+/* "Support RiLL · 请我喝杯咖啡 ☕" link at Letters list footer.
+   Accent vermilion so it stays readable at 11px (Tong: size already this small,
+   bump color to vermilion 朱砂 for legibility). */
+.letters-support-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 56px auto 0;
+  padding: 6px 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--accent);
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  font-weight: 500;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0.85;
+}
+.letters-support-link:hover { opacity: 1; transform: translateY(-1px); }
+.letters-support-link-sep { opacity: 0.5; }
+.letters-support-link-zh {
+  font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.letters-support-link-ic { opacity: 0.7; font-size: 12px; }
+/* Make it a centered block under the list */
+.letters-index .letters-support-link {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ============================================================
+   Breakpoints —— 三档体系
+     Mobile:  < 768px            纵向 stack / swipe / 大触摸区
+     Tablet:  768 - 1279px       桌面布局 + spacing 微调
+     Desktop: ≥ 1280px           1440 原版 + JS applyScale
+   桌面层 (≥1280) 现有 CSS 完全保留；移动改造只通过 @media (max-width)
+   覆盖式写在文件末尾或对应组件下面。
+   ============================================================ */
+
+/* ---- Mobile: Hero logo (§5.1) -------------------------------- */
+@media (max-width: 767px) {
+  .hero-logo-subtitle:not([hidden]) {
+    font-size: 56px;
+    top: 96px;
+    letter-spacing: 0.16em;
+    text-indent: 0.16em;
+  }
+
+  .hero-logo-subtitle:not([hidden])::after {
+    font-size: 11px;
+  }
+}
+
+/* ---- Mobile: Hero ribbon (§5.1) ------------------------------ */
+@media (max-width: 767px) {
+  .hero-logo-ribbon {
+    opacity: 0.10;
+  }
+}
+
+/* ---- Mobile: Hero quote (§5.1) ------------------------------- */
+@media (max-width: 767px) {
+  .hero-quote {
+    font-size: 24px;
+    top: 280px;
+    width: calc(100% - 32px);
+  }
+}
+
+/* ---- Mobile: Hero philosophy (§5.1) -------------------------- */
+@media (max-width: 767px) {
+  .hero-philosophy {
+    font-size: 16px;
+    width: calc(100% - 32px);
+    top: 200px;
+  }
+}
+
+/* ---- Mobile: Top nav (§5.2) ---------------------------------- */
+@media (max-width: 767px) {
+  .top-link {
+    top: 24px;
+    font-size: 16px;
+  }
+
+  .top-link-left {
+    left: 24px;
+  }
+
+  .top-link-right {
+    right: 24px;
+  }
+
+  .lang-opt {
+    font-size: 15px;
+  }
+
+  #lang-zh {
+    font-size: 15px;
+  }
+}
+
+/* ---- Mobile: mode-select layout (§5.3) ----------------------- */
+@media (max-width: 767px) {
+  .mode-select {
+    transform: translate(-50%, -50%);
+    flex-direction: column;
+    gap: var(--space-6);
+    width: calc(100% - 32px);
+    align-items: center;
+  }
+
+  .mode-card {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .mode-card-left {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .mode-icon-tarot {
+    width: 140px;
+    height: 140px;
+  }
+
+  .mode-icon-meihua {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* ---- Mobile: intent-select layout (§5.3) --------------------- */
+@media (max-width: 767px) {
+  .intent-select {
+    width: calc(100% - 32px);
+    flex-direction: column;
+    gap: var(--space-6);
+    top: 50%;
+  }
+
+  .intent-card {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .intent-image {
+    width: 180px;
+    height: 288px;
+  }
+}
+
+/* ---- Mobile: intent-entry (§5.4) ----------------------------- */
+@media (max-width: 767px) {
+  .intent-entry {
+    width: 100%;
+    height: auto;
+  }
+
+  .intent-entry-title {
+    margin: var(--space-7) 0 0;
+    width: calc(100% - 32px);
+    font-size: 28px;
+  }
+
+  :lang(zh) .intent-entry-title {
+    font-size: 24px;
+  }
+
+  .intent-entry-copy {
+    margin: var(--space-5) 0 0;
+    width: calc(100% - 32px);
+    font-size: 17px;
+  }
+
+  :lang(zh) .intent-entry-copy {
+    font-size: 16px;
+  }
+
+  .intent-entry-hints {
+    font-size: 13px;
+  }
+
+  :lang(zh) .intent-entry-hints {
+    font-size: 13px;
+  }
+
+  .intent-entry-input {
+    margin-top: var(--space-5);
+    width: calc(100% - 32px);
+    font-size: 16px;
+    padding: var(--space-4) var(--space-3);
+  }
+}
+
+/* ---- Mobile: reflection-kicker / reflection-title (§5.3) ----- */
+@media (max-width: 767px) {
+  .reflection-kicker {
+    font-size: 17px;
+    top: 80px;
+  }
+
+  :lang(zh) .reflection-kicker {
+    font-size: 16px;
+  }
+
+  .reflection-title {
+    font-size: 28px;
+    top: 200px;
+    width: calc(100% - 32px);
+  }
+
+  :lang(zh) .reflection-title {
+    font-size: 26px;
+  }
+}
+
+/* ---- Mobile: enter-btn touch target (§5.3) ------------------- */
+@media (max-width: 767px) {
+  .enter-btn {
+    padding: var(--space-5) var(--space-7);
+    min-width: 200px;
+    min-height: 48px;
+    font-size: 17px;
+  }
+
+  :lang(zh) .enter-btn {
+    font-size: 18px;
+  }
+}
+
+/* ================================================================
+   Mobile: pre-stage swipe carousel (§5.5) — A3
+   桌面扇形布局完全保留，仅在 max-width:767px 下覆盖为 scroll-snap carousel
+   ================================================================ */
+
+/* ---- pre-stage 容器：full-width, auto height ------------------- */
+@media (max-width: 767px) {
+  .pre-stage {
+    width: 100%;
+    height: auto;
+    min-height: 100dvh;
+    overflow: hidden;
+    /* transform: translateX(-50%) 保留不变 */
+    /* carousel 滚动在 .pre-deck 内部（overflow-x:auto on that child），
+       不会被这里的 overflow:hidden 截断 */
+  }
+}
+
+/* ---- pre-stage-title mobile 字号 / 间距 ----------------------- */
+@media (max-width: 767px) {
+  .pre-stage-title {
+    margin: 80px 0 0;
+    width: calc(100% - 32px);
+    font-size: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  :lang(zh) .pre-stage-title {
+    font-size: 18px;
+  }
+}
+
+/* ---- pre-stage-copy mobile：保持 absolute 结构，但缩小字号 ----- */
+@media (max-width: 767px) {
+  .pre-stage-copy {
+    top: auto;
+    /* 相对位置：title 下方 + 约 40px；用 position+top 难以准确，
+       改成非 absolute 嵌入流（但原结构是 absolute，只调字号） */
+    font-size: 28px;
+    width: calc(100% - 32px);
+    line-height: 1.5;
+  }
+}
+
+/* ---- pre-stage-pick-hint：显示在 carousel 上方 ---------------- */
+@media (max-width: 767px) {
+  .pre-stage-pick-hint {
+    /* 重新定位：相对视口顶部，让 hint 落在标题下方、牌上方 */
+    top: 148px;
+    font-size: 15px;
+    line-height: 1.4;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  :lang(zh) .pre-stage-pick-hint {
+    font-size: 14px;
+  }
+}
+
+/* ---- .pre-deck 容器：horizontal scroll-snap carousel ----------- */
+@media (max-width: 767px) {
+  .pre-stage.show-deck .pre-deck {
+    /* 覆盖桌面的 absolute + transform 布局，改为 flex scroll container */
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin-top: var(--space-6);
+    /* 左右 padding: 让首尾卡能滚到视口中央
+       viewport 50% - 卡半宽(72vw/2=36vw) = 14vw */
+    padding: var(--space-4) 14vw;
+    /* flex scroll container */
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-3);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    /* 隐藏 scrollbar，保留滚动 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* 防止触摸惯性弹回 */
+    -webkit-overflow-scrolling: touch;
+    /* 初始 opacity 和 pointer-events 由 show-deck 父规则控制，不动 */
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pre-stage.show-deck .pre-deck::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ---- .pre-card 牌本身：重置扇形 transform，纵向卡牌横向排列 --- */
+@media (max-width: 767px) {
+  /* show-deck 下的正常态：重置扇形 transform */
+  .pre-stage.show-deck .pre-card {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 72vw;
+    max-width: 320px;
+    /* 塔罗牌经典比例 7:11 */
+    aspect-ratio: 7 / 11;
+    height: auto;
+    /* !important 必须：覆盖桌面 nth-child + show-deck 的高优先级 transform */
+    transform: none !important;
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+    opacity: 1;
+    /* 保留 transition 的 opacity 部分；transform 在 mobile 不动 */
+    transition: opacity var(--motion-base, 420ms) ease;
+  }
+
+  /* hover 在 mobile 几乎无意义，重置防止触摸时短暂触发 */
+  .pre-stage.show-deck .pre-card:hover {
+    transform: none !important;
+  }
+
+  /* is-selected：mobile 下不做 scale，只保留 z-index 和 opacity */
+  .pre-stage.show-deck .pre-card.is-selected {
+    transform: none !important;
+    z-index: 6;
+    opacity: 1;
+  }
+
+  /* is-faded：桌面已设 opacity:0，mobile 沿用（选牌后其余牌淡出）*/
+  /* .pre-card.is-faded { opacity: 0; } — 不需要覆盖，已继承 */
+
+  /* 初始（show-deck 之前）pre-card 是 opacity:0，mobile 沿用不变 */
+}
+
+/* ================================================================
+   Mobile: reading layout (§5.6) — A4
+   桌面：flex row 左卡+右文字，absolute 定位容器 1160px 宽
+   Mobile：flex column 上卡+下文字，static 流布局，全幅
+   ================================================================ */
+
+/* ---- .reading-result / .guidance-result 容器 ------------------- */
+@media (max-width: 767px) {
+  .reading-result,
+  .guidance-result {
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: calc(100% - 32px);
+    margin: 80px auto 0;
+  }
+}
+
+/* ---- reading-title ---------------------------------------------- */
+@media (max-width: 767px) {
+  .reading-title {
+    font-size: 22px;
+  }
+
+  :lang(zh) .reading-title {
+    font-size: 20px;
+  }
+}
+
+/* ---- reading-layout：row → column -------------------------------- */
+@media (max-width: 767px) {
+  .reading-layout {
+    flex-direction: column;
+    gap: var(--space-5);
+    align-items: center;
+  }
+}
+
+/* ---- reading-left：固定 320px → 全幅居中 ------------------------- */
+@media (max-width: 767px) {
+  .reading-left {
+    width: 100%;
+    max-width: 200px;
+    margin-top: 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ---- reading-card-image：缩小 ------------------------------------ */
+@media (max-width: 767px) {
+  .reading-card-image {
+    width: min(160px, 100%);
+    max-height: min(300px, 50vh);
+  }
+}
+
+/* ---- reading-card-name / reading-card-keywords：字号微调 ---------- */
+@media (max-width: 767px) {
+  .reading-card-name {
+    font-size: 18px; /* 桌面 22px → mobile 18px，比例合理 */
+    margin-top: var(--space-4); /* 桌面 --space-6 → mobile 收紧 */
+  }
+
+  .reading-card-keywords {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+  }
+}
+
+/* ---- reading-right：固定 776px → 全幅 ---------------------------- */
+@media (max-width: 767px) {
+  .reading-right {
+    width: 100%;
+  }
+}
+
+/* ---- reading-scroll：固定 620px 高 → 自适应 ---------------------- */
+@media (max-width: 767px) {
+  .reading-scroll {
+    height: auto;
+    max-height: 65vh;
+  }
+}
+
+/* ---- guidance-result 内部 min-height 重置 ------------------------ */
+@media (max-width: 767px) {
+  .guidance-result .reading-main-flow,
+  .guidance-result .reading-screen,
+  .guidance-result .reading-screen-takeaway {
+    min-height: auto;
+  }
+}
+
+/* ================================================================
+   Mobile: advice-action / stamp (§5.7) — A4
+   ================================================================ */
+
+/* ---- advice-action 行动句 --------------------------------------- */
+@media (max-width: 767px) {
+  .advice-action {
+    font-size: 17px;
+    line-height: 1.75;
+    padding: 6px 40px 6px 16px; /* 右侧留出印章空间，left 与桌面接近 */
+  }
+}
+
+/* ---- 印章（.stamp）缩小至 36×36 ---------------------------------- */
+@media (max-width: 767px) {
+  .stamp {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+}
+
+/* ================================================================
+   Mobile: takeaway 收尾页 (§5.7) — A4
+   ================================================================ */
+
+/* ---- takeaway-title 字号缩小 ------------------------------------ */
+@media (max-width: 767px) {
+  .takeaway-title {
+    font-size: 21px;
+    padding: 6px 0 6px 12px; /* 保持 border-left 落款感，mobile 收窄 */
+  }
+
+  :lang(zh) .takeaway-title {
+    font-size: 19px;
+    letter-spacing: 0.14em;
+    line-height: 1.65;
+  }
+}
+
+/* ---- takeaway-actions：横向 → 纵向叠放 -------------------------- */
+@media (max-width: 767px) {
+  .takeaway-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-7);
+  }
+}
+
+/* ---- takeaway-btn：触摸目标 ≥ 44px，纵向铺满 -------------------- */
+@media (max-width: 767px) {
+  .takeaway-btn {
+    width: 100%;
+    max-width: 320px;
+    min-height: 48px;
+    height: auto;
+    padding: 14px var(--space-5);
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+
+  .takeaway-btn-wide {
+    max-width: 360px;
+  }
+}
+
+/* ================================================================
+   Mobile: daily anchor / postcard (§5.8) — A4
+   桌面：absolute grid 980px 两列；Mobile：static flex column 全幅
+   ================================================================ */
+
+/* ---- daily-anchor 容器：fixed width → 全幅 ---------------------- */
+@media (max-width: 767px) {
+  .daily-anchor {
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: calc(100% - 32px);
+    max-height: none;
+    margin: 80px auto 32px;
+    overflow-y: visible;
+  }
+}
+
+/* ---- postcard：grid 两列 → flex column 单列 --------------------- */
+@media (max-width: 767px) {
+  .postcard {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    box-sizing: border-box;
+  }
+}
+
+/* ---- postcard-left：居中 ---------------------------------------- */
+@media (max-width: 767px) {
+  .postcard-left {
+    align-items: center;
+    width: 100%;
+  }
+}
+
+/* ---- postcard-card-frame / postcard-card-image：缩小居中 --------- */
+@media (max-width: 767px) {
+  .postcard-card-frame {
+    width: 160px;
+    height: 266px; /* 保持 3:5 塔罗比例 */
+  }
+}
+
+/* ---- postcard-date-stamp 字号微调 -------------------------------- */
+@media (max-width: 767px) {
+  .stamp-line-top {
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  .stamp-line-bot {
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+}
+
+/* ---- postcard-core 字号缩小（意境句） ---------------------------- */
+@media (max-width: 767px) {
+  .postcard-core {
+    font-size: 23px;
+    margin-bottom: var(--space-6);
+  }
+}
+
+/* ---- postcard-takeaway（行动句）字号缩小 -------------------------- */
+@media (max-width: 767px) {
+  .postcard-takeaway {
+    font-size: 18px;
+  }
+}
+
+/* ---- postcard-anchors：三列 → 仍保留三列，仅字号微调 -------------- */
+@media (max-width: 767px) {
+  .postcard-anchors {
+    gap: var(--space-4);
+  }
+
+  .anchor-key {
+    font-size: 11px;
+  }
+
+  .anchor-val {
+    font-size: 14px;
+  }
+}
+
+/* ================================================================
+   Mobile: menu 弹层全屏 — A4
+   桌面：620px 宽居中 panel；Mobile：100vw 全屏 panel
+   ================================================================ */
+
+/* ---- menu-overlay：mobile 遮罩移除顶部渐变（全屏深色更自然）------- */
+@media (max-width: 767px) {
+  .menu-overlay {
+    mask-image: none;
+    -webkit-mask-image: none;
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ---- menu-panel：固定 620px → 100vw 全屏 ------------------------ */
+@media (max-width: 767px) {
+  .menu-panel {
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100vw;
+  }
+}
+
+/* ---- menu-items gap 压缩（全屏时 72px 间距太松）------------------- */
+@media (max-width: 767px) {
+  .menu-items {
+    gap: 48px;
+    padding: 120px 0 60px;
+  }
+}
+
+/* ---- menu-item：触摸目标 ≥ 44px，字号适当缩小 -------------------- */
+@media (max-width: 767px) {
+  .menu-item {
+    font-size: 32px;
+    padding: 12px 32px;
+    min-height: 44px;
+  }
+}
+
+/* ---- menu-detail：左右 padding 收窄适配窄屏 ---------------------- */
+@media (max-width: 767px) {
+  .menu-detail {
+    padding: 95px var(--space-5) var(--space-7);
+  }
+}
+
+/* ================================================================
+   Tablet 中间档覆盖（768–1279px）
+   目标：iPad 横屏 1024px + 13" 笔记本（1280 边界）
+   策略：桌面 1440 字号 / spacing 按比例缩 ~85%
+   保持布局结构（flex row 等），仅微调数值。
+   ================================================================ */
+@media (min-width: 768px) and (max-width: 1279px) {
+
+  /* Hero 标题 */
+  .hero-logo-subtitle:not([hidden]) {
+    font-size: 78px;
+    top: 180px;
+    letter-spacing: 0.18em;
+  }
+
+  /* Hero 引言 */
+  .hero-quote {
+    font-size: 30px;
+    top: 420px;
+    width: 700px;
+  }
+
+  /* Hero 哲学文字 */
+  .hero-philosophy {
+    font-size: 18px;
+    line-height: 1.80;
+  }
+
+  /* 阅读结果标题 */
+  .reflection-title {
+    font-size: 40px;
+  }
+
+  /* 意图选择标题 */
+  .intent-entry-title {
+    font-size: 34px;
+  }
+
+  /* 意图选择副文本 */
+  .intent-entry-copy {
+    font-size: 19px;
+  }
+
+  /* 模式选择间距 */
+  .mode-select {
+    gap: 140px;
+  }
+
+  /* 意图选择间距 + 宽度 */
+  .intent-select {
+    gap: 100px;
+    width: 900px;
+  }
+
+  /* 意图图片 */
+  .intent-image {
+    width: 200px;
+    height: 320px;
+  }
+
+  /* 意图卡片 */
+  .intent-card {
+    width: 200px;
+  }
+
+  /* 阅读结果 / 引导结果：防 iPad 横屏 1024px 超宽 */
+  .reading-result,
+  .guidance-result {
+    width: calc(100% - 80px);
+  }
+
+  /* 阅读布局间距 */
+  .reading-layout {
+    gap: 48px;
+  }
+}
+
+/* ================================================================
+   Reduced-motion 显式 animation: none 补丁
+   全局 catch-all (0.001ms) 已覆盖大部分，
+   此处补充需要明确关闭的装饰动画，避免 transform 最终态错位风险。
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  /* 浮动动画：translateY 有位移，直接关 */
+  .intent-image {
+    animation: none !important;
+  }
+
+  /* 下划线脉冲：仅 opacity 变化，catch-all 已处理，显式加强 */
+  .intent-caption::after {
+    animation: none !important;
+    opacity: 0.7;
+  }
+
+  /* 章节索引下划线脉冲 */
+  .chapter-index::after {
+    animation: none !important;
+    opacity: 0.7;
+  }
+
+  /* 加载态脉冲（reading / advice）：loading 状态下保留 opacity 可见即可 */
+  .reading-core.is-reading-loading,
+  .advice-loading.is-reading-loading {
+    animation: none !important;
+    opacity: 0.7;
+  }
+}
+

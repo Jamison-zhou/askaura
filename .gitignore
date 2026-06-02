@@ -1,0 +1,54 @@
+# Supabase CLI temp / link state
+supabase/.temp/
+supabase/.branches/
+
+# Node / npm
+node_modules/
+.npm/
+package-lock.json
+
+# Environment files (defense in depth — secrets live in `supabase secrets`, not files)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs / diagnostics
+*.log
+npm-debug.log*
+tmp-dev-server.*
+tmp-static-server.mjs
+
+# Local scratch / generated assets
+tmp/
+memes/
+
+# Build / cache (no build step in this project, but defense in depth)
+dist/
+build/
+.cache/
+
+# Texture pack downloads (large stock packs, 50-100MB each) — 仅挑选后的 PNG 进 assets/
+assets/textures/*.zip
+assets/textures/ink-pack/
+assets/textures/smoke-pack/
+assets/textures/fog-pack/
+
+# 临时 curl smoke test 文件
+tmp_*.json
+tmp_*.txt
+
+.vercel

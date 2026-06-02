@@ -1,0 +1,15 @@
+# Normalize line endings to LF in the repo; checkout uses LF on all platforms.
+# Prevents "phantom diff" caused by Windows CRLF autoconversion.
+* text=auto eol=lf
+
+# Binary files — never touch line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+# SVG is text but contains embedded base64 — keep byte-stable
+*.svg text

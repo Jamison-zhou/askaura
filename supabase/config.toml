@@ -1,0 +1,50 @@
+# Supabase project config for 此镜 (RiLL).
+# 通过 `supabase link --project-ref <ref>` 绑定到云端项目。
+
+project_id = "rill-cijing"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = false
+
+[storage]
+enabled = false
+
+[auth]
+enabled = false  # v1 暂不接入用户登录，v1.5 再开
+
+[functions]
+# 单个 function 的细粒度配置（如关 JWT 校验）。
+# v1 reading/tarot-draw 都用 anon key 调用，需要关掉 JWT verify。
+
+[functions.reading]
+verify_jwt = false
+
+[functions.tarot-draw]
+verify_jwt = false
+
+[functions.admin-config]
+verify_jwt = false
+
+[edge_runtime]
+enabled = true
+policy = "oneshot"
+inspector_port = 8083

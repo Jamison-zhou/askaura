@@ -1,0 +1,2532 @@
+﻿<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>象问 AskAura</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
+      rel="preload"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <link rel="stylesheet" href="./styles.css?v=20260602-result-hierarchy-1" />
+    <script>
+      window.RILL_SUPABASE_URL = "https://icvegpfnpkyrebtojoca.supabase.co";
+      window.RILL_SUPABASE_ANON_KEY = "sb_publishable_WBw4WUZdTCIIF3MhPtRg4w_N6MjH3hg";
+    </script>
+  </head>
+  <body>
+    <div class="mirror-cursor" aria-hidden="true">
+      <span class="cursor-ring"></span>
+      <span class="cursor-dot"></span>
+      <span class="cursor-seal">象</span>
+    </div>
+
+    <main class="mirror-room" data-step="idle" data-tone="tarot">
+      <canvas class="field-canvas" id="field-canvas" aria-hidden="true"></canvas>
+      <div class="surface-noise" aria-hidden="true"></div>
+
+      <aside class="side-rail">
+        <button class="brand" type="button" id="reset-btn" aria-label="回到首页">
+          <strong>象问</strong>
+          <span>AskAura</span>
+        </button>
+
+        <nav class="mode-nav" aria-label="三象入口">
+          <button class="active" type="button" data-mode="tarot" data-tone="tarot">
+            <span data-i18n="modeTarot">牌象解读</span>
+          </button>
+          <button type="button" data-mode="meihua" data-tone="meihua">
+            <span data-i18n="modeMeihua">卦象解读</span>
+          </button>
+          <button type="button" data-mode="dual" data-tone="dual">
+            <span data-i18n="modeDual">双象报告</span>
+          </button>
+        </nav>
+
+        <div class="rail-actions">
+          <button type="button" id="history-btn" data-i18n="history">回看</button>
+          <button type="button" id="account-btn" data-i18n="account">登录</button>
+        </div>
+
+        <div class="language" role="group" aria-label="语言">
+          <button type="button" class="lang-btn is-active" data-lang="zh">中文</button>
+          <span aria-hidden="true">/</span>
+          <button type="button" class="lang-btn" data-lang="en">En</button>
+        </div>
+
+      </aside>
+
+      <section class="mirror-stage" aria-label="当前入口">
+        <p class="mode-label" id="mode-label">牌象解读</p>
+        <div class="hero-ritual" aria-hidden="true">
+          <div class="hero-card-stack">
+            <span class="hero-card hero-card-a"></span>
+            <span class="hero-card hero-card-b"></span>
+            <span class="hero-card hero-card-c"></span>
+          </div>
+          <div class="hero-gua-mark">
+            <span></span>
+            <span></span>
+            <span class="split"><i></i><i></i></span>
+            <span></span>
+            <span class="split"><i></i><i></i></span>
+            <span></span>
+          </div>
+          <div class="ai-lens">
+            <span>AI</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="hero-content">
+        <section class="copy-block idle-copy">
+          <p>AskAura / Symbolic interpretation</p>
+          <h1 data-i18n="heroCopy">问一件事，看两种象。</h1>
+          <p class="hero-subcopy" data-i18n="heroSubcopy">牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。</p>
+        </section>
+
+        <section class="work-panel compose-panel" aria-label="问题">
+          <button class="panel-close" type="button" data-next="idle" aria-label="收起问题">×</button>
+          <span class="panel-index">New reading</span>
+          <p class="panel-kicker" id="question-label" data-i18n="questionLabel">你现在最想看清哪件事？</p>
+          <p class="mode-primer" id="mode-primer" data-i18n="modePrimerTarot">牌象先帮你聚焦问题里的情绪、关系和未说出口的信号。</p>
+          <form id="question-form">
+            <div class="signal-row" id="signal-row" aria-hidden="true">
+              <span data-i18n="signalTarot">牌象感知</span>
+              <span data-i18n="signalGua">卦象生成</span>
+              <span data-i18n="signalAi">AI 解读</span>
+            </div>
+            <textarea
+              id="question-input"
+              rows="4"
+              maxlength="140"
+              data-i18n-placeholder="questionPlaceholder"
+              placeholder="我最近总是睡不着，不知道真正烦的是什么。"
+            ></textarea>
+            <div class="gua-compose-mark" id="gua-compose-mark" hidden aria-hidden="true">
+              <span></span>
+              <span class="split"><i></i><i></i></span>
+              <span></span>
+              <span></span>
+              <span class="split"><i></i><i></i></span>
+              <span></span>
+            </div>
+            <p class="hint" id="mode-hint" data-i18n="modeHintTarot">适合关系、情绪与选择题。</p>
+            <button class="primary" type="submit" id="cast-btn" data-i18n="cast">生成解读</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="work-panel answer-panel" aria-label="结果">
+        <button class="panel-close" type="button" id="back-btn">←</button>
+        <span class="panel-index">02</span>
+        <p class="panel-kicker" id="answer-kicker">牌象解读</p>
+
+        <div class="result-body">
+          <article class="symbol-card" id="symbol-card">
+            <div class="symbol-summary-head">
+              <span id="symbol-mode-label">牌象解读</span>
+              <strong id="symbol-name-label">—</strong>
+            </div>
+            <div class="tarot-symbol" id="tarot-symbol" hidden>
+              <img id="card-image" alt="" role="button" tabindex="0" aria-label="放大查看牌面" loading="lazy" decoding="async" />
+            </div>
+            <div class="gua-symbol" id="gua-symbol" hidden aria-hidden="true"></div>
+            <div class="symbol-keywords" id="symbol-keywords" hidden></div>
+            <div class="symbol-question" id="symbol-question" hidden>
+              <span data-i18n="symbolQuestionLabel">本次问题</span>
+              <p id="symbol-question-text"></p>
+            </div>
+          </article>
+
+          <article class="answer-copy">
+            <h2 class="answer-title" data-i18n="answerTitle">解读结果</h2>
+            <span class="result-summary-label" data-i18n="coreConclusionLabel">核心结论</span>
+            <p class="result-summary" id="result-summary"></p>
+            <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
+              <section>
+                <span data-i18n="tarotCoreLabel">牌面告诉你</span>
+                <p id="tarot-core-question"></p>
+              </section>
+              <section>
+                <span data-i18n="tarotTensionLabel">你真正卡住的是</span>
+                <p id="tarot-tension"></p>
+              </section>
+              <section>
+                <span data-i18n="tarotJudgmentLabel">这次结果提醒你</span>
+                <p id="tarot-judgment"></p>
+              </section>
+            </div>
+            <div class="report-stack" id="report-stack" hidden>
+              <section id="report-tarot-section">
+                <span data-i18n="reportTarotLabel">牌象依据</span>
+                <p id="report-tarot"></p>
+              </section>
+              <section id="report-gua-section">
+                <span data-i18n="reportGuaLabel">卦象依据</span>
+                <p id="report-gua"></p>
+              </section>
+              <section id="report-dual-section">
+                <span data-i18n="reportDualLabel">双象共同指向</span>
+                <p id="report-dual"></p>
+              </section>
+            </div>
+            <h3 class="result-section-title" id="action-board-title" data-i18n="nextStepTitle" hidden>下一步怎么做</h3>
+            <div class="action-board" id="action-board" hidden>
+              <section>
+                <span data-i18n="actionDoLabel">今天可以做</span>
+                <p id="action-do"></p>
+              </section>
+              <section>
+                <span data-i18n="actionDontLabel">今天不要做</span>
+                <p id="action-dont"></p>
+              </section>
+              <section>
+                <span data-i18n="actionWatchLabel">接下来观察什么</span>
+                <p id="action-watch"></p>
+              </section>
+            </div>
+            <p class="action-sentence" id="action-sentence"></p>
+            <div class="followup-chips" id="followup-chips" hidden aria-label="继续探索这次结果">
+              <span class="followup-label" data-i18n="followupLabel">继续探索这次结果</span>
+              <button type="button" data-open-followup data-i18n="followupOpen">打开追问面板</button>
+            </div>
+            <div class="followup-panel" id="followup-panel" hidden>
+              <p data-i18n="followupPanelTitle">基于这次牌象，你还想看哪一面？</p>
+              <div class="followup-group">
+                <span data-i18n="followupQuestionGroup">继续追问</span>
+                <div class="followup-options">
+                  <button type="button" data-followup-question="push" data-i18n="followupPush">如果我主动推进，会发生什么？</button>
+                  <button type="button" data-followup-question="avoid" data-i18n="followupAvoid">我现在最该避免什么？</button>
+                  <button type="button" data-followup-question="blocker" data-i18n="followupBlocker">这件事真正的阻力是什么？</button>
+                  <button type="button" data-followup-question="review" data-i18n="followupReview">三天后我该如何复盘？</button>
+                </div>
+              </div>
+              <div class="followup-group followup-ritual-group">
+                <span data-i18n="followupRitualGroup">补充仪式</span>
+                <div class="followup-options followup-options-ritual">
+                  <button type="button" data-followup-question="clarify-card" data-i18n="followupClarifyCard">抽一张澄清牌</button>
+                </div>
+              </div>
+              <form class="followup-custom" id="followup-custom-form">
+                <input id="followup-custom-input" type="text" maxlength="80" data-i18n-placeholder="followupCustomPlaceholder" placeholder="自己输入追问" />
+                <button class="secondary muted" type="submit" data-i18n="followupCustomSubmit">生成补充回答</button>
+              </form>
+              <div class="followup-answer" id="followup-answer" hidden>
+                <span data-i18n="followupAnswerLabel">补充回答</span>
+                <p id="followup-answer-text"></p>
+              </div>
+            </div>
+            <div class="anchor-grid" id="anchor-grid" hidden>
+              <div><span data-i18n="anchorColor">颜色</span><strong id="anchor-color"></strong></div>
+              <div><span data-i18n="anchorObject">物件</span><strong id="anchor-object"></strong></div>
+              <div><span data-i18n="anchorMoment">时刻</span><strong id="anchor-moment"></strong></div>
+            </div>
+            <p class="daily-note-status" id="daily-note-status" hidden data-i18n="dailyNoteStatus">已收入回看</p>
+            <p class="loading-line" id="loading-line" hidden data-i18n="loading">正在整理本次线索…</p>
+          </article>
+        </div>
+
+        <div class="result-actions">
+          <button class="secondary muted" type="button" id="copy-btn" data-i18n="copy">复制行动句</button>
+          <button class="secondary muted" type="button" id="save-btn" data-i18n="saveHistory">保存到回看</button>
+          <button class="secondary muted subtle-danger" type="button" id="new-reading-btn" data-i18n="newReadingTarot">重新抽牌（新结果）</button>
+          <button class="secondary muted" type="button" id="again-btn" data-i18n="again">回到问题</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="ritual-stage" id="ritual-stage" hidden aria-live="polite">
+      <button class="ritual-close" type="button" id="ritual-close-btn" aria-label="关闭抽牌仪式">×</button>
+      <div class="ritual-stage-copy">
+        <span data-i18n="ritualTitle">抽牌仪式</span>
+        <strong id="ritual-heading" data-i18n="ritualIntroTitle">请凭第一直觉，选一张此刻最吸引你的牌。</strong>
+        <em data-i18n="ritualHint">无需分析，先相信你第一眼的停留。</em>
+      </div>
+      <div class="ritual-stepper" id="ritual-stepper" aria-hidden="true">
+        <span data-step="0" data-i18n="ritualStepShuffle">01 洗牌</span>
+        <span data-step="1" data-i18n="ritualStepChoose">02 选牌</span>
+        <span data-step="2" data-i18n="ritualStepReveal">03 翻牌</span>
+        <span data-step="3" data-i18n="ritualStepRead">04 解读</span>
+      </div>
+      <div class="ritual-deck" id="ritual-deck"></div>
+      <div class="ritual-gua" aria-hidden="true">
+        <span class="ritual-gua-line"></span>
+        <span class="ritual-gua-line"></span>
+        <span class="ritual-gua-line moving"></span>
+        <span class="ritual-gua-line"></span>
+        <span class="ritual-gua-line"></span>
+        <span class="ritual-gua-line moving"></span>
+      </div>
+      <p id="ritual-status" data-i18n="ritualIdle">正在整理本次线索</p>
+      <div class="ritual-preview-actions" id="ritual-preview-actions" hidden>
+        <button class="secondary" type="button" id="ritual-confirm-btn" data-i18n="ritualConfirm">确认这张牌</button>
+        <button class="secondary muted" type="button" id="ritual-reselect-btn" data-i18n="ritualReselect">重新选择</button>
+      </div>
+    </div>
+
+    <div class="card-lightbox" id="card-lightbox" hidden aria-hidden="true">
+      <button class="lightbox-backdrop" type="button" id="lightbox-backdrop" aria-label="关闭牌面预览"></button>
+      <figure class="lightbox-frame">
+        <button class="lightbox-close" type="button" id="lightbox-close" aria-label="关闭牌面预览">×</button>
+        <img id="lightbox-image" alt="" loading="lazy" decoding="async" />
+        <figcaption id="lightbox-caption"></figcaption>
+      </figure>
+    </div>
+
+    <div class="utility-panel" id="history-panel" hidden aria-hidden="true">
+      <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭回看"></button>
+      <section class="utility-sheet" aria-label="回看">
+        <button class="utility-close" type="button" data-close-utility aria-label="关闭回看">×</button>
+        <p class="panel-kicker" data-i18n="historyKicker">最近的象</p>
+        <div class="history-list" id="history-list"></div>
+        <button class="history-clear" type="button" id="history-clear-btn" data-i18n="clearHistory">清空记录</button>
+      </section>
+    </div>
+
+    <div class="utility-panel" id="auth-panel" hidden aria-hidden="true">
+      <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭登录"></button>
+      <section class="utility-sheet auth-sheet" aria-label="登录">
+        <button class="utility-close" type="button" data-close-utility aria-label="关闭登录">×</button>
+        <p class="panel-kicker" data-i18n="authKicker">登录同步</p>
+        <p class="auth-status" id="auth-status"></p>
+        <form class="auth-form" id="auth-form">
+          <input id="auth-email" type="email" autocomplete="email" data-i18n-placeholder="emailPlaceholder" placeholder="邮箱" required />
+          <input id="auth-password" type="password" autocomplete="current-password" data-i18n-placeholder="passwordPlaceholder" placeholder="密码" required />
+          <div class="auth-actions">
+            <button class="secondary" type="submit" data-auth-action="signin" data-i18n="signIn">登录</button>
+            <button class="secondary muted" type="button" id="signup-btn" data-i18n="signUp">注册</button>
+            <button class="secondary muted" type="button" id="password-reset-btn" data-i18n="resetPassword">重置密码</button>
+            <button class="secondary muted" type="button" id="password-update-btn" data-i18n="updatePassword">保存新密码</button>
+            <button class="secondary muted" type="button" id="signout-btn" data-i18n="signOut">退出</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <script type="module">
+      import {
+        clearDailyAnchors,
+        clearHistory,
+        createStorage,
+        loadDailyAnchor,
+        loadHistory,
+        saveDailyAnchor,
+        saveHistoryRecord,
+        todayKey
+      } from "./assets/app/storage.js";
+      import { guaFromTime } from "./assets/app/meihua.js";
+      import { createSyncClient } from "./assets/app/sync.js";
+
+      const API_URL = window.RILL_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/reading";
+      const CONFIG_API_URL = window.RILL_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/admin-config";
+      const API_AUTH = "Bearer " + window.RILL_SUPABASE_ANON_KEY;
+      const CONFIG_KEY = "rill_admin_config_v1";
+      let adminConfig = {};
+      const recordStore = createStorage();
+      const syncClient = createSyncClient({
+        supabaseUrl: window.RILL_SUPABASE_URL,
+        anonKey: window.RILL_SUPABASE_ANON_KEY,
+        store: recordStore
+      });
+
+      const translations = {
+        zh: {
+          heroCopy: "问一件事，看两种象。",
+          heroSubcopy: "牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。",
+          discText: "照见",
+          modeTarot: "牌象解读",
+          modeMeihua: "卦象解读",
+          modeDual: "双象报告",
+          modeDaily: "每日镜笺",
+          questionLabel: "你现在最想看清哪件事？",
+          questionLabelMeihua: "此刻起卦",
+          questionLabelDual: "写下一个值得认真看的问题",
+          questionLabelDaily: "今日镜笺",
+          modePrimerTarot: "牌象先帮你聚焦问题里的情绪、关系和未说出口的信号。",
+          modePrimerMeihua: "不必完整表述问题，起卦会从此刻的时机、趋势和推进方式展开。",
+          modePrimerDual: "同时参考牌象与卦象，把情绪、趋势和下一步整理成一份报告。",
+          questionPlaceholder: "比如：我应该继续推进这段关系，还是先退一步观察？",
+          questionPlaceholderAlt1: "比如：这件事现在卡住，是因为时机不对，还是我没看清？",
+          questionPlaceholderAlt2: "比如：我该主动说明，还是先观察三天再回应？",
+          questionPlaceholderMeihua: "不用输入问题，按此刻起卦。",
+          questionPlaceholderDual: "比如：这件事现在卡住的原因，真的是对方态度吗？",
+          questionPlaceholderDualAlt1: "比如：这段关系的情绪和趋势，分别在提醒我什么？",
+          questionPlaceholderDualAlt2: "比如：我下一步更该收束、沟通，还是等待？",
+          questionPlaceholderDaily: "不用输入问题，直接打开今天的锚点。",
+          modeHintTarot: "适合关系、情绪与选择题。",
+          modeHintMeihua: "基于梅花易数，观察趋势、时机与推进方式。",
+          modeHintDual: "同时参考牌象与卦象，整理成摘要、依据、行动和复盘。",
+          castTarot: "开始抽牌",
+          castMeihua: "此刻起卦",
+          castDual: "生成双象报告",
+          generatingTarot: "正在感知牌象…",
+          generatingMeihua: "正在起卦…",
+          generatingDual: "正在汇总双象报告…",
+          signalTarotFocus: "问题聚焦",
+          signalTarot: "牌象感知",
+          signalGua: "卦象生成",
+          signalAi: "AI 解读",
+          signalMoment: "此刻取象",
+          signalAiSummary: "AI 汇总",
+          ritualIdle: "正在整理本次线索",
+          ritualTitle: "抽牌仪式",
+          ritualIntroTitle: "请凭第一直觉，选一张此刻最吸引你的牌。",
+          ritualHint: "无需分析，先相信你第一眼的停留。",
+          ritualStepShuffle: "01 洗牌",
+          ritualStepChoose: "02 选牌",
+          ritualStepReveal: "03 翻牌",
+          ritualStepRead: "04 解读",
+          ritualQuestion: "正在锁定本次问题…",
+          ritualShuffle: "正在洗牌…",
+          ritualSpread: "牌阵正在展开",
+          ritualChooseCard: "请凭第一直觉，选一张此刻最吸引你的牌",
+          ritualSelect: "你选择了这张牌",
+          ritualConfirm: "确认这张牌",
+          ritualReselect: "重新选择",
+          ritualClose: "关闭",
+          ritualRevealingCard: "正在揭示牌象…",
+          ritualGuaMoment: "正在取此刻之象…",
+          ritualGua: "卦象正在成形…",
+          ritualAi: "正在整理象意…",
+          ritualSummarize: "正在汇总双象报告…",
+          ritualReveal: "准备揭示结果",
+          modeHintDaily: "今天只带走一件小事。",
+          cast: "生成解读",
+          generating: "正在生成象意…",
+          dailyNoteButton: "照见今日",
+          dailyNoteTitle: "今日镜笺",
+          dailyNoteSubtitle: "今天只带走一件小事。",
+          dailyNoteStatus: "已收入回看",
+          dailyRecordTitle: "复盘 · 今日镜笺",
+          answerTitle: "解读结果",
+          loading: "正在整理本次线索…",
+          again: "回到问题",
+          copy: "复制行动句",
+          saveHistory: "保存到回看",
+          savedHistory: "已保存到回看",
+          newReadingTarot: "重新抽牌（新结果）",
+          newReadingMeihua: "重新起卦（新结果）",
+          newReadingDual: "重新生成报告（新结果）",
+          newReadingConfirm: "重新抽牌会生成一次新的结果，当前结果仍会保留在回看中。",
+          copied: "行动已复制",
+          copyFailed: "复制失败",
+          copyManual: "按 Ctrl+C",
+          anchorColor: "颜色",
+          anchorObject: "物件",
+          anchorMoment: "时刻",
+          fallbackQuestion: "我现在需要看清什么？",
+          history: "回看",
+          account: "登录",
+          accountReady: "我的",
+          historyKicker: "最近的象",
+          historyEmpty: "还没有留下记录。",
+          clearHistory: "清空记录",
+          clearDone: "已清空",
+          authKicker: "登录同步",
+          authSignedOut: "未登录也可以使用；登录后同步最近记录。",
+          authSignedIn: "已登录：",
+          authSynced: "已同步",
+          authFailed: "没有连上账号，请稍后再试。",
+          authWorking: "正在处理…",
+          authSignupPending: "注册已提交。请检查邮箱，或稍后直接登录。",
+          authSignupDone: "注册成功，已同步本机记录。",
+          authEmailExists: "这个邮箱已经注册，请直接登录。",
+          authWeakPassword: "密码至少需要 6 位。",
+          authConfirmed: "邮箱确认成功，已登录并同步记录。",
+          authConfirmLogin: "邮箱确认完成，请用刚才的邮箱和密码登录。",
+          authConfirmFailed: "邮箱确认链接无效或已过期，请重新注册。",
+          authUnconfirmed: "这个邮箱还没有确认。请先点邮件里的确认链接。",
+          authDetailPrefix: "账号返回：",
+          authInvalidCredentials: "邮箱或密码不对。可以重新输入，或点“重置密码”。",
+          authResetSent: "重置密码邮件已发送，请打开邮件后回到这里设置新密码。",
+          authPasswordUpdated: "新密码已保存，可以继续同步记录。",
+          authEmailRateLimited: "邮件发送太频繁了。先等几分钟，再点注册或重置密码。",
+          coreConclusionLabel: "核心结论",
+          tarotCardMessageLabel: "牌面告诉你",
+          tarotStuckLabel: "你真正卡住的是",
+          tarotCoreLabel: "牌面告诉你",
+          tarotTensionLabel: "你真正卡住的是",
+          symbolQuestionLabel: "本次问题",
+          tarotJudgmentLabel: "这次结果提醒你",
+          guaShowsLabel: "卦象显示什么",
+          guaTrendLabel: "当前趋势",
+          guaAdviceLabel: "推进建议",
+          reportTarotLabel: "牌象侧：牌面提醒了什么",
+          reportGuaLabel: "卦象侧：卦象显示了什么趋势",
+          reportDualLabel: "双象共同指向",
+          nextStepTitle: "下一步怎么做",
+          actionDoLabel: "现在可以做",
+          actionDontLabel: "先别急着做",
+          actionWatchLabel: "接下来观察什么",
+          followupLabel: "继续探索这次结果",
+          followupOpen: "打开追问面板",
+          followupPanelTitle: "基于这次牌象，你还想看哪一面？",
+          followupQuestionGroup: "继续追问",
+          followupRitualGroup: "补充仪式",
+          followupPush: "如果我主动推进，会发生什么？",
+          followupAvoid: "我现在最该避免什么？",
+          followupBlocker: "这件事真正的阻力是什么？",
+          followupReview: "三天后我该如何复盘？",
+          followupClarifyCard: "抽一张澄清牌",
+          followupCustomPlaceholder: "自己输入追问",
+          followupCustomSubmit: "生成补充回答",
+          followupCustomSubmitSelected: "基于本次结果追问",
+          followupWorking: "正在整理补充回答…",
+          followupAnswerLabel: "补充回答",
+          emptyFallback: "暂无",
+          emailPlaceholder: "邮箱",
+          passwordPlaceholder: "密码",
+          signIn: "登录",
+          signUp: "注册",
+          resetPassword: "重置密码",
+          updatePassword: "保存新密码",
+          signOut: "退出"
+        },
+        en: {
+          heroCopy: "Ask one thing. Read two symbols.",
+          heroSubcopy: "Card symbols clarify emotion. Gua symbols read momentum. The result ends with one next step.",
+          discText: "Mirror",
+          modeTarot: "Card reading",
+          modeMeihua: "Gua reading",
+          modeDual: "Dual report",
+          modeDaily: "Daily note",
+          questionLabel: "What do you want to see more clearly?",
+          questionLabelMeihua: "Cast this moment",
+          questionLabelDual: "Write one question worth reading carefully",
+          questionLabelDaily: "Daily note",
+          modePrimerTarot: "Card symbols first focus the emotion, relationship, and unspoken signal inside the question.",
+          modePrimerMeihua: "A full question is optional. The gua reads timing, momentum, and the way forward from this moment.",
+          modePrimerDual: "Card and gua signals are read together into a report for emotion, momentum, and next step.",
+          questionPlaceholder: "For example: should I keep moving this relationship forward, or step back first?",
+          questionPlaceholderAlt1: "For example: is this blocked by timing, or by what I have not seen clearly?",
+          questionPlaceholderAlt2: "For example: should I explain myself now, or observe for three days?",
+          questionPlaceholderMeihua: "No question needed. Cast from this moment.",
+          questionPlaceholderDual: "For example: is this blocked because of their attitude, or my timing?",
+          questionPlaceholderDualAlt1: "For example: what do the emotion and momentum of this relationship each point to?",
+          questionPlaceholderDualAlt2: "For example: should my next move be closure, conversation, or waiting?",
+          questionPlaceholderDaily: "No question needed. Open today's anchor.",
+          modeHintTarot: "Good for relationships, emotions, and choices.",
+          modeHintMeihua: "Based on Meihua Yishu, for timing, momentum, and next movement.",
+          modeHintDual: "Reads card and gua signals together into summary, evidence, action, and review.",
+          castTarot: "Begin draw",
+          castMeihua: "Cast this moment",
+          castDual: "Create dual report",
+          generatingTarot: "Reading card symbols...",
+          generatingMeihua: "Forming the gua...",
+          generatingDual: "Synthesizing dual report...",
+          signalTarotFocus: "Question focus",
+          signalTarot: "Card signal",
+          signalGua: "Gua forming",
+          signalAi: "AI reading",
+          signalMoment: "Moment signal",
+          signalAiSummary: "AI synthesis",
+          ritualIdle: "Structuring this reading",
+          ritualTitle: "Draw ritual",
+          ritualIntroTitle: "Choose the card that first holds your attention.",
+          ritualHint: "No need to analyze. Notice where your eye stops first.",
+          ritualStepShuffle: "01 Shuffle",
+          ritualStepChoose: "02 Choose",
+          ritualStepReveal: "03 Reveal",
+          ritualStepRead: "04 Read",
+          ritualQuestion: "Locking this question...",
+          ritualShuffle: "Shuffling...",
+          ritualSpread: "The spread is opening",
+          ritualChooseCard: "Choose the card that first holds your attention",
+          ritualSelect: "You chose this card",
+          ritualConfirm: "Confirm this card",
+          ritualReselect: "Choose again",
+          ritualClose: "Close",
+          ritualRevealingCard: "Revealing the card...",
+          ritualGuaMoment: "Reading this moment...",
+          ritualGua: "The gua is forming...",
+          ritualAi: "Organizing the symbols...",
+          ritualSummarize: "Synthesizing dual report...",
+          ritualReveal: "Revealing result",
+          modeHintDaily: "Take one small thing with you today.",
+          cast: "Generate reading",
+          generating: "Reading the symbols...",
+          dailyNoteButton: "Open today",
+          dailyNoteTitle: "Daily note",
+          dailyNoteSubtitle: "Take one small thing with you today.",
+          dailyNoteStatus: "Saved to history",
+          dailyRecordTitle: "Review · Today",
+          answerTitle: "Reading result",
+          loading: "Structuring this reading...",
+          again: "Back to question",
+          copy: "Copy action",
+          saveHistory: "Save to history",
+          savedHistory: "Saved to history",
+          newReadingTarot: "Draw again (new result)",
+          newReadingMeihua: "Cast again (new result)",
+          newReadingDual: "New dual report",
+          newReadingConfirm: "Drawing again will create a new result. This result will remain in history.",
+          copied: "Action copied",
+          copyFailed: "Copy failed",
+          copyManual: "Press Ctrl+C",
+          anchorColor: "Color",
+          anchorObject: "Object",
+          anchorMoment: "Moment",
+          fallbackQuestion: "What do I need to see right now?",
+          history: "History",
+          account: "Sign in",
+          accountReady: "Mine",
+          historyKicker: "Recent symbols",
+          historyEmpty: "No saved records yet.",
+          clearHistory: "Clear records",
+          clearDone: "Cleared",
+          authKicker: "Sign in to sync",
+          authSignedOut: "You can use AskAura without signing in. Sign in to sync recent records.",
+          authSignedIn: "Signed in: ",
+          authSynced: "Synced",
+          authFailed: "Could not reach your account. Try again later.",
+          authWorking: "Working...",
+          authSignupPending: "Sign-up submitted. Check your email, or sign in shortly.",
+          authSignupDone: "Created and synced.",
+          authEmailExists: "This email is already registered. Sign in instead.",
+          authWeakPassword: "Password must be at least 6 characters.",
+          authConfirmed: "Email confirmed. Signed in and synced.",
+          authConfirmLogin: "Email confirmed. Sign in with your email and password.",
+          authConfirmFailed: "The confirmation link is invalid or expired. Sign up again.",
+          authUnconfirmed: "This email has not been confirmed yet. Open the confirmation email first.",
+          authDetailPrefix: "Account response: ",
+          authInvalidCredentials: "Email or password is incorrect. Try again, or reset the password.",
+          authResetSent: "Password reset email sent. Open it, then set a new password here.",
+          authPasswordUpdated: "New password saved. Sync can continue.",
+          authEmailRateLimited: "Too many emails were requested. Wait a few minutes, then try again.",
+          coreConclusionLabel: "Core conclusion",
+          tarotCardMessageLabel: "What the card shows",
+          tarotStuckLabel: "Where you are stuck",
+          tarotCoreLabel: "What the card shows",
+          tarotTensionLabel: "Where you are stuck",
+          symbolQuestionLabel: "This question",
+          tarotJudgmentLabel: "What this result reminds you",
+          guaShowsLabel: "What the gua shows",
+          guaTrendLabel: "Current trend",
+          guaAdviceLabel: "How to move",
+          reportTarotLabel: "Card side: what it points to",
+          reportGuaLabel: "Gua side: what trend it shows",
+          reportDualLabel: "Shared direction",
+          nextStepTitle: "What to do next",
+          actionDoLabel: "Do now",
+          actionDontLabel: "Do not rush into",
+          actionWatchLabel: "Watch next",
+          followupLabel: "Continue exploring this result",
+          followupOpen: "Open follow-up panel",
+          followupPanelTitle: "Based on this card, which side do you want to see?",
+          followupQuestionGroup: "Continue asking",
+          followupRitualGroup: "Supplemental ritual",
+          followupPush: "What if I move first?",
+          followupAvoid: "What should I avoid most?",
+          followupBlocker: "What is the real blocker?",
+          followupReview: "How should I review in three days?",
+          followupClarifyCard: "Draw a clarification card",
+          followupCustomPlaceholder: "Type your own follow-up",
+          followupCustomSubmit: "Generate follow-up",
+          followupCustomSubmitSelected: "Ask from this result",
+          followupWorking: "Organizing follow-up...",
+          followupAnswerLabel: "Follow-up answer",
+          emptyFallback: "Not available",
+          emailPlaceholder: "Email",
+          passwordPlaceholder: "Password",
+          signIn: "Sign in",
+          signUp: "Create",
+          resetPassword: "Reset password",
+          updatePassword: "Save password",
+          signOut: "Sign out"
+        }
+      };
+
+      function mergeConfig(target, source) {
+        if (!source || typeof source !== "object") return target;
+        Object.entries(source).forEach(([key, value]) => {
+          if (value && typeof value === "object" && !Array.isArray(value)) {
+            target[key] = mergeConfig(target[key] || {}, value);
+          } else if (value !== undefined && value !== null && value !== "") {
+            target[key] = value;
+          }
+        });
+        return target;
+      }
+
+      async function loadAdminConfig() {
+        try {
+          const response = await fetch(CONFIG_API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: API_AUTH
+            },
+            body: JSON.stringify({ action: "public" })
+          });
+          if (!response.ok) return false;
+          const parsed = (await response.json()).config;
+          adminConfig = parsed || {};
+          if (adminConfig.translations) mergeConfig(translations, adminConfig.translations);
+          return true;
+        } catch (error) {
+          console.warn("Invalid admin config", error);
+          return false;
+        }
+      }
+
+      function clampNumber(value, fallback, min, max) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return fallback;
+        return Math.min(max, Math.max(min, number));
+      }
+
+      function getLlmOptions() {
+        const llm = adminConfig.llm || {};
+        return {
+          provider: ["kimi", "xiaomi"].includes(llm.provider) ? llm.provider : undefined,
+          model: typeof llm.model === "string" && llm.model.trim() ? llm.model.trim() : undefined,
+          temperature: clampNumber(llm.temperature, 0.7, 0, 1.5),
+          maxTokens: Math.round(clampNumber(llm.maxTokens, 2048, 128, 4096))
+        };
+      }
+
+      const tarotDeck = [
+        ["The Fool", "愚者", "00-the-fool.jpg"],
+        ["The Magician", "魔术师", "01-the-magician.jpg"],
+        ["The High Priestess", "女祭司", "02-the-high-priestess.jpg"],
+        ["The Empress", "皇后", "03-the-empress.jpg"],
+        ["The Emperor", "皇帝", "04-the-emperor.jpg"],
+        ["The Hierophant", "教皇", "05-the-hierophant.jpg"],
+        ["The Lovers", "恋人", "06-the-lovers.jpg"],
+        ["The Chariot", "战车", "07-the-chariot.jpg"],
+        ["Strength", "力量", "08-strength.jpg"],
+        ["The Hermit", "隐士", "09-the-hermit.jpg"],
+        ["Wheel of Fortune", "命运之轮", "10-wheel-of-fortune.jpg"],
+        ["Justice", "正义", "11-justice.jpg"],
+        ["The Hanged Man", "倒吊人", "12-the-hanged-man.jpg"],
+        ["Death", "死神", "13-death.jpg"],
+        ["Temperance", "节制", "14-temperance.jpg"],
+        ["The Devil", "恶魔", "15-the-devil.jpg"],
+        ["The Tower", "高塔", "16-the-tower.jpg"],
+        ["The Star", "星星", "17-the-star.jpg"],
+        ["The Moon", "月亮", "18-the-moon.jpg"],
+        ["The Sun", "太阳", "19-the-sun.jpg"],
+        ["Judgement", "审判", "20-judgement.jpg"],
+        ["The World", "世界", "21-the-world.jpg"]
+      ];
+
+      const els = {
+        room: document.querySelector(".mirror-room"),
+        cursor: document.querySelector(".mirror-cursor"),
+        reset: document.getElementById("reset-btn"),
+        composePanel: document.querySelector(".compose-panel"),
+        answerPanel: document.querySelector(".answer-panel"),
+        form: document.getElementById("question-form"),
+        input: document.getElementById("question-input"),
+        questionLabel: document.getElementById("question-label"),
+        modePrimer: document.getElementById("mode-primer"),
+        cast: document.getElementById("cast-btn"),
+        hint: document.getElementById("mode-hint"),
+        modeLabel: document.getElementById("mode-label"),
+        modeBtns: Array.from(document.querySelectorAll("[data-mode]")),
+        langBtns: Array.from(document.querySelectorAll(".lang-btn")),
+        nextBtns: Array.from(document.querySelectorAll("[data-next]")),
+        historyBtn: document.getElementById("history-btn"),
+        accountBtn: document.getElementById("account-btn"),
+        historyPanel: document.getElementById("history-panel"),
+        authPanel: document.getElementById("auth-panel"),
+        utilityClosers: Array.from(document.querySelectorAll("[data-close-utility]")),
+        historyList: document.getElementById("history-list"),
+        historyClear: document.getElementById("history-clear-btn"),
+        authForm: document.getElementById("auth-form"),
+        authEmail: document.getElementById("auth-email"),
+        authPassword: document.getElementById("auth-password"),
+        authStatus: document.getElementById("auth-status"),
+        signup: document.getElementById("signup-btn"),
+        passwordReset: document.getElementById("password-reset-btn"),
+        passwordUpdate: document.getElementById("password-update-btn"),
+        signout: document.getElementById("signout-btn"),
+        back: document.getElementById("back-btn"),
+        again: document.getElementById("again-btn"),
+        save: document.getElementById("save-btn"),
+        newReading: document.getElementById("new-reading-btn"),
+        copy: document.getElementById("copy-btn"),
+        loading: document.getElementById("loading-line"),
+        ritualStage: document.getElementById("ritual-stage"),
+        ritualDeck: document.getElementById("ritual-deck"),
+        ritualStatus: document.getElementById("ritual-status"),
+        ritualHeading: document.getElementById("ritual-heading"),
+        ritualStepper: document.getElementById("ritual-stepper"),
+        ritualPreviewActions: document.getElementById("ritual-preview-actions"),
+        ritualConfirm: document.getElementById("ritual-confirm-btn"),
+        ritualReselect: document.getElementById("ritual-reselect-btn"),
+        ritualClose: document.getElementById("ritual-close-btn"),
+        signalRow: document.getElementById("signal-row"),
+        ritualCards: Array.from(document.querySelectorAll(".ritual-card")),
+        ritualGuaLines: Array.from(document.querySelectorAll(".ritual-gua-line")),
+        guaComposeMark: document.getElementById("gua-compose-mark"),
+        action: document.getElementById("action-sentence"),
+        tarotReadingGrid: document.getElementById("tarot-reading-grid"),
+        tarotCoreQuestion: document.getElementById("tarot-core-question"),
+        tarotTension: document.getElementById("tarot-tension"),
+        tarotJudgment: document.getElementById("tarot-judgment"),
+        resultSummary: document.getElementById("result-summary"),
+        reportStack: document.getElementById("report-stack"),
+        reportTarotSection: document.getElementById("report-tarot-section"),
+        reportGuaSection: document.getElementById("report-gua-section"),
+        reportDualSection: document.getElementById("report-dual-section"),
+        reportTarot: document.getElementById("report-tarot"),
+        reportGua: document.getElementById("report-gua"),
+        reportDual: document.getElementById("report-dual"),
+        actionBoard: document.getElementById("action-board"),
+        actionBoardTitle: document.getElementById("action-board-title"),
+        actionDo: document.getElementById("action-do"),
+        actionDont: document.getElementById("action-dont"),
+        actionWatch: document.getElementById("action-watch"),
+        followupChips: document.getElementById("followup-chips"),
+        followupPanel: document.getElementById("followup-panel"),
+        followupCustomForm: document.getElementById("followup-custom-form"),
+        followupCustomInput: document.getElementById("followup-custom-input"),
+        followupAnswer: document.getElementById("followup-answer"),
+        followupAnswerText: document.getElementById("followup-answer-text"),
+        answerKicker: document.getElementById("answer-kicker"),
+        cardImage: document.getElementById("card-image"),
+        lightbox: document.getElementById("card-lightbox"),
+        lightboxImage: document.getElementById("lightbox-image"),
+        lightboxCaption: document.getElementById("lightbox-caption"),
+        lightboxBackdrop: document.getElementById("lightbox-backdrop"),
+        lightboxClose: document.getElementById("lightbox-close"),
+        tarotSymbol: document.getElementById("tarot-symbol"),
+        guaSymbol: document.getElementById("gua-symbol"),
+        symbolModeLabel: document.getElementById("symbol-mode-label"),
+        symbolNameLabel: document.getElementById("symbol-name-label"),
+        symbolKeywords: document.getElementById("symbol-keywords"),
+        symbolQuestion: document.getElementById("symbol-question"),
+        symbolQuestionText: document.getElementById("symbol-question-text"),
+        anchorGrid: document.getElementById("anchor-grid"),
+        anchorColor: document.getElementById("anchor-color"),
+        anchorObject: document.getElementById("anchor-object"),
+        anchorMoment: document.getElementById("anchor-moment"),
+        dailyNoteStatus: document.getElementById("daily-note-status")
+      };
+
+      let lang = "zh";
+      let mode = "tarot";
+      let lastAction = "";
+      let lastQuestion = "";
+      let lastRecord = null;
+      let currentResultContext = null;
+      let selectedFollowupKind = "";
+      let isRunning = false;
+      let activeRitualCancel = null;
+      let placeholderIndex = 0;
+      let currentRitualStatusKey = "ritualIdle";
+
+      function t(key) {
+        return translations[lang][key] || translations.zh[key] || key;
+      }
+
+      function cleanText(value, fallback = t("emptyFallback")) {
+        const text = String(value ?? "").replace(/\s+/g, " ").trim();
+        if (!text || text === "undefined" || text === "null" || text === "NaN") return fallback;
+        return text;
+      }
+
+      function modeConfig(nextMode = mode) {
+        const config = {
+          tarot: {
+            label: "modeTarot",
+            hint: "modeHintTarot",
+            primer: "modePrimerTarot",
+            question: "questionLabel",
+            placeholder: "questionPlaceholder",
+            cast: "castTarot",
+            generating: "generatingTarot",
+            signals: ["signalTarotFocus", "signalTarot", "signalAi"]
+          },
+          meihua: {
+            label: "modeMeihua",
+            hint: "modeHintMeihua",
+            primer: "modePrimerMeihua",
+            question: "questionLabelMeihua",
+            placeholder: "questionPlaceholderMeihua",
+            cast: "castMeihua",
+            generating: "generatingMeihua",
+            signals: ["signalMoment", "signalGua", "signalAi"]
+          },
+          dual: {
+            label: "modeDual",
+            hint: "modeHintDual",
+            primer: "modePrimerDual",
+            question: "questionLabelDual",
+            placeholder: "questionPlaceholderDual",
+            cast: "castDual",
+            generating: "generatingDual",
+            signals: ["signalTarot", "signalGua", "signalAiSummary"]
+          },
+          daily: {
+            label: "modeDaily",
+            hint: "modeHintDaily",
+            primer: "modeHintDaily",
+            question: "questionLabelDaily",
+            placeholder: "questionPlaceholderDaily",
+            cast: "dailyNoteButton",
+            generating: "loading",
+            signals: ["signalMoment", "signalAi", "actionWatchLabel"]
+          }
+        };
+        return config[nextMode] || config.tarot;
+      }
+
+      function updateSignalCopy() {
+        modeConfig().signals.forEach((key, index) => {
+          const node = els.signalRow.children[index];
+          if (node) node.textContent = t(key);
+        });
+      }
+
+      function refreshLocalizedUi() {
+        document.documentElement.lang = lang;
+        els.composePanel.dataset.mode = mode;
+        els.signalRow.dataset.mode = mode;
+        document.querySelectorAll("[data-i18n]").forEach((node) => {
+          node.textContent = t(node.dataset.i18n);
+        });
+        document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+          node.placeholder = t(node.dataset.i18nPlaceholder);
+        });
+        els.langBtns.forEach((btn) => btn.classList.toggle("is-active", btn.dataset.lang === lang));
+        updateModeHint();
+        updateModeLabel();
+        updateQuestionCopy();
+        updateSignalCopy();
+        updateRitualCardLabels();
+        setRitualStatus(currentRitualStatusKey);
+        updatePlaceholderSample(true);
+        updateDailyModeState();
+        updateCastCopy();
+        renderHistoryList();
+        updateAuthUi();
+      }
+
+      function applyLanguage(nextLang) {
+        lang = nextLang;
+        refreshLocalizedUi();
+      }
+
+      function setMode(nextMode) {
+        if (isRunning) return;
+        const previousMode = mode;
+        mode = nextMode;
+        const active = els.modeBtns.find((btn) => btn.dataset.mode === mode);
+        els.modeBtns.forEach((btn) => btn.classList.toggle("active", btn === active));
+        els.room.dataset.tone = active?.dataset.tone || "tarot";
+        els.composePanel.dataset.mode = mode;
+        els.signalRow.dataset.mode = mode;
+        resetExperience();
+        els.input.disabled = false;
+        if (mode === "meihua" || previousMode === "meihua") els.input.value = "";
+        updateModeHint();
+        updateModeLabel();
+        updateQuestionCopy();
+        updateSignalCopy();
+        updatePlaceholderSample(true);
+        updateDailyModeState();
+        updateCastCopy();
+      }
+
+      function updateModeLabel() {
+        els.modeLabel.textContent = t(modeConfig().label);
+      }
+
+      function updateModeHint() {
+        els.hint.textContent = t(modeConfig().hint);
+      }
+
+      function updateQuestionCopy() {
+        const config = modeConfig();
+        els.questionLabel.textContent = t(config.question);
+        els.modePrimer.textContent = t(config.primer);
+        els.input.placeholder = t(config.placeholder);
+      }
+
+      function placeholderKeysForMode() {
+        if (mode === "dual") return ["questionPlaceholderDual", "questionPlaceholderDualAlt1", "questionPlaceholderDualAlt2"];
+        if (mode === "tarot") return ["questionPlaceholder", "questionPlaceholderAlt1", "questionPlaceholderAlt2"];
+        return [mode === "meihua" ? "questionPlaceholderMeihua" : "questionPlaceholderDaily"];
+      }
+
+      function updatePlaceholderSample(reset = false) {
+        const keys = placeholderKeysForMode();
+        if (reset) placeholderIndex = 0;
+        if (document.activeElement === els.input || els.input.value.trim()) {
+          els.input.placeholder = t(keys[placeholderIndex % keys.length]);
+          return;
+        }
+        els.input.classList.add("is-shifting-placeholder");
+        setTimeout(() => {
+          els.input.placeholder = t(keys[placeholderIndex % keys.length]);
+          els.input.classList.remove("is-shifting-placeholder");
+        }, 180);
+      }
+
+      function startPlaceholderCycle() {
+        setInterval(() => {
+          const keys = placeholderKeysForMode();
+          if (keys.length <= 1 || document.activeElement === els.input || els.input.value.trim()) return;
+          placeholderIndex = (placeholderIndex + 1) % keys.length;
+          updatePlaceholderSample();
+        }, 4600);
+      }
+
+      function updateDailyModeState() {
+        const isDaily = mode === "daily";
+        els.composePanel.classList.toggle("is-daily", isDaily);
+        els.answerPanel.classList.toggle("is-daily-note", isDaily);
+        prepareDailyCompose();
+      }
+
+      function prepareDailyCompose() {
+        const isDaily = mode === "daily";
+        els.input.hidden = isDaily || mode === "meihua";
+        els.guaComposeMark.hidden = mode !== "meihua";
+      }
+
+      function updateCastCopy() {
+        if (isRunning) return;
+        els.cast.textContent = t(modeConfig().cast);
+      }
+
+      function setResultLabels(sourceMode) {
+        const tarotLabels = sourceMode === "dual"
+          ? ["reportTarotLabel", "reportGuaLabel", "reportDualLabel"]
+          : ["tarotCardMessageLabel", "tarotStuckLabel", "tarotJudgmentLabel"];
+        const meihuaLabels = ["guaShowsLabel", "guaTrendLabel", "guaAdviceLabel"];
+        const labels = sourceMode === "meihua" ? meihuaLabels : tarotLabels;
+        [
+          [els.tarotReadingGrid, labels],
+          [els.reportStack, labels]
+        ].forEach(([container, keys]) => {
+          Array.from(container.querySelectorAll("span")).forEach((node, index) => {
+            if (keys[index]) node.textContent = t(keys[index]);
+          });
+        });
+        els.actionBoardTitle.textContent = t("nextStepTitle");
+        els.newReading.textContent = t(
+          sourceMode === "meihua" ? "newReadingMeihua" : sourceMode === "dual" ? "newReadingDual" : "newReadingTarot"
+        );
+        els.save.textContent = t(lastRecord ? "savedHistory" : "saveHistory");
+      }
+
+      function hideTarotReading() {
+        els.tarotReadingGrid.hidden = true;
+        els.tarotReadingGrid.classList.remove("is-revealed");
+        els.tarotCoreQuestion.textContent = "";
+        els.tarotTension.textContent = "";
+        els.tarotJudgment.textContent = "";
+      }
+
+      function showTarotReading(parts) {
+        const coreQuestion = cleanText(parts.cardMessage || parts.tension || parts.coreQuestion, "");
+        const tension = cleanText(parts.stuckText || parts.coreQuestion || parts.tension, "");
+        const judgment = cleanText(parts.judgment, "");
+        els.tarotCoreQuestion.textContent = coreQuestion;
+        els.tarotTension.textContent = tension;
+        els.tarotJudgment.textContent = judgment;
+        els.tarotReadingGrid.hidden = !(coreQuestion || tension || judgment);
+        if (!els.tarotReadingGrid.hidden) {
+          requestAnimationFrame(() => els.tarotReadingGrid.classList.add("is-revealed"));
+        }
+      }
+
+      function hideReport() {
+        els.resultSummary.textContent = "";
+        els.action.hidden = false;
+        els.reportStack.hidden = true;
+        els.reportStack.classList.remove("is-revealed");
+        els.reportTarot.textContent = "";
+        els.reportGua.textContent = "";
+        els.reportDual.textContent = "";
+        els.actionBoard.hidden = true;
+        els.actionBoard.classList.remove("is-revealed");
+        els.actionBoardTitle.hidden = true;
+        els.actionDo.textContent = "";
+        els.actionDont.textContent = "";
+        els.actionWatch.textContent = "";
+        els.followupChips.hidden = true;
+        els.followupPanel.hidden = true;
+        els.followupAnswer.hidden = true;
+        els.followupAnswerText.textContent = "";
+        selectedFollowupKind = "";
+        updateFollowupSubmit();
+      }
+
+      function actionAdvice(actionText) {
+        const action = cleanText(actionText, "");
+        return {
+          doText: action || (lang === "zh" ? "用三句话写下已知事实、你的猜测、今天能做的一个小动作。" : "Write three lines: known facts, your guess, and one small action for today."),
+          dontText: lang === "zh" ? "先不要发长消息、追问承诺，或在情绪最满的时候要求对方立刻表态。" : "Do not send a long message, ask for a promise, or demand an immediate answer while emotion is high.",
+          watchText: lang === "zh" ? "接下来三天只观察两件事：对方是否给出更清楚的信息，以及你自己的消耗有没有下降。" : "For three days, watch two things: whether clearer information appears, and whether your own friction goes down."
+        };
+      }
+
+      function guaDescription(gua) {
+        if (!gua) return "";
+        const name = cleanText(lang === "zh" ? gua.name : gua.en, "");
+        const image = cleanText(gua.image, "");
+        const essence = cleanText(gua.essence, "");
+        if (!name) return "";
+        return lang === "zh"
+          ? [name, [image, essence].filter(Boolean).join("，")].filter(Boolean).join("：") + "。"
+          : [name, [image, essence].filter(Boolean).join(", ")].filter(Boolean).join(": ") + ".";
+      }
+
+      function renderStructuredReport(data) {
+        const tarotText = cleanText(data.tarotText, "");
+        const guaText = cleanText(data.guaText, "");
+        const dualText = cleanText(data.dualText, "");
+        const summary = cleanText(
+          data.summary || tarotText || guaText || dualText,
+          lang === "zh" ? "这次结果更像是在提醒你：先看清手里已有的信号，再决定是否推进。" : "This reading points to a pause: see the available signals clearly before moving forward."
+        );
+        els.resultSummary.textContent = summary;
+        els.reportTarot.textContent = tarotText;
+        els.reportGua.textContent = guaText;
+        els.reportDual.textContent = dualText;
+        els.reportTarotSection.hidden = !tarotText;
+        els.reportGuaSection.hidden = !guaText;
+        els.reportDualSection.hidden = !dualText;
+        setResultLabels(data.sourceMode);
+        const shouldShowReportStack = data.sourceMode === "meihua" || data.sourceMode === "dual";
+        els.reportStack.hidden = !shouldShowReportStack;
+
+        const advice = actionAdvice(data.actionText);
+        els.actionDo.textContent = advice.doText;
+        els.actionDont.textContent = advice.dontText;
+        els.actionWatch.textContent = advice.watchText;
+        lastAction = cleanText(data.actionText, "") || advice.doText;
+        els.action.textContent = lastAction;
+        els.action.hidden = data.sourceMode !== "daily";
+        els.actionBoard.hidden = false;
+        els.actionBoardTitle.hidden = false;
+        els.followupChips.hidden = data.sourceMode === "meihua" || data.sourceMode === "daily";
+        els.followupPanel.hidden = true;
+        currentResultContext = {
+          sourceMode: data.sourceMode,
+          summary,
+          tarotText,
+          guaText,
+          dualText,
+          actionText: lastAction,
+          doText: advice.doText,
+          dontText: advice.dontText,
+          watchText: advice.watchText
+        };
+
+        requestAnimationFrame(() => {
+          if (!els.reportStack.hidden) els.reportStack.classList.add("is-revealed");
+          els.actionBoard.classList.add("is-revealed");
+        });
+      }
+
+      function reportFromRecord(record) {
+        if (record.report) return { ...record.report, sourceMode: record.mode };
+        const reading = record.reading || parseTokens(record.answer || "");
+        const tarotText = cleanText(reading.tension || reading.TENSION || reading.coreQuestion || reading.CORE_QUESTION, "");
+        const summary = cleanText(
+          reading.judgment || reading.JUDGMENT || record.action || record.answer,
+          ""
+        );
+        const guaText = record.gua ? guaDescription(record.gua) : "";
+        const dualText = record.mode === "dual" && (tarotText || guaText)
+          ? (lang === "zh"
+            ? "牌象和卦象共同提醒你：先把情绪信号与推进节奏分开看，再决定下一步。"
+            : "Card and gua signals suggest separating emotion from timing before choosing the next step.")
+          : "";
+        if (!summary && !tarotText && !guaText && !dualText) return null;
+        return {
+          summary,
+          tarotText,
+          guaText,
+          dualText,
+          actionText: actionFromRecord(record),
+          sourceMode: record.mode
+        };
+      }
+
+      function actionFromRecord(record) {
+        const tokens = parseTokens(record?.answer || "");
+        return cleanText(record?.action || tokens.ACTION || record?.answer, "");
+      }
+
+      function randomItem(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+
+      function cardLabel(card) {
+        return lang === "zh" ? card[1] : card[0];
+      }
+
+      function cardKeywords(cardName) {
+        const name = cleanText(cardName, "");
+        const zh = {
+          "愚者": ["未知", "出发", "信任", "轻盈"],
+          "魔术师": ["开始", "资源", "表达", "行动"],
+          "女祭司": ["直觉", "沉静", "未说出", "观察"],
+          "皇后": ["滋养", "感受", "关系", "生长"],
+          "皇帝": ["边界", "秩序", "责任", "掌控"],
+          "教皇": ["规则", "经验", "确认", "传统"],
+          "恋人": ["选择", "连接", "诚实", "对齐"],
+          "战车": ["推进", "意志", "方向", "控制"],
+          "力量": ["克制", "耐心", "柔和", "稳定"],
+          "隐士": ["独处", "审视", "答案", "慢下来"],
+          "命运之轮": ["变化", "节奏", "转折", "顺势"],
+          "正义": ["事实", "权衡", "边界", "负责"],
+          "倒吊人": ["暂停", "换角度", "等待", "松手"],
+          "死神": ["结束", "清理", "更新", "放下"],
+          "节制": ["调和", "节奏", "修复", "中间路"],
+          "恶魔": ["执念", "消耗", "诱因", "看清"],
+          "高塔": ["冲击", "真相", "拆除", "重建"],
+          "星星": ["恢复", "希望", "远方", "信念"],
+          "月亮": ["不确定", "投射", "梦境", "辨认"],
+          "太阳": ["明朗", "能量", "坦诚", "看见"],
+          "审判": ["回应", "复盘", "决定", "醒来"],
+          "世界": ["完成", "整合", "闭环", "下一段"]
+        };
+        const en = {
+          "The Fool": ["Unknown", "Start", "Trust", "Lightness"],
+          "The Magician": ["Start", "Resource", "Expression", "Action"],
+          "The High Priestess": ["Intuition", "Quiet", "Unspoken", "Observe"],
+          "The Empress": ["Nurture", "Feeling", "Relation", "Growth"],
+          "The Emperor": ["Boundary", "Order", "Duty", "Control"],
+          "The Hierophant": ["Rule", "Experience", "Confirm", "Tradition"],
+          "The Lovers": ["Choice", "Bond", "Honesty", "Alignment"],
+          "The Chariot": ["Move", "Will", "Direction", "Control"],
+          "Strength": ["Restraint", "Patience", "Softness", "Steady"],
+          "The Hermit": ["Alone", "Review", "Answer", "Slow down"],
+          "Wheel of Fortune": ["Change", "Rhythm", "Turn", "Flow"],
+          "Justice": ["Fact", "Weighing", "Boundary", "Account"],
+          "The Hanged Man": ["Pause", "Angle", "Wait", "Release"],
+          "Death": ["End", "Clear", "Renew", "Let go"],
+          "Temperance": ["Blend", "Rhythm", "Repair", "Middle path"],
+          "The Devil": ["Fixation", "Drain", "Trigger", "See clearly"],
+          "The Tower": ["Impact", "Truth", "Dismantle", "Rebuild"],
+          "The Star": ["Recover", "Hope", "Distance", "Faith"],
+          "The Moon": ["Unclear", "Projection", "Dream", "Discern"],
+          "The Sun": ["Clear", "Energy", "Open", "Visible"],
+          "Judgement": ["Respond", "Review", "Decide", "Wake"],
+          "The World": ["Complete", "Integrate", "Close", "Next"]
+        };
+        return (lang === "zh" ? zh[name] : en[name]) || (lang === "zh"
+          ? ["观察", "确认", "收束", "行动"]
+          : ["Observe", "Confirm", "Narrow", "Act"]);
+      }
+
+      function updateSymbolSummary({ sourceMode = mode, name = "", question = "" } = {}) {
+        const modeLabel = sourceMode === "meihua" ? t("modeMeihua") : sourceMode === "dual" ? t("modeDual") : t("modeTarot");
+        const safeName = cleanText(name || els.cardImage?.alt || els.answerKicker?.textContent, modeLabel);
+        const safeQuestion = cleanText(question || lastQuestion, "");
+        els.symbolModeLabel.textContent = modeLabel;
+        els.symbolNameLabel.textContent = safeName;
+        els.symbolKeywords.innerHTML = "";
+        const keywords = sourceMode === "meihua"
+          ? (lang === "zh" ? ["时机", "趋势", "推进", "观察"] : ["Timing", "Trend", "Move", "Observe"])
+          : cardKeywords(safeName);
+        keywords.forEach((keyword) => {
+          const item = document.createElement("span");
+          item.textContent = keyword;
+          els.symbolKeywords.appendChild(item);
+        });
+        els.symbolKeywords.hidden = keywords.length === 0;
+        els.symbolQuestionText.textContent = safeQuestion;
+        els.symbolQuestion.hidden = !safeQuestion;
+      }
+
+      function updateRitualCardLabels() {
+        els.ritualCards.forEach((cardButton) => {
+          const card = tarotDeck[Number(cardButton.dataset.cardIndex)];
+          if (!card) return;
+          const position = Number(cardButton.dataset.cardIndex) + 1;
+          cardButton.setAttribute("aria-label", lang === "zh" ? `选择第 ${position} 张牌` : `Choose card ${position}`);
+          cardButton.title = "";
+        });
+      }
+
+      function buildRitualDeck() {
+        if (!els.ritualDeck) return;
+        els.ritualDeck.innerHTML = "";
+        const center = (tarotDeck.length - 1) / 2;
+        tarotDeck.forEach((card, index) => {
+          const cardButton = document.createElement("button");
+          const offset = index - center;
+          cardButton.className = "ritual-card";
+          cardButton.type = "button";
+          cardButton.disabled = true;
+          cardButton.dataset.cardIndex = String(index);
+          const normalized = offset / center;
+          const arcX = Math.round(offset * 64);
+          const arcY = Math.round(Math.abs(normalized) * 106 - 46);
+          const arcAngle = normalized * 40;
+          const arcDepth = Math.round((1 - Math.abs(normalized)) * 84);
+          const arcScale = Math.max(0.92, 1 - Math.abs(normalized) * 0.06);
+          const arcOpacity = Math.max(0.76, 1 - Math.abs(normalized) * 0.14);
+          const pullDistance = 30;
+          const selectDistance = 74;
+          const pullAngle = arcAngle * Math.PI / 180;
+          const pullX = Math.round(Math.sin(pullAngle) * pullDistance);
+          const pullY = Math.round(-Math.cos(pullAngle) * pullDistance);
+          const selectX = Math.round(Math.sin(pullAngle) * selectDistance * 0.46);
+          const selectY = Math.round(-196 + Math.abs(normalized) * 24);
+          const layerBase = Math.abs(normalized) < 0.34 ? 160 : Math.abs(normalized) < 0.72 ? 112 : 74;
+          const layerOffset = Math.round((1 - Math.abs(normalized)) * 26);
+          cardButton.style.setProperty("--card-index", index);
+          cardButton.style.setProperty("--card-mid", offset.toFixed(2));
+          cardButton.style.setProperty("--card-x", `${arcX}px`);
+          cardButton.style.setProperty("--card-y", `${arcY}px`);
+          cardButton.style.setProperty("--card-angle", `${arcAngle.toFixed(2)}deg`);
+          cardButton.style.setProperty("--card-depth", `${arcDepth}px`);
+          cardButton.style.setProperty("--card-scale", arcScale.toFixed(3));
+          cardButton.style.setProperty("--card-opacity", arcOpacity.toFixed(3));
+          cardButton.style.setProperty("--card-pull-x", `${pullX}px`);
+          cardButton.style.setProperty("--card-pull-y", `${pullY}px`);
+          cardButton.style.setProperty("--card-select-x", `${selectX}px`);
+          cardButton.style.setProperty("--card-select-y", `${selectY}px`);
+          cardButton.style.setProperty("--shuffle-x", `${((index % 7) - 3) * 8}px`);
+          cardButton.style.setProperty("--shuffle-y", `${((index % 5) - 2) * 3}px`);
+          cardButton.style.setProperty("--cut-x", `${index < center ? -54 + index * 1.5 : 54 - (index - center) * 1.5}px`);
+          cardButton.style.setProperty("--cut-y", `${index < center ? -7 : 8}px`);
+          cardButton.style.setProperty("--spread-z", layerBase + layerOffset);
+          cardButton.style.setProperty("--delay", `${index * 16}ms`);
+          cardButton.innerHTML = '<span class="ritual-card-3d"><span class="ritual-card-back"></span><span class="ritual-card-face"></span></span>';
+          cardButton.querySelector(".ritual-card-face").style.backgroundImage = `url("./assets/cards/${card[2]}")`;
+          els.ritualDeck.appendChild(cardButton);
+        });
+        els.ritualCards = Array.from(els.ritualDeck.querySelectorAll(".ritual-card"));
+        updateRitualCardLabels();
+      }
+
+      function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function ritualDelay(ms) {
+        return matchMedia("(prefers-reduced-motion: reduce)").matches ? delay(Math.min(ms, 80)) : delay(ms);
+      }
+
+      function setRitualStep(index) {
+        if (!els.ritualStepper) return;
+        els.ritualStepper.dataset.activeStep = String(index);
+        Array.from(els.ritualStepper.children).forEach((step, stepIndex) => {
+          step.classList.toggle("is-active", stepIndex === index);
+          step.classList.toggle("is-complete", stepIndex < index);
+        });
+      }
+
+      function setRitualStatus(key) {
+        currentRitualStatusKey = key;
+        if (els.ritualStatus) els.ritualStatus.textContent = t(key);
+        if (els.ritualHeading) els.ritualHeading.textContent = t(key);
+      }
+
+      function setNavigationLocked(locked) {
+        els.modeBtns.forEach((button) => {
+          button.disabled = locked;
+        });
+        els.reset.disabled = locked;
+      }
+
+      function setSignalPhase(index) {
+        els.signalRow.classList.remove("phase-1", "phase-2", "phase-3");
+        if (index > 0) els.signalRow.classList.add(`phase-${index}`);
+      }
+
+      function resetCardChoice() {
+        els.ritualStage?.classList.remove("is-awaiting-card", "is-previewing", "has-choice", "is-selected", "is-revealing-card");
+        if (els.ritualPreviewActions) els.ritualPreviewActions.hidden = true;
+        els.ritualCards.forEach((card) => {
+          card.classList.remove("is-chosen", "is-dimmed");
+          card.disabled = true;
+        });
+      }
+
+      function waitForCardChoice() {
+        setRitualStatus("ritualChooseCard");
+        setRitualStep(1);
+        els.ritualStage.classList.add("is-awaiting-card");
+        els.ritualClose.disabled = false;
+        els.ritualCards.forEach((card) => {
+          card.disabled = false;
+        });
+        return new Promise((resolve, reject) => {
+          let selectedCard = null;
+          const clearListeners = () => {
+            els.ritualCards.forEach((card) => card.removeEventListener("click", choose));
+            els.ritualConfirm.removeEventListener("click", confirmChoice);
+            els.ritualReselect.removeEventListener("click", reselect);
+            window.removeEventListener("keydown", handleKeydown);
+            activeRitualCancel = null;
+          };
+          const cancelChoice = () => {
+            clearListeners();
+            const error = new Error("Ritual cancelled");
+            error.name = "RitualCancelled";
+            reject(error);
+          };
+          const choose = (event) => {
+            selectedCard = event.currentTarget;
+            els.ritualCards.forEach((card) => {
+              card.removeEventListener("click", choose);
+              card.disabled = true;
+              if (card !== selectedCard) card.classList.add("is-dimmed");
+            });
+            selectedCard.classList.add("is-chosen");
+            selectedCard.disabled = false;
+            selectedCard.focus();
+            els.ritualStage.classList.add("has-choice", "is-previewing");
+            els.ritualStage.classList.remove("is-awaiting-card");
+            els.ritualPreviewActions.hidden = false;
+            setRitualStatus("ritualSelect");
+          };
+          const confirmChoice = () => {
+            if (!selectedCard) return;
+            const selected = tarotDeck[Number(selectedCard.dataset.cardIndex)];
+            if (!selected) {
+              clearListeners();
+              reject(new Error("Missing selected card"));
+              return;
+            }
+            clearListeners();
+            els.ritualPreviewActions.hidden = true;
+            selectedCard.disabled = true;
+            resolve(selected);
+          };
+          const reselect = () => {
+            selectedCard = null;
+            resetCardChoice();
+            els.ritualStage.classList.add("is-spread", "is-awaiting-card");
+            setRitualStatus("ritualChooseCard");
+            els.ritualCards.forEach((card) => {
+              card.disabled = false;
+              card.addEventListener("click", choose);
+            });
+            els.ritualCards[Math.floor(els.ritualCards.length / 2)]?.focus();
+          };
+          const handleKeydown = (event) => {
+            if (event.key === "Escape" && selectedCard) reselect();
+          };
+          els.ritualCards.forEach((card) => card.addEventListener("click", choose));
+          els.ritualConfirm.addEventListener("click", confirmChoice);
+          els.ritualReselect.addEventListener("click", reselect);
+          window.addEventListener("keydown", handleKeydown);
+          activeRitualCancel = cancelChoice;
+          els.ritualCards[Math.floor(els.ritualCards.length / 2)]?.focus();
+        });
+      }
+
+      async function playRitual(nextMode) {
+        if (!els.ritualStage) return null;
+        els.composePanel.classList.add("is-ritual-active");
+        els.ritualStage.hidden = false;
+        els.ritualStage.dataset.ritual = nextMode === "meihua" ? "gua" : nextMode === "dual" ? "dual" : "card";
+        els.ritualStage.className = "ritual-stage";
+        els.ritualClose.disabled = true;
+        resetCardChoice();
+        els.ritualGuaLines.forEach((line) => line.classList.remove("is-drawn"));
+        setSignalPhase(1);
+        let selectedCard = null;
+
+        if (nextMode === "tarot" || nextMode === "dual") {
+          setRitualStatus("ritualShuffle");
+          setRitualStep(0);
+          await ritualDelay(300);
+          els.ritualStage.classList.add("is-shuffling");
+          await ritualDelay(900);
+          els.ritualStage.classList.add("is-cutting");
+          await ritualDelay(600);
+          setRitualStatus("ritualSpread");
+          els.ritualStage.classList.add("is-spread");
+          await ritualDelay(1000);
+          selectedCard = await waitForCardChoice();
+          setRitualStatus("ritualRevealingCard");
+          setRitualStep(2);
+          els.ritualStage.classList.add("is-selected", "is-revealing-card");
+          await ritualDelay(300);
+          els.ritualStage.classList.add("is-flipped");
+          await ritualDelay(900);
+        } else {
+          setRitualStatus("ritualGuaMoment");
+          await ritualDelay(220);
+        }
+
+        if (nextMode === "meihua" || nextMode === "dual") {
+          setSignalPhase(2);
+          setRitualStep(2);
+          setRitualStatus("ritualGua");
+          els.ritualStage.classList.add("is-gua-drawing");
+          for (const line of els.ritualGuaLines) {
+            line.classList.add("is-drawn");
+            await ritualDelay(115);
+          }
+        }
+
+        setSignalPhase(3);
+        setRitualStep(3);
+        setRitualStatus(nextMode === "dual" ? "ritualSummarize" : "ritualAi");
+        els.ritualStage.classList.add("is-revealing");
+        await ritualDelay(500);
+        return selectedCard;
+      }
+
+      function hideRitual() {
+        if (!els.ritualStage) return;
+        els.ritualStage.hidden = true;
+        els.ritualStage.className = "ritual-stage";
+        els.ritualClose.disabled = true;
+        els.composePanel.classList.remove("is-ritual-active");
+        els.ritualStage.removeAttribute("data-ritual");
+        setRitualStatus("ritualIdle");
+        setRitualStep(0);
+        setSignalPhase(0);
+        resetCardChoice();
+      }
+
+      function renderGua(binary) {
+        els.guaSymbol.innerHTML = "";
+        const safeBinary = /^[01]{6}$/.test(String(binary || "")) ? String(binary) : "111111";
+        [...safeBinary].reverse().forEach((line) => {
+          const row = document.createElement("div");
+          row.className = "gua-line " + (line === "1" ? "yang" : "yin");
+          row.appendChild(document.createElement("span"));
+          if (line !== "1") row.appendChild(document.createElement("span"));
+          els.guaSymbol.appendChild(row);
+        });
+        requestAnimationFrame(() => {
+          els.guaSymbol.querySelectorAll(".gua-line").forEach((line, index) => {
+            line.style.setProperty("--line-index", index);
+            line.classList.add("is-drawn");
+          });
+        });
+      }
+
+      function parseTokens(text) {
+        const out = {};
+        const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+        let current = null;
+        for (const line of lines) {
+          const match = line.match(/^\s*\[([A-Z0-9_]+)\]\s*(.*)$/);
+          if (match) {
+            current = match[1];
+            out[current] = match[2] ? match[2].trim() : "";
+          } else if (current) {
+            out[current] = [out[current], line].filter(Boolean).join("\n").trim();
+          }
+        }
+        return out;
+      }
+
+      async function streamReading(payload, onText) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 45000);
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: API_AUTH
+            },
+            body: JSON.stringify({ ...payload, llm: getLlmOptions() }),
+            signal: controller.signal
+          }).catch((error) => {
+            if (error.name === "AbortError") throw new Error("Request timed out");
+            throw error;
+          });
+          if (!response.ok || !response.body) {
+            const body = await response.text().catch(() => "");
+            throw new Error(body || "Request failed");
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let fullText = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const events = buffer.split("\n\n");
+            buffer = events.pop() || "";
+            for (const event of events) {
+              const line = event.split("\n").find((item) => item.startsWith("data: "));
+              if (!line) continue;
+              const raw = line.slice(6).trim();
+              if (raw === "[DONE]") return fullText;
+              let json;
+              try {
+                json = JSON.parse(raw);
+              } catch {
+                continue;
+              }
+              if (json.error) throw new Error(json.error);
+              if (json.delta) {
+                fullText += json.delta;
+                onText(fullText);
+              }
+            }
+          }
+          return fullText;
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+
+      function showResult() {
+        els.room.dataset.step = "answer";
+      }
+
+      function resetExperience() {
+        closeCardLightbox();
+        hideRitual();
+        els.room.dataset.step = "idle";
+        els.loading.hidden = true;
+        els.action.hidden = false;
+        els.action.textContent = "";
+        els.action.classList.remove("is-typing");
+        els.anchorGrid.hidden = true;
+        els.dailyNoteStatus.hidden = true;
+        hideTarotReading();
+        hideReport();
+        els.copy.textContent = t("copy");
+        updateSymbolSummary({ sourceMode: mode, name: t("modeTarot"), question: "" });
+        lastAction = "";
+        lastQuestion = "";
+      }
+
+      function openCardLightbox() {
+        if (els.tarotSymbol.hidden || !els.cardImage.currentSrc) return;
+        els.lightboxImage.src = els.cardImage.currentSrc;
+        els.lightboxImage.alt = els.cardImage.alt;
+        els.lightboxCaption.textContent = els.cardImage.alt;
+        els.lightbox.hidden = false;
+        els.lightbox.setAttribute("aria-hidden", "false");
+        els.lightboxClose.focus();
+      }
+
+      function closeCardLightbox() {
+        if (!els.lightbox || els.lightbox.hidden) return;
+        els.lightbox.hidden = true;
+        els.lightbox.setAttribute("aria-hidden", "true");
+      }
+
+      function createRecord(data) {
+        const createdAt = new Date().toISOString();
+        return {
+          id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `rill-${Date.now()}`,
+          createdAt,
+          updatedAt: createdAt,
+          language: lang,
+          ...data
+        };
+      }
+
+      function saveResultRecord(data) {
+        const record = createRecord(data);
+        saveHistoryRecord(recordStore, record);
+        if (record.mode === "daily") saveDailyAnchor(recordStore, todayKey(), record);
+        syncAfterSave(record);
+        renderHistoryList();
+        lastRecord = record;
+        if (els.save) els.save.textContent = t("savedHistory");
+        return record;
+      }
+
+      function showStoredRecord(record) {
+        if (!record) return false;
+
+        lastRecord = record;
+        showResult();
+        els.answerPanel.classList.toggle("is-daily-note", record.mode === "daily");
+        els.tarotSymbol.hidden = !record.imageSrc;
+        els.guaSymbol.hidden = true;
+        els.anchorGrid.hidden = !record.anchor;
+        els.dailyNoteStatus.hidden = record.mode !== "daily";
+        if (record.reading) showTarotReading(record.reading);
+        else hideTarotReading();
+        const report = reportFromRecord(record);
+        if (report) renderStructuredReport(report);
+        else hideReport();
+        setResultLabels(record.mode);
+        els.answerKicker.textContent = record.mode === "daily" ? t("dailyNoteTitle") : record.title || t("modeDaily");
+        els.action.textContent = actionFromRecord(record);
+        lastAction = els.action.textContent;
+        lastQuestion = cleanText(record.question, "");
+
+        if (record.imageSrc) {
+          els.cardImage.src = record.imageSrc;
+          els.cardImage.alt = cleanText(record.imageAlt || record.title, "");
+        }
+
+        if (record.gua?.binary) {
+          els.guaSymbol.hidden = false;
+          renderGua(record.gua.binary);
+        }
+
+        if (record.anchor) {
+          els.anchorColor.textContent = record.anchor.color || "—";
+          els.anchorObject.textContent = record.anchor.object || "—";
+          els.anchorMoment.textContent = record.anchor.moment || "—";
+        }
+
+        updateSymbolSummary({
+          sourceMode: record.mode,
+          name: record.imageAlt || record.gua?.name || record.title || "",
+          question: record.question || ""
+        });
+
+        return true;
+      }
+
+      function syncAfterSave(record) {
+        syncClient.syncHistory()
+          .then((result) => result.status === "synced" && record.mode === "daily" ? syncClient.saveDailyAnchor(todayKey(), record) : result)
+          .then((result) => {
+            renderHistoryList();
+            if (result?.status === "synced") updateAuthUi(t("authSynced"));
+          })
+          .catch((error) => console.warn("Sync skipped", error));
+      }
+
+      function openUtilityPanel(panel) {
+        closeUtilityPanels();
+        panel.hidden = false;
+        panel.setAttribute("aria-hidden", "false");
+      }
+
+      function closeUtilityPanels() {
+        [els.historyPanel, els.authPanel].forEach((panel) => {
+          panel.hidden = true;
+          panel.setAttribute("aria-hidden", "true");
+        });
+      }
+
+      function renderHistoryList() {
+        const records = loadHistory(recordStore);
+        els.historyList.innerHTML = "";
+
+        if (!records.length) {
+          const empty = document.createElement("p");
+          empty.className = "history-empty";
+          empty.textContent = t("historyEmpty");
+          els.historyList.appendChild(empty);
+          return;
+        }
+
+        records.forEach((record) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "history-item";
+          item.dataset.id = record.id;
+
+          const title = document.createElement("strong");
+          title.textContent = record.mode === "daily"
+            ? `${formatDate(record.createdAt)} ${lang === "zh" ? "复盘" : "Review"}`
+            : record.title || t(modeConfig(record.mode).label);
+          const meta = document.createElement("span");
+          meta.textContent = record.mode === "daily"
+            ? formatDailyAnchor(record)
+            : formatDate(record.createdAt);
+          const action = document.createElement("em");
+          action.textContent = cleanText(record.action || record.answer, "");
+          item.classList.toggle("is-daily", record.mode === "daily");
+
+          item.append(title, meta, action);
+          els.historyList.appendChild(item);
+        });
+      }
+
+      function formatDate(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toLocaleString(lang === "zh" ? "zh-CN" : "en", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      }
+
+      function formatDailyAnchor(record) {
+        const anchor = record.anchor || {};
+        const parts = [anchor.color, anchor.object, anchor.moment].filter(Boolean);
+        return parts.length ? parts.join(" · ") : formatDate(record.createdAt);
+      }
+
+      function updateAuthUi(message = "") {
+        const session = syncClient.getSession();
+        els.accountBtn.textContent = session?.access_token ? t("accountReady") : t("account");
+        els.authStatus.textContent = message || (session?.user?.email ? `${t("authSignedIn")}${session.user.email}` : t("authSignedOut"));
+        els.signout.hidden = !session?.access_token;
+        els.passwordUpdate.hidden = !session?.access_token;
+      }
+
+      async function syncAndRefresh() {
+        const result = await syncClient.syncHistory();
+        const daily = await syncClient.loadDailyAnchor(todayKey());
+        if (daily.record) {
+          saveDailyAnchor(recordStore, todayKey(), daily.record);
+          saveHistoryRecord(recordStore, daily.record);
+        }
+        renderHistoryList();
+        updateAuthUi(result.status === "synced" ? t("authSynced") : "");
+        return result;
+      }
+
+      async function syncAndRefreshQuietly() {
+        try {
+          return await syncAndRefresh();
+        } catch (error) {
+          console.warn("Sync skipped", error);
+          renderHistoryList();
+          updateAuthUi();
+          return { status: "sync-failed" };
+        }
+      }
+
+      async function clearAllRecords() {
+        clearHistory(recordStore);
+        clearDailyAnchors(recordStore);
+        renderHistoryList();
+        if (syncClient.getSession()?.access_token) {
+          await syncClient.clearCloudRecords();
+        }
+        updateAuthUi(t("clearDone"));
+      }
+
+      async function submitAuth(action) {
+        const email = els.authEmail.value.trim();
+        const password = els.authPassword.value;
+        if (!email || !password) return;
+        if (password.length < 6) {
+          updateAuthUi(t("authWeakPassword"));
+          return;
+        }
+
+        els.authStatus.textContent = t("authWorking");
+        try {
+          if (action === "signup") {
+            const result = await syncClient.signUpWithPassword(email, password);
+            if (!result.access_token) {
+              updateAuthUi(t("authSignupPending"));
+              return;
+            }
+            await syncAndRefreshQuietly();
+            updateAuthUi(t("authSignupDone"));
+            return;
+          }
+
+          await syncClient.signInWithPassword(email, password);
+          await syncAndRefreshQuietly();
+        } catch (error) {
+          console.error(error);
+          updateAuthUi(authErrorText(error));
+        }
+      }
+
+      async function requestPasswordReset() {
+        const email = els.authEmail.value.trim();
+        if (!email) return;
+
+        els.authStatus.textContent = t("authWorking");
+        try {
+          await syncClient.requestPasswordReset(email, location.origin + location.pathname);
+          updateAuthUi(t("authResetSent"));
+        } catch (error) {
+          console.error(error);
+          updateAuthUi(authErrorText(error));
+        }
+      }
+
+      async function updatePasswordFromForm() {
+        const password = els.authPassword.value;
+        if (password.length < 6) {
+          updateAuthUi(t("authWeakPassword"));
+          return;
+        }
+
+        els.authStatus.textContent = t("authWorking");
+        try {
+          await syncClient.updatePassword(password);
+          await syncAndRefreshQuietly();
+          updateAuthUi(t("authPasswordUpdated"));
+        } catch (error) {
+          console.error(error);
+          updateAuthUi(authErrorText(error));
+        }
+      }
+
+      function authErrorText(error) {
+        const message = String(error?.message || "").toLowerCase();
+        if (message.includes("already") || message.includes("registered")) return t("authEmailExists");
+        if (message.includes("not confirmed") || message.includes("confirm")) return t("authUnconfirmed");
+        if (message.includes("invalid login credentials")) return t("authInvalidCredentials");
+        if (message.includes("rate limit") || message.includes("too many")) return t("authEmailRateLimited");
+        if (message.includes("password") && (message.includes("6") || message.includes("weak"))) return t("authWeakPassword");
+        return error?.message ? `${t("authDetailPrefix")}${error.message}` : t("authFailed");
+      }
+
+      function cleanAuthUrl() {
+        if (!location.hash && !location.search.includes("code=") && !location.search.includes("error")) return;
+        history.replaceState(null, "", location.pathname || "/");
+      }
+
+      async function handleAuthRedirect() {
+        try {
+          const result = await syncClient.completeSessionFromUrl(location.href);
+          if (result.status === "signed-in") {
+            cleanAuthUrl();
+            await syncAndRefreshQuietly();
+            openUtilityPanel(els.authPanel);
+            updateAuthUi(t("authConfirmed"));
+            return;
+          }
+          if (result.status === "needs-login") {
+            cleanAuthUrl();
+            openUtilityPanel(els.authPanel);
+            updateAuthUi(t("authConfirmLogin"));
+          }
+        } catch (error) {
+          console.error(error);
+          cleanAuthUrl();
+          openUtilityPanel(els.authPanel);
+          updateAuthUi(t("authConfirmFailed"));
+        }
+      }
+
+      async function runExperience(event) {
+        event.preventDefault();
+        if (isRunning) return;
+        const requestDetail = event.detail || {};
+        if (mode === "daily") {
+          const dailyRecord = loadDailyAnchor(recordStore, todayKey());
+          if (dailyRecord && showStoredRecord(dailyRecord)) return;
+        }
+
+        isRunning = true;
+        setNavigationLocked(true);
+        els.cast.classList.add("is-loading");
+        els.signalRow.classList.add("is-running");
+        setSignalPhase(0);
+        els.cast.textContent = t(modeConfig().generating);
+        const question = mode === "tarot" || mode === "dual"
+          ? (requestDetail.question || els.input.value.trim() || t("fallbackQuestion"))
+          : mode === "meihua"
+            ? (els.input.value.trim() || (lang === "zh" ? "此刻起卦，观察下一步方向。" : "Cast this moment and read the next direction."))
+            : "";
+        lastQuestion = question;
+        try {
+          lastRecord = null;
+          currentResultContext = null;
+          const selectedCard = await playRitual(mode);
+          hideRitual();
+          showResult();
+          els.answerPanel.classList.toggle("is-daily-note", mode === "daily");
+          els.loading.hidden = false;
+          els.action.hidden = false;
+          els.action.textContent = "";
+          els.action.classList.remove("is-typing");
+          els.anchorGrid.hidden = true;
+          els.dailyNoteStatus.hidden = true;
+          hideTarotReading();
+          hideReport();
+          els.cast.disabled = true;
+          els.again.disabled = true;
+          els.save.disabled = true;
+          els.newReading.disabled = true;
+          els.copy.disabled = true;
+          els.room.setAttribute("aria-busy", "true");
+          lastAction = "";
+
+          if (mode === "tarot") {
+            if (!selectedCard) throw new Error("Card selection missing");
+            const card = selectedCard;
+            els.tarotSymbol.hidden = false;
+            els.guaSymbol.hidden = true;
+            els.cardImage.src = "./assets/cards/" + card[2];
+            els.cardImage.alt = lang === "zh" ? card[1] : card[0];
+            els.answerKicker.textContent = `${t("modeTarot")} · ${lang === "zh" ? card[1] : card[0]}`;
+            updateSymbolSummary({ sourceMode: "tarot", name: els.cardImage.alt, question });
+            const full = await streamReading({
+              mode: "reading",
+              cardName: card[0],
+              orientation: Math.random() > 0.5 ? "upright" : "reversed",
+              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
+              question,
+              round: 1,
+              sessionHistory: "",
+              language: lang
+            }, renderAction);
+            const readingParts = renderTarotReading(full);
+            const report = {
+              summary: readingParts.judgment || lastAction,
+              tarotText: readingParts.tension || readingParts.coreQuestion,
+              actionText: lastAction,
+              sourceMode: "tarot"
+            };
+            renderStructuredReport(report);
+            saveResultRecord({
+              mode: "tarot",
+              title: els.answerKicker.textContent,
+              question,
+              answer: lastAction || full,
+              action: lastAction,
+              reading: readingParts,
+              report,
+              imageSrc: els.cardImage.getAttribute("src"),
+              imageAlt: els.cardImage.alt
+            });
+          } else if (mode === "meihua") {
+            const gua = guaFromTime();
+            els.tarotSymbol.hidden = true;
+            els.guaSymbol.hidden = false;
+            renderGua(gua.binary);
+            els.answerKicker.textContent = `${t("modeMeihua")} · ${lang === "zh" ? gua.name : gua.en}`;
+            updateSymbolSummary({ sourceMode: "meihua", name: lang === "zh" ? gua.name : gua.en, question });
+            const full = await streamReading({
+              mode: "meihua-reading",
+              guaName: gua.name,
+              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
+              question,
+              language: lang
+            }, renderAction);
+            renderAction(full);
+            const guaText = guaDescription(gua);
+            const report = {
+              summary: lastAction,
+              guaText,
+              actionText: lastAction,
+              sourceMode: "meihua"
+            };
+            renderStructuredReport(report);
+            saveResultRecord({
+              mode: "meihua",
+              title: els.answerKicker.textContent,
+              question,
+              answer: lastAction || full,
+              action: lastAction,
+              report,
+              gua
+            });
+          } else if (mode === "dual") {
+            if (!selectedCard) throw new Error("Card selection missing");
+            const card = selectedCard;
+            const gua = guaFromTime();
+            els.tarotSymbol.hidden = false;
+            els.guaSymbol.hidden = false;
+            els.cardImage.src = "./assets/cards/" + card[2];
+            els.cardImage.alt = lang === "zh" ? card[1] : card[0];
+            renderGua(gua.binary);
+            els.answerKicker.textContent = `${t("modeDual")} · ${lang === "zh" ? card[1] : card[0]} / ${lang === "zh" ? gua.name : gua.en}`;
+            updateSymbolSummary({ sourceMode: "dual", name: els.cardImage.alt, question });
+            const tarotFull = await streamReading({
+              mode: "reading",
+              cardName: card[0],
+              orientation: Math.random() > 0.5 ? "upright" : "reversed",
+              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
+              question,
+              round: 1,
+              sessionHistory: "",
+              language: lang
+            }, renderAction);
+            const tarotParts = renderTarotReading(tarotFull);
+            const meihuaFull = await streamReading({
+              mode: "meihua-reading",
+              guaName: gua.name,
+              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
+              question,
+              language: lang
+            }, renderAction);
+            const meihuaAction = renderAction(meihuaFull);
+            showDualReading(tarotParts, gua, meihuaAction);
+            const guaText = guaDescription(gua);
+            const report = {
+              summary: meihuaAction || tarotParts.judgment || lastAction,
+              tarotText: tarotParts.tension || tarotParts.coreQuestion,
+              guaText,
+              dualText: lang === "zh"
+                ? "牌象先提醒你看见情绪张力，卦象再提醒你观察推进节奏。两者合在一起，重点不是立刻求证，而是降低噪音后再行动。"
+                : "The card points to emotional tension, while the gua points to timing. Together they suggest reducing noise before acting.",
+              actionText: lastAction,
+              sourceMode: "dual"
+            };
+            renderStructuredReport(report);
+            saveResultRecord({
+              mode: "dual",
+              title: els.answerKicker.textContent,
+              question,
+              answer: lastAction || `${tarotFull}\n${meihuaFull}`,
+              action: lastAction,
+              reading: tarotParts,
+              report,
+              gua,
+              imageSrc: els.cardImage.getAttribute("src"),
+              imageAlt: els.cardImage.alt
+            });
+          } else {
+            els.tarotSymbol.hidden = true;
+            els.guaSymbol.hidden = true;
+            els.answerKicker.textContent = t("dailyNoteTitle");
+            const full = await streamReading({
+              mode: "anchor",
+              cardName: t("dailyNoteTitle"),
+              orientation: "upright",
+              language: lang
+            }, renderAnchor);
+            const anchor = renderAnchor(full);
+            saveResultRecord({
+              mode: "daily",
+              title: t("dailyRecordTitle"),
+              question: "",
+              answer: lastAction || "",
+              action: lastAction,
+              anchor
+            });
+            els.dailyNoteStatus.hidden = false;
+          }
+        } catch (error) {
+          if (error?.name === "RitualCancelled") {
+            els.room.dataset.step = "compose";
+            return;
+          }
+          renderStructuredReport({
+            summary: lang === "zh" ? "这次没有等到清晰回应，可以先停一下，稍后换个更具体的问题再试。" : "No clear response arrived this time. Pause, then try again with a more specific question.",
+            actionText: lang === "zh" ? "先停一下，稍后换个更具体的问题再试一次。" : "Pause, then try again with a more specific question.",
+            sourceMode: mode
+          });
+          console.error(error);
+        } finally {
+          els.loading.hidden = true;
+          els.cast.disabled = false;
+          els.cast.classList.remove("is-loading");
+          els.signalRow.classList.remove("is-running");
+          setSignalPhase(0);
+          els.again.disabled = false;
+          els.save.disabled = false;
+          els.newReading.disabled = false;
+          els.copy.disabled = false;
+          els.room.removeAttribute("aria-busy");
+          isRunning = false;
+          setNavigationLocked(false);
+          updateCastCopy();
+          setResultLabels(mode);
+        }
+      }
+
+      function renderAction(rawText) {
+        const tokens = parseTokens(rawText);
+        const sentence = cleanText(tokens.ACTION, "");
+        if (!sentence) return "";
+        lastAction = sentence;
+        els.action.hidden = false;
+        els.action.textContent = sentence;
+        els.action.classList.add("is-typing");
+        return sentence;
+      }
+
+      function renderTarotReading(rawText) {
+        const tokens = parseTokens(rawText);
+        const parts = {
+          coreQuestion: cleanText(tokens.CORE_QUESTION, ""),
+          tension: cleanText(tokens.TENSION, ""),
+          judgment: cleanText(tokens.JUDGMENT, "")
+        };
+        showTarotReading({
+          cardMessage: parts.tension,
+          stuckText: parts.coreQuestion,
+          judgment: parts.judgment
+        });
+        renderAction(rawText);
+        return parts;
+      }
+
+      function showDualReading(tarotParts, gua, meihuaAction) {
+        hideTarotReading();
+        lastAction = meihuaAction || lastAction;
+        if (lastAction) els.action.textContent = lastAction;
+      }
+
+      function renderAnchor(rawText) {
+        const tokens = parseTokens(rawText);
+        const sentence = (tokens.ANCHOR_TAKEAWAY || tokens.ACTION || "").replace(/\s+/g, " ").trim();
+        if (sentence) {
+          lastAction = sentence;
+          els.action.textContent = sentence;
+        }
+        els.anchorGrid.hidden = false;
+        els.anchorColor.textContent = tokens.ANCHOR_COLOR || "—";
+        els.anchorObject.textContent = tokens.ANCHOR_OBJECT || "—";
+        els.anchorMoment.textContent = tokens.ANCHOR_MOMENT || "—";
+        return {
+          color: tokens.ANCHOR_COLOR || "",
+          object: tokens.ANCHOR_OBJECT || "",
+          moment: tokens.ANCHOR_MOMENT || ""
+        };
+      }
+
+      async function copyTextToClipboard(text) {
+        if (!text) return "failed";
+
+        if (copyTextViaSelection(text) && await clipboardMatches(text)) {
+          clearSelection();
+          return "copied";
+        }
+
+        if (navigator.clipboard?.writeText) {
+          try {
+            await navigator.clipboard.writeText(text);
+            if (await clipboardMatches(text)) {
+              clearSelection();
+              return "copied";
+            }
+          } catch {
+            // Keep the selected text as the manual fallback.
+          }
+        }
+
+        selectActionSentence();
+        return "manual";
+      }
+
+      function copyTextViaSelection(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-1000px";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, text.length);
+
+        try {
+          return document.execCommand("copy");
+        } catch {
+          return false;
+        } finally {
+          textarea.remove();
+        }
+      }
+
+      async function clipboardMatches(text) {
+        if (!navigator.clipboard?.readText) return true;
+
+        try {
+          return (await navigator.clipboard.readText()) === text;
+        } catch {
+          return true;
+        }
+      }
+
+      function selectActionSentence() {
+        const selection = window.getSelection();
+        if (!selection || !els.action.textContent) return;
+
+        const range = document.createRange();
+        range.selectNodeContents(els.action);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      function clearSelection() {
+        window.getSelection()?.removeAllRanges();
+      }
+
+      function followupText(kind, customText = "") {
+        const context = currentResultContext || {};
+        const base = cleanText(context.summary || context.actionText || lastAction, "");
+        const watch = cleanText(context.watchText, "");
+        const doText = cleanText(context.doText, "");
+        const dontText = cleanText(context.dontText, "");
+        const templates = {
+          push: lang === "zh"
+            ? `如果主动推进，先把动作缩小到一个可撤回的试探：${doText}。推进后重点看对方是否更清楚，而不是只看对方是否立刻答应。`
+            : `If you move first, make it a small reversible test: ${doText}. Watch whether the situation becomes clearer, not only whether the other side agrees immediately.`,
+          avoid: lang === "zh"
+            ? `现在最该避免的是：${dontText}。这会把问题从观察变成逼问，反而让你更难判断。`
+            : `What to avoid most now: ${dontText}. It can turn observation into pressure and make the situation harder to read.`,
+          blocker: lang === "zh"
+            ? `真正的阻力不一定是事件本身，而是你还没有分清“事实、猜测、期待”。先按这个结论看：${base}`
+            : `The real blocker may not be the event itself, but the mix of fact, guess, and expectation. Start from this conclusion: ${base}`,
+          review: lang === "zh"
+            ? `三天后复盘时只看一个问题：${watch || "这件事有没有变得更具体，还是只让你更消耗。"}` 
+            : `In three days, review one question: ${watch || "Did this become more concrete, or only more draining?"}`,
+          custom: lang === "zh"
+            ? `围绕“${cleanText(customText, "这个追问")}”，这次结果给出的补充线索是：先回到核心结论，再用一个小动作验证，不要把它变成新一轮猜测。`
+            : `For "${cleanText(customText, "this follow-up")}", this result adds: return to the core conclusion, test with one small action, and do not turn it into another round of guessing.`
+        };
+        return templates[kind] || templates.custom;
+      }
+
+      function showFollowupAnswer(kind, customText = "") {
+        const submit = els.followupCustomForm.querySelector("button[type='submit']");
+        if (submit) {
+          submit.disabled = true;
+          submit.textContent = t("followupWorking");
+        }
+        els.followupAnswerText.textContent = followupText(kind, customText);
+        els.followupAnswer.hidden = false;
+        setTimeout(() => {
+          selectedFollowupKind = "";
+          els.followupCustomInput.value = "";
+          els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
+          updateFollowupSubmit();
+          els.followupAnswer.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }, 180);
+      }
+
+      function updateFollowupSubmit() {
+        if (!els.followupCustomForm) return;
+        const submit = els.followupCustomForm.querySelector("button[type='submit']");
+        if (!submit) return;
+        const hasCustomText = Boolean(els.followupCustomInput.value.trim());
+        submit.disabled = !(selectedFollowupKind || hasCustomText);
+        submit.textContent = selectedFollowupKind ? t("followupCustomSubmitSelected") : t("followupCustomSubmit");
+      }
+
+      function drawClarificationCard() {
+        if (isRunning) return;
+        mode = "tarot";
+        els.input.hidden = false;
+        els.input.value = lang === "zh"
+          ? `围绕这次结果，抽一张澄清牌：${lastQuestion || t("fallbackQuestion")}`
+          : `Draw a clarification card for this result: ${lastQuestion || t("fallbackQuestion")}`;
+        setMode("tarot");
+        els.input.value = lang === "zh"
+          ? `围绕这次结果，抽一张澄清牌：${lastQuestion || t("fallbackQuestion")}`
+          : `Draw a clarification card for this result: ${lastQuestion || t("fallbackQuestion")}`;
+        setTimeout(() => els.form.requestSubmit(), 80);
+      }
+
+      function initFieldCanvas() {
+        const canvas = document.getElementById("field-canvas");
+        const ctx = canvas.getContext("2d");
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        let width = 0;
+        let height = 0;
+        const particles = Array.from({ length: 34 }, () => ({
+          x: Math.random(),
+          y: Math.random(),
+          a: Math.random() * Math.PI * 2,
+          r: Math.random() * 2.2 + 0.4,
+          v: Math.random() * 0.42 + 0.08
+        }));
+
+        function resize() {
+          const ratio = Math.min(devicePixelRatio || 1, 2);
+          width = innerWidth;
+          height = innerHeight;
+          canvas.width = width * ratio;
+          canvas.height = height * ratio;
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+
+        function draw(time) {
+          ctx.clearRect(0, 0, width, height);
+          const cx = width * 0.52;
+          const cy = height * 0.5;
+
+          for (let i = 0; i < 11; i++) {
+            ctx.strokeStyle = `rgba(226, 214, 190, ${0.035 + i * 0.006})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let angle = 0; angle <= Math.PI * 2 + 0.08; angle += 0.08) {
+              const wave = Math.sin(angle * 4 + time / 1400 + i) * (16 + i * 2);
+              const radius = 120 + i * 42 + wave;
+              const x = cx + Math.cos(angle + time / 18000) * radius * 1.18;
+              const y = cy + Math.sin(angle) * radius * 0.72;
+              if (angle === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+
+          particles.forEach((p) => {
+            const x = (p.x * width + Math.sin(time / 2600 + p.a) * 34 + width) % width;
+            const y = (p.y * height + Math.cos(time / 3000 + p.a) * 22 + height) % height;
+            ctx.fillStyle = `rgba(250, 244, 230, ${0.018 + p.v * 0.06})`;
+            ctx.beginPath();
+            ctx.arc(x, y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          requestAnimationFrame(draw);
+        }
+
+        addEventListener("resize", resize);
+        resize();
+        draw(0);
+      }
+
+      function initPointerEffects() {
+        addEventListener("pointermove", (event) => {
+          const x = event.clientX / innerWidth;
+          const y = event.clientY / innerHeight;
+          els.room.style.setProperty("--mx", `${x * 100}%`);
+          els.room.style.setProperty("--my", `${y * 100}%`);
+          els.room.style.setProperty("--tilt-x", `${(0.5 - y) * 7}deg`);
+          els.room.style.setProperty("--tilt-y", `${(x - 0.5) * 9}deg`);
+          els.cursor.style.setProperty("--cursor-x", `${event.clientX}px`);
+          els.cursor.style.setProperty("--cursor-y", `${event.clientY}px`);
+        });
+        addEventListener("pointerdown", () => els.cursor.classList.add("is-down"));
+        addEventListener("pointerup", () => els.cursor.classList.remove("is-down"));
+        document.querySelectorAll("button, input, textarea, .tarot-symbol img").forEach((target) => {
+          target.addEventListener("pointerenter", () => els.cursor.classList.add("is-hover"));
+          target.addEventListener("pointerleave", () => els.cursor.classList.remove("is-hover"));
+        });
+      }
+
+      els.nextBtns.forEach((button) => button.addEventListener("click", () => {
+        els.room.dataset.step = button.dataset.next;
+      }));
+      els.modeBtns.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
+      els.langBtns.forEach((btn) => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
+      els.form.addEventListener("submit", runExperience);
+      els.historyBtn.addEventListener("click", () => {
+        renderHistoryList();
+        openUtilityPanel(els.historyPanel);
+      });
+      els.accountBtn.addEventListener("click", () => {
+        updateAuthUi();
+        openUtilityPanel(els.authPanel);
+      });
+      els.utilityClosers.forEach((button) => button.addEventListener("click", closeUtilityPanels));
+      els.historyList.addEventListener("click", (event) => {
+        const item = event.target.closest(".history-item");
+        if (!item) return;
+        const record = loadHistory(recordStore).find((entry) => entry.id === item.dataset.id);
+        if (showStoredRecord(record)) closeUtilityPanels();
+      });
+      els.followupChips.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        els.followupPanel.hidden = false;
+        updateFollowupSubmit();
+        els.followupPanel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      });
+      els.followupPanel.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-followup-question]");
+        if (!button) return;
+        const kind = button.dataset.followupQuestion;
+        if (kind === "clarify-card") {
+          drawClarificationCard();
+          return;
+        }
+        selectedFollowupKind = kind;
+        els.followupCustomInput.value = "";
+        els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
+        button.classList.add("is-selected");
+        updateFollowupSubmit();
+      });
+      els.followupCustomInput.addEventListener("input", () => {
+        if (els.followupCustomInput.value.trim()) {
+          selectedFollowupKind = "";
+          els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
+        }
+        updateFollowupSubmit();
+      });
+      els.followupCustomForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = els.followupCustomInput.value.trim();
+        if (!selectedFollowupKind && !text) return;
+        showFollowupAnswer(selectedFollowupKind || "custom", text);
+      });
+      els.historyClear.addEventListener("click", () => {
+        clearAllRecords().catch((error) => {
+          console.error(error);
+          updateAuthUi(t("authFailed"));
+        });
+      });
+      els.authForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        submitAuth("signin");
+      });
+      els.signup.addEventListener("click", () => submitAuth("signup"));
+      els.passwordReset.addEventListener("click", requestPasswordReset);
+      els.passwordUpdate.addEventListener("click", updatePasswordFromForm);
+      els.signout.addEventListener("click", () => {
+        syncClient.signOut();
+        updateAuthUi();
+      });
+      els.back.addEventListener("click", () => {
+        els.room.dataset.step = "compose";
+      });
+      els.reset.addEventListener("click", resetExperience);
+      els.ritualClose.addEventListener("click", () => {
+        if (activeRitualCancel) activeRitualCancel();
+      });
+      els.again.addEventListener("click", () => {
+        els.room.dataset.step = "compose";
+        setTimeout(() => els.input.focus(), 80);
+      });
+      els.save.addEventListener("click", () => {
+        renderHistoryList();
+        els.save.textContent = t(lastRecord ? "savedHistory" : "saveHistory");
+      });
+      els.newReading.addEventListener("click", () => {
+        if (isRunning) return;
+        if (!confirm(t("newReadingConfirm"))) return;
+        els.form.requestSubmit();
+      });
+      els.copy.addEventListener("click", async () => {
+        if (!lastAction) return;
+        const result = await copyTextToClipboard(lastAction);
+        els.copy.textContent = result === "copied"
+          ? t("copied")
+          : result === "manual"
+            ? t("copyManual")
+            : t("copyFailed");
+      });
+      els.cardImage.addEventListener("click", openCardLightbox);
+      els.cardImage.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openCardLightbox();
+        }
+      });
+      els.lightboxBackdrop.addEventListener("click", closeCardLightbox);
+      els.lightboxClose.addEventListener("click", closeCardLightbox);
+      addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeCardLightbox();
+      });
+
+      function boot() {
+        buildRitualDeck();
+        applyLanguage("zh");
+        setMode("tarot");
+        renderHistoryList();
+        updateAuthUi();
+        initFieldCanvas();
+        initPointerEffects();
+        startPlaceholderCycle();
+
+        loadAdminConfig().then((loaded) => {
+          if (loaded) refreshLocalizedUi();
+        });
+        handleAuthRedirect()
+          .catch((error) => console.warn("Auth redirect skipped", error))
+          .then(() => {
+            syncAndRefresh().catch((error) => console.warn("Initial sync skipped", error));
+          });
+      }
+
+      boot();
+    </script>
+  </body>
+</html>
