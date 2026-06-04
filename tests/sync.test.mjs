@@ -75,7 +75,7 @@ const fetchImpl = async (url, options = {}) => {
       user: { id: "user-1", email: "test@example.com" },
     });
   }
-  if (String(url).includes("/rest/v1/rill_reflection_records") && options.method === "GET") {
+  if (String(url).includes("/rest/v1/askaura_reflection_records") && options.method === "GET") {
     return jsonResponse([
       historyRecordToRow({
         id: "cloud-1",
@@ -88,7 +88,7 @@ const fetchImpl = async (url, options = {}) => {
       }),
     ]);
   }
-  if (String(url).includes("/rest/v1/rill_daily_anchors") && options.method === "GET") {
+  if (String(url).includes("/rest/v1/askaura_daily_anchors") && options.method === "GET") {
     return jsonResponse([
       {
         date_key: "2026-05-23",
@@ -106,16 +106,18 @@ const fetchImpl = async (url, options = {}) => {
       },
     ]);
   }
-  if (String(url).includes("/rest/v1/rill_reflection_records") && options.method === "DELETE") {
+  if (String(url).includes("/rest/v1/askaura_reflection_records") && options.method === "DELETE") {
     return jsonResponse([]);
   }
-  if (String(url).includes("/rest/v1/rill_daily_anchors") && options.method === "DELETE") {
+  if (String(url).includes("/rest/v1/askaura_daily_anchors") && options.method === "DELETE") {
     return jsonResponse([]);
   }
   return jsonResponse([]);
 };
 
 const store = createStorage(memoryStorage());
+assert.equal(SESSION_KEY, "askaura.authSession.v1");
+
 const client = createSyncClient({
   supabaseUrl: "https://example.supabase.co/",
   anonKey: "anon-key",
@@ -165,6 +167,26 @@ saveHistoryRecord(store, {
   answer: "本地记录",
   action: "本地记录",
   imageSrc: "./assets/cards/18-the-moon.jpg",
+  actionStatus: "not_fit",
+  reviewAt: "2026-05-25T08:00:00.000Z",
+  reviewNote: "It helped me send a shorter message.",
+  favorite: true,
+  spreadType: "three_current_resistance_next",
+  cards: [{
+    name: "The Moon",
+    label: "Current",
+    position: "current",
+    orientation: "upright",
+    imageSrc: "./assets/cards/18-the-moon.jpg",
+    imageAlt: "The Moon",
+  }],
+  followups: [{
+    id: "followup-local-1",
+    question: "Follow-up question",
+    answer: "Follow-up answer",
+    sourceResultId: "local-1",
+    createdAt: "2026-05-22T08:05:00.000Z",
+  }],
   imageAlt: "月亮",
   createdAt: "2026-05-22T08:00:00.000Z",
   updatedAt: "2026-05-22T08:00:00.000Z",
@@ -187,11 +209,61 @@ const row = historyRecordToRow({
   title: "梅花 · 震",
   question: "下一步？",
   answer: "先确认一件事。",
+  actionStatus: "not_fit",
+  reviewAt: "2026-05-25T01:00:00.000Z",
+  reviewNote: "The action reduced pressure.",
+  favorite: true,
+  spreadType: "relationship_tension",
+  cards: [{
+    name: "The Star",
+    label: "Self",
+    position: "self",
+    orientation: "reversed",
+    imageSrc: "./assets/cards/17-the-star.jpg",
+    imageAlt: "The Star",
+  }],
+  followups: [{
+    id: "followup-roundtrip",
+    question: "What else?",
+    answer: "Check one signal.",
+    sourceResultId: "roundtrip",
+    createdAt: "2026-05-22T01:05:00.000Z",
+  }],
+  clarificationOf: {
+    sourceResultId: "source-roundtrip",
+    originalQuestion: "Original question",
+    previousCard: "The Moon",
+    resultSummary: "Original summary",
+  },
+  gua: {
+    name: "Qian",
+    binary: "111",
+    castMethod: "character",
+    seed: "问",
+  },
   createdAt: "2026-05-22T01:00:00.000Z",
 });
 
 assert.equal(row.created_at, "2026-05-22T01:00:00.000Z");
 assert.equal(historyRecordFromRow(row).createdAt, row.created_at);
+assert.equal(row.action_status, "not_fit");
+assert.equal(historyRecordFromRow(row).actionStatus, "not_fit");
+assert.equal(row.review_at, "2026-05-25T01:00:00.000Z");
+assert.equal(row.review_note, "The action reduced pressure.");
+assert.equal(historyRecordFromRow(row).reviewAt, "2026-05-25T01:00:00.000Z");
+assert.equal(historyRecordFromRow(row).reviewNote, "The action reduced pressure.");
+assert.equal(row.is_favorite, true);
+assert.equal(historyRecordFromRow(row).favorite, true);
+assert.equal(row.spread_type, "relationship_tension");
+assert.equal(historyRecordFromRow(row).spreadType, "relationship_tension");
+assert.equal(row.cards[0].position, "self");
+assert.equal(historyRecordFromRow(row).cards[0].orientation, "reversed");
+assert.equal(row.gua.castMethod, "character");
+assert.equal(historyRecordFromRow(row).gua.seed, "问");
+assert.equal(row.followups[0].sourceResultId, "roundtrip");
+assert.equal(historyRecordFromRow(row).followups[0].answer, "Check one signal.");
+assert.equal(row.clarification_of.previousCard, "The Moon");
+assert.equal(historyRecordFromRow(row).clarificationOf.sourceResultId, "source-roundtrip");
 
 const cloudAnchor = await client.loadDailyAnchor("2026-05-23");
 assert.equal(cloudAnchor.status, "synced");
@@ -241,5 +313,28 @@ assert.equal(store.get(SESSION_KEY, null).access_token, "refreshed-access");
 const refreshCall = calls.find((call) => String(call.url).includes("grant_type=refresh_token"));
 assert.ok(refreshCall);
 assert.deepEqual(JSON.parse(refreshCall.options.body), { refresh_token: "refresh-me" });
+
+assert.ok(calls.every((call) => !String(call.url).includes("rill_reflection_records")));
+assert.ok(calls.every((call) => !String(call.url).includes("rill_daily_anchors")));
+assert.ok(calls.every((call) => !String(call.url).includes("icvegpfnpkyrebtojoca")));
+
+const defaultCalls = [];
+globalThis.ASKAURA_SUPABASE_URL = "https://askaura-example.supabase.co/";
+globalThis.ASKAURA_SUPABASE_ANON_KEY = "askaura-anon";
+const defaultClient = createSyncClient({
+  fetchImpl: async (url, options = {}) => {
+    defaultCalls.push({ url, options });
+    return jsonResponse({
+      access_token: "default-access",
+      refresh_token: "default-refresh",
+      user: { id: "default-user", email: "default@example.com" },
+    });
+  },
+  store: createStorage(memoryStorage()),
+});
+
+await defaultClient.signInWithPassword("default@example.com", "secret-pass");
+assert.equal(String(defaultCalls[0].url), "https://askaura-example.supabase.co/auth/v1/token?grant_type=password");
+assert.equal(defaultCalls[0].options.headers.apikey, "askaura-anon");
 
 console.log("sync tests passed");

@@ -1,69 +1,54 @@
-# 此镜 (RiLL / cijing) — 项目规则
+# AskAura Project Rules
 
-> 本文件每次会话开始时被 Claude Code 自动装载。
-> 项目核心定位见 [PRODUCT.md](./PRODUCT.md) 与 [DESIGN.md](./DESIGN.md)。
-> AI 接入架构见 [docs/specs/2026-05-11-ai-integration-design.md](./docs/specs/2026-05-11-ai-integration-design.md)。
-> 全局通用规则见 `~/.claude/templates/CLAUDE.md`，本文件只放项目特有约定。
+> This file is loaded at the start of Claude Code sessions for `D:\CursorAgentChats\askaura`.
 
----
+## Project Boundary
 
-## 一、模型分工
+- AskAura is an independent project migrated from RiLL / cijing.
+- Do not deploy AskAura code, migrations, functions, or secrets to the old cijing Supabase project.
+- Old cijing Supabase ref: `icvegpfnpkyrebtojoca`. Treat it as a legacy reference only.
+- Active code uses AskAura names: `ASKAURA_SUPABASE_URL`, `ASKAURA_SUPABASE_ANON_KEY`, `askaura_reflection_records`, `askaura_daily_anchors`, `askaura_runtime_config`.
+- Legacy localStorage keys may be read for compatibility: `rill.history.v1`, `rill.dailyAnchors.v1`. New writes must use `askaura.*` keys.
 
-继承全局规则：[`~/.claude/templates/CLAUDE.md` 第四节 "Subagent 协作"](../../../../Users/17751/.claude/templates/CLAUDE.md)。
+## Current Stack
 
-**一句话：** Opus 主对话只做设计 / 规划 / 决策 / 多轮对话；动手实施一律派 Sonnet 4.6 子 agent，单 agent ≤ 6 项，三段式 prompt。< 3 步的单点操作 Opus 直接做。
+- Frontend: static `index.html`, `styles.css`, and native JS modules. No Vite, Next, or build-time env injection.
+- Admin: `admin.html`.
+- Storage: `assets/app/storage.js`.
+- Sync: `assets/app/sync.js`.
+- Supabase Edge Functions: `reading`, `tarot-draw`, `admin-config`.
+- `tarot-draw` logs draw events and returns `{ ok: true }`; it does not draw cards server-side.
+- `reading` is SSE and keeps the current frontend contract.
 
-本项目首次明确这条约定于 2026-05-12（cijing），随后升级为全局规则。
+## Supabase Rules
 
----
+- Use the dedicated AskAura Supabase project for real deployment.
+- Do not write service role keys, provider keys, admin passwords, or admin session secrets into code, git, markdown, or chat.
+- Required function secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `AI_PROVIDER`, provider API keys/models, `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_SECRET`.
+- Deploy functions with `--no-verify-jwt` unless auth behavior is redesigned first.
 
-## 二、技术栈快照
+## Local Verification
 
-- **前端**：纯静态 HTML + CSS（无构建步骤）
-  - `index.html` 主入口（含所有 JS / i18n / 业务流程）
-  - `styles.css` 视觉系统
-  - 中国风视觉 token 已落地在 `styles.css` 顶部 `:root`（OKLCH 色板 + 现代仿宋字体栈 + spacing/motion）
-- **后端**：Supabase Edge Functions（Deno runtime）
-  - Project ref: `icvegpfnpkyrebtojoca`
-  - Region: Northeast Asia (Tokyo)
-  - 两个 endpoint：`reading` + `tarot-draw`
-  - Provider 适配器层：`supabase/functions/_shared/providers/` (v1: Kimi + Xiaomi)
-- **AI 模型**：通过 supabase secret `AI_PROVIDER` 切换
-  - 当前 `AI_PROVIDER=xiaomi` + `XIAOMI_MODEL=mimo-v2.5-pro`
-  - 端点 `https://token-plan-cn.xiaomimimo.com/v1`（小米官方 MiMo 生产 ALB 转发）
+```powershell
+node --experimental-vm-modules tests/index-syntax.test.mjs
+node tests/askaura-migration-static.test.mjs
+node tests/clarify-contract.test.mjs
+node tests/meihua.test.mjs
+node tests/phase1-mobile-css.test.mjs
+node tests/storage.test.mjs
+node tests/sync.test.mjs
+```
 
----
+```powershell
+python -m http.server 5174 --directory D:\CursorAgentChats\askaura
+```
 
-## 三、Edge Function 部署约定
+Open `http://127.0.0.1:5174/index.html`.
 
-- **永远走 supabase CLI 部署**（`supabase functions deploy <name> --project-ref icvegpfnpkyrebtojoca --no-verify-jwt`），不要试图 web 上传 zip。
-- **修改 secret 不需要重新 deploy**（runtime 读取）。
-- **修改 `.ts` 文件必须重新 deploy** 才生效。
-- **`config.toml` 里 `verify_jwt = false`** 是有意的（v1 不做用户登录绑定）。改回 `true` 之前先实现 auth 流程，否则前端调用立刻 401。
+## Product And Content Rules
 
----
-
-## 四、视觉系统约束（来自 DESIGN.md，重要的复述一遍）
-
-- **禁止金色**：任何 OKLCH chroma > 0.05 且 hue 接近 80-90 的色都视为"偏金"，违反规则。原 `#c9a96e` 已全替换为朱砂。
-- **禁止 box-shadow 做卡片浮起**：唯一允许的 box-shadow 是 input autofill 重置 + menu vignette。
-- **禁止龙凤云纹灯笼**等中国传统装饰元素。"东方为骨，不是为衣。"
-- **中文用 Source Han Serif SC / Noto Serif SC（现代仿宋）**，不是黑体 / 圆体 / 楷书。楷书仅用于印章。
-- **朱砂色 ≤ 5%**：仅印章 + 行动 CTA + 选中态 + 关键状态。
-
----
-
-## 五、内容创作约束（来自 PRODUCT.md）
-
-- 中文文案不要"亲爱的""宝贝"称呼，不要 emoji 表情。
-- 禁止"算命 / 玄学 / 转运 / 灵签 / 改运 / 命中注定"等词汇。
-- 行动建议必须**具体可执行**——不是"对自己好点"，是"为自己倒一杯温水"。
-- 每次会话必须以一个**今天或这周可以做的具体行动**收尾。
-
----
-
-## 六、敏感信息
-
-- **小米 API key (`tp-xxx`) 已在聊天 transcript 暴露过**，联调完成后必须去 [token-plan-cn.xiaomimimo.com](https://token-plan-cn.xiaomimimo.com) 控制台 rotate。
-- **任何时候不要把 service_role key 写进代码、git、聊天。** 只允许在 supabase secret 里。
-- `index.html` 里的 `RILL_SUPABASE_ANON_KEY` 是 publishable key，公开可见无所谓。
+- AskAura is not a fortune-telling tool and must not present deterministic predictions.
+- Avoid terms such as `算命`, `玄学`, `转运`, `灵签`, `改运`, and `命中注定`.
+- Do not use `亲爱的`, `宝贝`, or emoji in generated guidance.
+- Every reading should end with one concrete action the user can take today or this week.
+- Keep visual and copy changes restrained. Do not add unrelated product features during migration.

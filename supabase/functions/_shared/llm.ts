@@ -3,6 +3,7 @@
 
 import { KimiProvider } from "./providers/kimi.ts";
 import { XiaomiProvider } from "./providers/xiaomi.ts";
+import { DeepSeekProvider } from "./providers/deepseek.ts";
 // v1.5 补齐：deepseek / qwen / glm / openai / anthropic
 // 添加新 provider 时：在 providers/ 下新建文件，import 进来，在 createProvider switch 加分支。
 
@@ -16,6 +17,8 @@ export interface ChatOptions {
   maxTokens?: number;
   topP?: number;
   stop?: string[];
+  thinking?: { type: "disabled" } | { type: "enabled" };
+  reasoningEffort?: "high" | "max";
 }
 
 export interface LLMProvider {
@@ -36,7 +39,7 @@ export type ProviderName =
   | "anthropic";
 
 export interface ProviderOverrides {
-  provider?: "kimi" | "xiaomi";
+  provider?: "kimi" | "xiaomi" | "deepseek";
   model?: string;
   baseUrl?: string;
   apiKey?: string;
@@ -49,9 +52,11 @@ export function createProvider(env: Env, overrides: ProviderOverrides = {}): LLM
       return new KimiProvider(env, overrides);
     case "xiaomi":
       return new XiaomiProvider(env, overrides);
+    case "deepseek":
+      return new DeepSeekProvider(env, overrides);
     default:
       throw new Error(
-        `Unknown AI_PROVIDER: "${name}". v1 supports: kimi, xiaomi.`,
+        `Unknown AI_PROVIDER: "${name}". v1 supports: kimi, xiaomi, deepseek.`,
       );
   }
 }

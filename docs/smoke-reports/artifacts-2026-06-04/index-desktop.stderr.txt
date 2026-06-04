@@ -1,0 +1,2 @@
+libpng warning: tRNS: invalid with alpha channel
+804001 bytes written to file D:\CursorAgentChats\askaura\docs\smoke-reports\artifacts-2026-06-04\index-desktop.png

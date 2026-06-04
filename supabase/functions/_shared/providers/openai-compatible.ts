@@ -73,6 +73,8 @@ export class OpenAICompatibleProvider implements LLMProvider {
       top_p: opts.topP ?? 0.9,
       stream: false,
       ...(opts.stop ? { stop: opts.stop } : {}),
+      ...(opts.thinking ? { thinking: opts.thinking } : {}),
+      ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
     };
 
     const resp = await this.fetchWithTimeout(this.chatUrl, {
@@ -111,6 +113,8 @@ export class OpenAICompatibleProvider implements LLMProvider {
       top_p: opts.topP ?? 0.9,
       stream: true,
       ...(opts.stop ? { stop: opts.stop } : {}),
+      ...(opts.thinking ? { thinking: opts.thinking } : {}),
+      ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
     };
 
     const controller = new AbortController();
@@ -167,7 +171,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
           const payload = dataLine.slice(6).trim();
           if (payload === "[DONE]") return; // 上游结束信号
 
-          let parsed: { choices?: Array<{ delta?: { content?: string } }> };
+          let parsed: { choices?: Array<{ delta?: { content?: string; reasoning_content?: string } }> };
           try {
             parsed = JSON.parse(payload);
           } catch {

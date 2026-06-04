@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskAura Admin</title>
+    <link rel="stylesheet" href="./admin-styles.css">
+  </head>
+  <body>
+    <section class="auth-gate" id="auth-gate">
+      <form class="auth-card" id="auth-form">
+        <p class="eyebrow">AskAura Admin</p>
+        <h1 id="auth-title">管理员登录</h1>
+        <p class="auth-copy" id="auth-copy">输入服务端管理员账号密码后进入配置后台。</p>
+        <label>
+          管理员账号
+          <input id="auth-user" autocomplete="username">
+        </label>
+        <label>
+          管理员密码
+          <input id="auth-pass" type="password" autocomplete="current-password">
+        </label>
+        <button class="auth-submit" type="submit" id="auth-submit">进入后台</button>
+        <p class="auth-error" id="auth-error"></p>
+      </form>
+    </section>
+
+    <main class="admin-shell">
+      <aside class="admin-rail">
+        <a class="back-home" href="./index.html">← 返回 AskAura</a>
+        <div>
+          <p class="eyebrow">AskAura Admin</p>
+          <h1>配置后台</h1>
+          <p class="rail-copy">这里改的是本浏览器配置。保存后回到首页刷新即可看到效果。</p>
+        </div>
+        <div>
+          <button class="logout-btn" type="button" id="logout-btn">退出登录</button>
+          <div class="status" id="status">未保存</div>
+        </div>
+      </aside>
+
+      <section class="admin-board">
+        <form id="config-form">
+          <div class="toolbar">
+            <button class="primary" type="submit">保存配置</button>
+            <button type="button" id="preview-btn">打开首页</button>
+            <button type="button" id="export-btn">导出 JSON</button>
+            <label class="import-btn">
+              导入 JSON
+              <input id="import-input" type="file" accept="application/json">
+            </label>
+            <button class="danger" type="button" id="reset-btn">恢复默认</button>
+          </div>
+
+          <div class="grid">
+            <section class="panel">
+              <span class="panel-num">01</span>
+              <h2>首页</h2>
+              <label>
+                中文主文案
+                <textarea name="zh.heroCopy" rows="3"></textarea>
+              </label>
+              <label>
+                English Hero Copy
+                <textarea name="en.heroCopy" rows="3"></textarea>
+              </label>
+              <label>
+                镜盘文字
+                <input name="zh.discText">
+              </label>
+              <label>
+                Mirror Text
+                <input name="en.discText">
+              </label>
+            </section>
+
+            <section class="panel">
+              <span class="panel-num">02</span>
+              <h2>模式名称</h2>
+              <div class="three-cols">
+                <label>
+                  塔罗
+                  <input name="zh.modeTarot">
+                </label>
+                <label>
+                  梅花
+                  <input name="zh.modeMeihua">
+                </label>
+                <label>
+                  当下
+                  <input name="zh.modeDaily">
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Tarot
+                  <input name="en.modeTarot">
+                </label>
+                <label>
+                  Meihua
+                  <input name="en.modeMeihua">
+                </label>
+                <label>
+                  Now
+                  <input name="en.modeDaily">
+                </label>
+              </div>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">03</span>
+              <h2>输入与提示</h2>
+              <label>
+                中文输入提示
+                <textarea name="zh.questionPlaceholder" rows="2"></textarea>
+              </label>
+              <label>
+                English Placeholder
+                <textarea name="en.questionPlaceholder" rows="2"></textarea>
+              </label>
+              <div class="three-cols">
+                <label>
+                  塔罗提示
+                  <textarea name="zh.modeHintTarot" rows="2"></textarea>
+                </label>
+                <label>
+                  梅花提示
+                  <textarea name="zh.modeHintMeihua" rows="2"></textarea>
+                </label>
+                <label>
+                  当下提示
+                  <textarea name="zh.modeHintDaily" rows="2"></textarea>
+                </label>
+              </div>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">04</span>
+              <h2>LLM 设置</h2>
+              <div class="three-cols">
+                <label>
+                  Provider
+                  <select name="llm.provider">
+                    <option value="deepseek">deepseek</option>
+                    <option value="xiaomi">xiaomi</option>
+                    <option value="kimi">kimi</option>
+                  </select>
+                </label>
+                <label>
+                  Model
+                  <input name="llm.model">
+                </label>
+                <label>
+                  Base URL
+                  <input name="llm.baseUrl">
+                </label>
+              </div>
+              <label>
+                API Key
+                <input name="llm.apiKey" type="password" autocomplete="new-password">
+              </label>
+              <div class="three-cols">
+                <label>
+                  Max Tokens
+                  <input name="llm.maxTokens" type="number" min="128" max="4096" step="1">
+                </label>
+                <label>
+                  Temperature
+                  <input name="llm.temperature" type="number" min="0" max="1.5" step="0.1">
+                </label>
+                <label>
+                  说明
+                  <input value="保存后服务端即时生效" disabled="">
+                </label>
+              </div>
+              <p class="note">API Key 和 Base URL 会保存到 Supabase 服务端配置表，前端读取时会自动脱敏。</p>
+              <div class="secret-box">
+                <strong>已接入服务端配置</strong>
+                <p>上方字段可以直接修改并保存。API Key 返回后台时会显示为星号；如果不想更换 key，保持星号不动即可。</p>
+                <code>管理员登录与保存由 admin-config Edge Function 校验。</code>
+              </div>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">05</span>
+              <h2>Model Router</h2>
+              <div class="three-cols">
+                <label>
+                  Basic Model
+                  <input name="models.basic.model">
+                </label>
+                <label>
+                  Basic Max Tokens
+                  <input name="models.basic.maxTokens" type="number" min="256" max="1800" step="1">
+                </label>
+                <label>
+                  Basic Thinking
+                  <select name="models.basic.thinking">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Pro Model
+                  <input name="models.pro.model">
+                </label>
+                <label>
+                  Pro Max Tokens
+                  <input name="models.pro.maxTokens" type="number" min="256" max="3072" step="1">
+                </label>
+                <label>
+                  Pro Route
+                  <select name="models.pro.enabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Pro Thinking
+                  <select name="models.pro.thinking">
+                    <option value="true">enabled</option>
+                    <option value="false">disabled</option>
+                  </select>
+                </label>
+                <label>
+                  Pro Reasoning Effort
+                  <select name="models.pro.reasoningEffort">
+                    <option value="high">high</option>
+                    <option value="max">max</option>
+                  </select>
+                </label>
+                <label>
+                  Router Note
+                  <input value="Frontend model values are ignored by reading." disabled="">
+                </label>
+              </div>
+              <p class="note">Model choice is owned by the Edge Function route. Public frontend requests only send tier and entry hints.</p>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">06</span>
+              <h2>Ops Quality</h2>
+              <div class="three-cols">
+                <label>
+                  Prompt Version
+                  <input name="ops.promptVersion" maxlength="80">
+                </label>
+                <label>
+                  Quality Logging
+                  <select name="ops.qualityLoggingEnabled">
+                    <option value="true">enabled</option>
+                    <option value="false">disabled</option>
+                  </select>
+                </label>
+                <label>
+                  Safety Scan
+                  <select name="ops.contentSafetyScanEnabled">
+                    <option value="true">enabled</option>
+                    <option value="false">disabled</option>
+                  </select>
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Experiment Key
+                  <input name="ops.experimentKey" maxlength="80">
+                </label>
+                <label>
+                  Rollback Note
+                  <input name="ops.rollbackNote" maxlength="240">
+                </label>
+                <label>
+                  Ops Note
+                  <input value="Quality events store metadata only." disabled="">
+                </label>
+              </div>
+              <p class="note">Use these switches to stop quality logging or safety scanning without deleting user data. Experiments are reserved but not active.</p>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">07</span>
+              <h2>Paid Guardrails</h2>
+              <div class="three-cols">
+                <label>
+                  Paid UI
+                  <select name="paid.enabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+                <label>
+                  Pro Model Gate
+                  <select name="paid.proModelEnabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+                <label>
+                  Free Daily Follow-ups
+                  <input name="paid.freeDailyFollowups" type="number" min="0" max="20" step="1">
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Pro Daily Follow-ups
+                  <input name="paid.proDailyFollowups" type="number" min="0" max="100" step="1">
+                </label>
+                <label>
+                  Free Monthly Exports
+                  <input name="paid.freeMonthlyExports" type="number" min="0" max="50" step="1">
+                </label>
+                <label>
+                  Pro Monthly Exports
+                  <input name="paid.proMonthlyExports" type="number" min="0" max="500" step="1">
+                </label>
+              </div>
+              <p class="note">Paid features stay disabled until checkout and refund handling are selected. Pro routing requires this gate and a server-side entitlement.</p>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">08</span>
+              <h2>结果文案</h2>
+              <div class="three-cols">
+                <label>
+                  中文加载中
+                  <input name="zh.loading">
+                </label>
+                <label>
+                  中文复制按钮
+                  <input name="zh.copy">
+                </label>
+                <label>
+                  中文再来一次
+                  <input name="zh.again">
+                </label>
+              </div>
+              <label>
+                中文兜底问题
+                <input name="zh.fallbackQuestion">
+              </label>
+            </section>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const ADMIN_SESSION_KEY = "askaura_admin_token_v1";
+      const SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
+      const CONFIG_API_URL = SUPABASE_URL + "/functions/v1/admin-config";
+      const defaults = {
+        llm: {
+          provider: "deepseek",
+          model: "deepseek-v4-flash",
+          baseUrl: "https://api.deepseek.com/v1",
+          apiKey: "",
+          temperature: 0.7,
+          maxTokens: 2048
+        },
+        models: {
+          basic: {
+            model: "deepseek-v4-flash",
+            maxTokens: 1200,
+            thinking: false,
+            enabled: true
+          },
+          pro: {
+            model: "deepseek-v4-pro",
+            maxTokens: 2200,
+            thinking: true,
+            reasoningEffort: "high",
+            enabled: false
+          }
+        },
+        paid: {
+          enabled: false,
+          proModelEnabled: false,
+          freeDailyFollowups: 3,
+          proDailyFollowups: 20,
+          freeMonthlyExports: 3,
+          proMonthlyExports: 50
+        },
+        ops: {
+          promptVersion: "askaura-2026-06-03",
+          qualityLoggingEnabled: true,
+          contentSafetyScanEnabled: true,
+          experimentKey: "",
+          rollbackNote: ""
+        },
+        translations: {
+          zh: {
+            heroCopy: "把心里的噪声，压成今晚能做的一件事。",
+            discText: "照见",
+            modeTarot: "塔罗",
+            modeMeihua: "梅花",
+            modeDaily: "当下",
+            questionPlaceholder: "我最近总是睡不着，不知道真正烦的是什么。",
+            modeHintTarot: "将随机抽取一张大阿尔卡那牌。",
+            modeHintMeihua: "将随机起一卦，取它的当下之象。",
+            modeHintDaily: "无需输入问题，直接打开今日锚点。",
+            loading: "正在等一句清楚的话……",
+            copy: "复制这句话",
+            again: "再来一次",
+            fallbackQuestion: "我现在需要看清什么？"
+          },
+          en: {
+            heroCopy: "Turn the noise in your mind into one thing you can do tonight.",
+            discText: "Mirror",
+            modeTarot: "Tarot",
+            modeMeihua: "Meihua",
+            modeDaily: "Now",
+            questionPlaceholder: "I have not been sleeping well, and I do not know what is really bothering me.",
+            modeHintTarot: "One Major Arcana card will be drawn.",
+            modeHintMeihua: "One trigram will be cast for this moment.",
+            modeHintDaily: "No question needed. Open today's anchor.",
+            loading: "Waiting for one clear sentence...",
+            copy: "Copy this line",
+            again: "Again",
+            fallbackQuestion: "What do I need to see right now?"
+          }
+        }
+      };
+
+      const form = document.getElementById("config-form");
+      const statusEl = document.getElementById("status");
+      const authGate = document.getElementById("auth-gate");
+      const authForm = document.getElementById("auth-form");
+      const authTitle = document.getElementById("auth-title");
+      const authCopy = document.getElementById("auth-copy");
+      const authUser = document.getElementById("auth-user");
+      const authPass = document.getElementById("auth-pass");
+      const authSubmit = document.getElementById("auth-submit");
+      const authError = document.getElementById("auth-error");
+
+      function clone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+
+      function merge(target, source) {
+        if (!source || typeof source !== "object") return target;
+        Object.entries(source).forEach(([key, value]) => {
+          if (value && typeof value === "object" && !Array.isArray(value)) {
+            target[key] = merge(target[key] || {}, value);
+          } else {
+            target[key] = value;
+          }
+        });
+        return target;
+      }
+
+      function getPath(object, path) {
+        return path.split(".").reduce((acc, key) => acc?.[key], object);
+      }
+
+      function setPath(object, path, value) {
+        const keys = path.split(".");
+        let cursor = object;
+        keys.slice(0, -1).forEach((key) => {
+          cursor[key] ||= {};
+          cursor = cursor[key];
+        });
+        cursor[keys.at(-1)] = value;
+      }
+
+      function loadConfig() {
+        return clone(defaults);
+      }
+
+      function fillForm(config) {
+        form.querySelectorAll("[name]").forEach((field) => {
+          const path = field.name.includes(".") ? field.name : "translations." + field.name;
+          field.value = getPath(config, path) ?? "";
+        });
+      }
+
+      function readForm() {
+        const config = { translations: {}, llm: {}, models: { basic: {}, pro: {} }, paid: {}, ops: {} };
+        form.querySelectorAll("[name]").forEach((field) => {
+          const path = field.name.includes(".") ? field.name : "translations." + field.name;
+          const rawValue = field.value.trim();
+          const value = field.type === "number" ? Number(rawValue) : rawValue === "true" ? true : rawValue === "false" ? false : rawValue;
+          setPath(config, path, value);
+        });
+        return config;
+      }
+
+      async function adminRequest(action, payload = {}, token = sessionStorage.getItem(ADMIN_SESSION_KEY)) {
+        const response = await fetch(CONFIG_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ action, ...payload }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Request failed");
+        return data;
+      }
+
+      async function save(config) {
+        const data = await adminRequest("save", { config });
+        fillForm(merge(clone(defaults), data.config || config));
+        statusEl.textContent = "已保存 " + new Date().toLocaleTimeString();
+      }
+
+      function renderAuthMode() {
+        authTitle.textContent = "管理员登录";
+        authCopy.textContent = "输入服务端管理员账号密码后进入配置后台。";
+        authSubmit.textContent = "进入后台";
+        authPass.autocomplete = "current-password";
+      }
+
+      function unlockAdmin(token) {
+        if (token) sessionStorage.setItem(ADMIN_SESSION_KEY, token);
+        authGate.hidden = true;
+      }
+
+      async function handleAuth(event) {
+        event.preventDefault();
+        authError.textContent = "";
+        const username = authUser.value.trim();
+        const password = authPass.value;
+        if (!username || password.length < 6) {
+          authError.textContent = "账号不能为空，密码至少 6 位。";
+          return;
+        }
+
+        try {
+          const data = await adminRequest("login", { username, password }, "");
+          unlockAdmin(data.token);
+          fillForm(merge(clone(defaults), data.config || {}));
+          statusEl.textContent = "已登录";
+        } catch (error) {
+          authError.textContent = error.message || "账号或密码不正确。";
+        }
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+          await save(readForm());
+        } catch (error) {
+          statusEl.textContent = error.message || "保存失败";
+        }
+      });
+
+      document.getElementById("preview-btn").addEventListener("click", () => {
+        window.open("./index.html", "_blank");
+      });
+
+      document.getElementById("export-btn").addEventListener("click", () => {
+        const blob = new Blob([JSON.stringify(readForm(), null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "askaura-config.json";
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById("import-input").addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const imported = JSON.parse(await file.text());
+        const config = merge(clone(defaults), imported);
+        fillForm(config);
+        await save(config);
+      });
+
+      document.getElementById("reset-btn").addEventListener("click", async () => {
+        fillForm(defaults);
+        await save(defaults);
+        statusEl.textContent = "已恢复默认";
+      });
+
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        location.reload();
+      });
+
+      authForm.addEventListener("submit", handleAuth);
+      fillForm(loadConfig());
+      renderAuthMode();
+      if (sessionStorage.getItem(ADMIN_SESSION_KEY)) {
+        adminRequest("get")
+          .then((data) => {
+            unlockAdmin();
+            fillForm(merge(clone(defaults), data.config || {}));
+            statusEl.textContent = "已登录";
+          })
+          .catch(() => sessionStorage.removeItem(ADMIN_SESSION_KEY));
+      }
+    </script>
+  
+
+</body></html>

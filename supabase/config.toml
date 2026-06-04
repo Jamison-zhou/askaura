@@ -1,7 +1,6 @@
-# Supabase project config for 此镜 (RiLL).
-# 通过 `supabase link --project-ref <ref>` 绑定到云端项目。
-
-project_id = "rill-cijing"
+# Supabase project config for AskAura.
+# Link this workspace only to the dedicated AskAura Supabase project.
+project_id = "askaura"
 
 [api]
 enabled = true
@@ -13,7 +12,7 @@ max_rows = 1000
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 15
+major_version = 17
 
 [realtime]
 enabled = false
@@ -29,11 +28,10 @@ enabled = false
 enabled = false
 
 [auth]
-enabled = false  # v1 暂不接入用户登录，v1.5 再开
+enabled = false
 
 [functions]
-# 单个 function 的细粒度配置（如关 JWT 校验）。
-# v1 reading/tarot-draw 都用 anon key 调用，需要关掉 JWT verify。
+# Anonymous frontend calls are intentional for the current public reading flow.
 
 [functions.reading]
 verify_jwt = false
@@ -42,6 +40,15 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.admin-config]
+verify_jwt = false
+
+[functions.share-link]
+verify_jwt = false
+
+[functions.resonance-pool]
+verify_jwt = false
+
+[functions.billing-webhook]
 verify_jwt = false
 
 [edge_runtime]

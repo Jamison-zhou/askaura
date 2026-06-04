@@ -15,6 +15,8 @@ const REQUIRED_TOKENS: Record<ReadingMode, string[]> = {
   ],
   "meihua-reading": ["ACTION"],
   clarify: ["CLARIFIED_QUESTION", "CLARIFY_NOTE"],
+  followup: [],
+  "weekly-summary": ["THEME", "STUCK_POINT", "NEXT_ACTION"],
 };
 
 const TOKEN_REGEX = /^\s*\[([A-Z][A-Z0-9_]*)\]/;

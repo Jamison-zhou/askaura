@@ -1,11 +1,10 @@
 // CORS helper for Supabase Edge Functions.
-// v1: 全开 *。v2 上线后改为白名单（生产域 + localhost）。
-
+// Keep permissive origin until the production domain is finalized.
 export const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers":
-    "authorization, content-type, x-client-info, apikey, x-rill-version",
+    "authorization, content-type, x-client-info, apikey, x-askaura-version, x-askaura-origin",
   "Access-Control-Max-Age": "86400",
 };
 

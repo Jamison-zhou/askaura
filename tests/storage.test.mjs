@@ -63,6 +63,103 @@ const deduped = saveHistoryRecord(store, {
 assert.equal(deduped.length, 1);
 assert.equal(deduped[0].question, "更新的问题");
 
+const followupStore = createStorage(memoryStorage());
+saveHistoryRecord(followupStore, {
+  id: "followup-record",
+  mode: "tarot",
+  title: "Followup source",
+  question: "Original question",
+  answer: "Original answer",
+  actionStatus: "done",
+  reviewAt: "2026-05-25T08:00:00.000Z",
+  reviewNote: "It helped me wait before replying.",
+  favorite: true,
+  spreadType: "three_current_resistance_next",
+  cards: [{
+    name: "The Moon",
+    label: "Current",
+    position: "current",
+    orientation: "upright",
+    imageSrc: "./assets/cards/18-the-moon.jpg",
+    imageAlt: "The Moon",
+  }],
+  createdAt: "2026-05-22T08:00:00.000Z",
+  updatedAt: "2026-05-22T08:00:00.000Z",
+});
+const followupUpdated = saveHistoryRecord(followupStore, {
+  id: "followup-record",
+  mode: "tarot",
+  title: "Followup source",
+  question: "Original question",
+  answer: "Original answer",
+  actionStatus: "done",
+  reviewAt: "2026-05-25T08:00:00.000Z",
+  reviewNote: "It helped me wait before replying.",
+  favorite: true,
+  spreadType: "three_current_resistance_next",
+  cards: [{
+    name: "The Moon",
+    label: "Current",
+    position: "current",
+    orientation: "upright",
+    imageSrc: "./assets/cards/18-the-moon.jpg",
+    imageAlt: "The Moon",
+  }],
+  followups: [{
+    question: "Follow-up question",
+    answer: "Follow-up answer",
+    sourceResultId: "followup-record",
+    createdAt: "2026-05-22T08:05:00.000Z",
+  }],
+  createdAt: "2026-05-22T08:00:00.000Z",
+  updatedAt: "2026-05-22T08:05:00.000Z",
+});
+assert.equal(followupUpdated.length, 1);
+assert.equal(followupUpdated[0].followups.length, 1);
+assert.equal(followupUpdated[0].followups[0].sourceResultId, "followup-record");
+assert.equal(loadHistory(followupStore)[0].followups[0].answer, "Follow-up answer");
+assert.equal(loadHistory(followupStore)[0].actionStatus, "done");
+assert.equal(loadHistory(followupStore)[0].reviewAt, "2026-05-25T08:00:00.000Z");
+assert.equal(loadHistory(followupStore)[0].reviewNote, "It helped me wait before replying.");
+assert.equal(loadHistory(followupStore)[0].favorite, true);
+assert.equal(loadHistory(followupStore)[0].spreadType, "three_current_resistance_next");
+assert.equal(loadHistory(followupStore)[0].cards[0].position, "current");
+
+const invalidStatus = saveHistoryRecord(createStorage(memoryStorage()), {
+  id: "invalid-status",
+  mode: "tarot",
+  title: "Invalid status",
+  answer: "Action",
+  actionStatus: "maybe",
+  createdAt: "2026-05-22T08:00:00.000Z",
+});
+assert.equal(invalidStatus[0].actionStatus, "");
+
+const clarificationStore = createStorage(memoryStorage());
+const clarificationRecords = saveHistoryRecord(clarificationStore, {
+  id: "clarification-record",
+  mode: "tarot",
+  title: "Clarification card",
+  question: "Clarify this result",
+  answer: "Clarification answer",
+  clarificationOf: {
+    sourceResultId: "followup-record",
+    originalQuestion: "Original question",
+    previousCard: "The Moon",
+    resultSummary: "Original summary",
+  },
+  gua: {
+    name: "Qian",
+    binary: "111",
+    castMethod: "number",
+    seed: "42",
+  },
+  createdAt: "2026-05-22T08:10:00.000Z",
+});
+assert.equal(clarificationRecords[0].clarificationOf.sourceResultId, "followup-record");
+assert.equal(loadHistory(clarificationStore)[0].clarificationOf.previousCard, "The Moon");
+assert.equal(loadHistory(clarificationStore)[0].gua.castMethod, "number");
+
 for (let index = 0; index < HISTORY_LIMIT + 3; index += 1) {
   saveHistoryRecord(store, {
     id: `record-${index + 2}`,
@@ -119,5 +216,55 @@ assert.equal(loadDailyAnchor(store, anchorDate).id, savedAnchor.id);
 
 clearDailyAnchors(store);
 assert.equal(loadDailyAnchor(store, anchorDate), null);
+
+const legacyHistoryState = {
+  "rill.history.v1": JSON.stringify([{
+    id: "legacy-1",
+    mode: "tarot",
+    title: "Legacy",
+    answer: "Legacy record",
+    createdAt: "2026-05-21T01:00:00.000Z",
+  }]),
+};
+const legacyHistoryStore = createStorage(memoryStorage(legacyHistoryState));
+assert.equal(loadHistory(legacyHistoryStore)[0].id, "legacy-1");
+saveHistoryRecord(legacyHistoryStore, {
+  id: "new-1",
+  mode: "tarot",
+  title: "AskAura",
+  answer: "New record",
+  createdAt: "2026-05-22T01:00:00.000Z",
+});
+assert.equal(legacyHistoryStore.has("askaura.history.v1"), true);
+assert.equal(legacyHistoryStore.has("rill.history.v1"), true);
+clearHistory(legacyHistoryStore);
+assert.deepEqual(loadHistory(legacyHistoryStore), []);
+assert.equal(legacyHistoryStore.has("rill.history.v1"), true);
+
+const legacyAnchorDate = "2026-05-21";
+const legacyDailyStore = createStorage(memoryStorage({
+  "rill.dailyAnchors.v1": JSON.stringify({
+    [legacyAnchorDate]: {
+      id: "legacy-anchor",
+      mode: "daily",
+      title: "Legacy anchor",
+      answer: "Legacy anchor record",
+      createdAt: "2026-05-21T01:00:00.000Z",
+    },
+  }),
+}));
+assert.equal(loadDailyAnchor(legacyDailyStore, legacyAnchorDate).id, "legacy-anchor");
+saveDailyAnchor(legacyDailyStore, legacyAnchorDate, {
+  id: "new-anchor",
+  mode: "daily",
+  title: "AskAura anchor",
+  answer: "New anchor record",
+  createdAt: "2026-05-22T01:00:00.000Z",
+});
+assert.equal(legacyDailyStore.has("askaura.dailyAnchors.v1"), true);
+assert.equal(legacyDailyStore.has("rill.dailyAnchors.v1"), true);
+clearDailyAnchors(legacyDailyStore);
+assert.equal(loadDailyAnchor(legacyDailyStore, legacyAnchorDate), null);
+assert.equal(legacyDailyStore.has("rill.dailyAnchors.v1"), true);
 
 console.log("storage tests passed");

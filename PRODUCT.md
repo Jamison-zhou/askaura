@@ -1,61 +1,63 @@
-# Product
+# AskAura Product Notes
 
-## Register
+## Positioning
 
-brand
+AskAura is a reflective symbolic-reading product. It uses tarot imagery, Meihua-style gua signals, and AI writing to help users organize uncertainty into a clearer view of the present moment.
+
+AskAura is not a fortune-telling product. It does not predict the future, promise outcomes, make decisions for the user, or frame uncertainty as fate.
 
 ## Users
 
-国内 Z 世代 / 年轻中文用户，在焦虑、迷茫、关系混乱、人生抉择的时刻打开此镜。
-他们不期待"算命"，期待的是一个安静的、可以独处的仪式——一面镜子，让自己看清楚现在站在哪里。
-使用场景多在夜晚，独处，低光，安静。一次使用 5–15 分钟，结束时希望带走一个可以执行的小行动。
-对设计敏感，能一眼识别"故宫文创周边 / 国潮联名"的低级感，对"原生东方"的高级感买单。
+Primary users are young Chinese-speaking users who open the product when they feel anxious, stuck, emotionally tangled, or unsure how to act next.
 
-## Product Purpose
+They are not looking for a mystical verdict. They want a quiet ritual that helps them name what is happening, notice their own position, and leave with one concrete action.
 
-此镜（RiLL）是一面用符号系统帮助自省的镜子。借助塔罗（22 张大阿尔卡那）与梅花易数（八卦），结合 AI，让人在不确定的时刻看得更清楚。它不预测、不给定论、不替你做决定；只是提供几个看待当下的角度，最终读卡的永远是你。每次会话以一个具体的行动收尾，因为生活终归是你自己来过。
+Typical use:
 
-本次改造目标：让产品从第一眼起就被识别为"原生东方"，为即将上线的梅花易数模块提供合身的视觉底座——两套占卜系统在同一品牌里都是原生的，不是"西方主题 + 中国插件"。
+- Nighttime or private moments.
+- 3 to 8 minutes per session.
+- One question, one reading, one practical next step.
 
-## Brand Personality
+## Core Product Promise
 
-**安静、留白、理性。** 当代东方极简。
+AskAura helps the user turn an unclear feeling into:
 
-不古董，不博物馆，不联名护饰，不玄学神秘。
-是一个 Z 世代认得出"自己人"的高级感——克制，自信，懂行。
-气质参考：无印良品的安静、茂海的克制、朝鲜者 Kinfolk 的留白，但骨子里是中文的、东方的。
+- one clearer question,
+- two or three angles on the current situation,
+- one small action for today or this week.
 
-## Anti-references
+The product should feel like a calm mirror, not a divination authority.
 
-明确不要落入这几类：
+## Modes
 
-- **故宫文创 / 国潮联名护饰**：黄金 + 服律人物 + 明朝灯饰 + 市场词重贴脸。
-- **抽签 H5 / 寺庙签言质感**：水墨滤镜 + 供几 + 宋体浓汤哲学鸡汤。
-- **抖音水墨供嚏 / 锦鲤求签**：金红黔梦 + 锦鲤 + 丽莱供品仪式。
-- **抽象简低卸 / 黄渤泡泡玛特联名**：跨笔纹 + 锡包包 + 明星 IP 三重轻原低低礼。
-- 任何带"算命 / 玄学 / 转运 / 灵签 / 改运"的转化词。
+- Tarot: focuses emotion, relationship tension, and the unspoken signal inside the question.
+- Meihua: reads timing, momentum, and current movement from the moment.
+- Dual: combines card and gua signals into a compact report with evidence and action.
+- Daily: gives a small daily anchor, not a prediction.
 
-## Design Principles
+## Voice
 
-1. **东方为骨，不是为衣**
-   留白、节奏、字距是骨架；印章、墨点、纹样是骨架上的点缀。先排版后装饰，禁止纹样优先。
+- Restrained, quiet, clear.
+- Modern Chinese first, with English support that feels like the same brand.
+- No flattery, no exaggerated comfort, no deterministic claims.
+- No `亲爱的`, `宝贝`, or emoji.
+- Avoid terms such as `算命`, `玄学`, `转运`, `灵签`, `改运`, and `命中注定`.
 
-2. **梅花与塔罗平权**
-   塔罗与梅花易数在视觉系统里享有同等地位，不能出现"主题 + 插件"的等级差。Hero、卡片、流程在两套系统之间应当无缝过渡。
+## Product Rules
 
-3. **静而非神秘**
-   不渲染玄学，气氛是"安静的自省时刻"。深色不是为了制造神秘，而是为了夜里 2 点的低光环境。
+- Every result ends with one concrete action.
+- Action copy must be specific enough to do today or this week.
+- Never replace user choice with an AI verdict.
+- Never make health, legal, financial, or relationship guarantees.
+- Keep legacy brand references only in explicitly marked migration notes.
 
-4. **中文为主，英文不让步**
-   中文做主排版，英文做副，但英文同样走东方 typesetting（字距、留白、纵线感），不让两种语言看起来像两个品牌。
+## Anti-References
 
-5. **每次会话以一个行动收尾**
-   现有产品哲学要在视觉层被强化：结束页（行动卡）比抽牌动画更重要——它是产品的真正高潮。
+Avoid:
 
-## Accessibility & Inclusion
-
-- WCAG 2.1 AA：正文对比 ≥ 4.5:1，大字号 ≥ 3:1。
-- `prefers-reduced-motion`：所有装饰动画（涟漪、卡片浮动、入场过渡）必须可关闭。
-- 中文字体 fallback 链：`"Source Han Serif SC", "Noto Serif SC", "Songti SC", "STSong", serif`。
-- 中英混排时英文字号应略小于中文以保持视觉等高。
-- 卡牌图像必须配有意义的中文 `alt`，不仅是英文牌名翻译。
+- temple-lottery or lucky-charm language,
+- exaggerated traditional decorative motifs,
+- gold-heavy visual systems,
+- generic chat-app behavior,
+- “AI therapist” framing,
+- fortune-teller authority.

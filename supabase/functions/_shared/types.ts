@@ -1,22 +1,39 @@
-// 此镜（RiLL）AI 后端类型定义
-// 与前端 index.html 的 callReadingApi() 调用契约严格对齐。
-
+// AskAura AI backend request and response contracts.
+// Keep these aligned with callReadingApi() in index.html.
 export type Orientation = "upright" | "reversed";
 export type Language = "zh" | "en";
 
-export type ReadingMode = "reading" | "advice" | "anchor" | "meihua-reading" | "clarify";
+export type ReadingMode = "reading" | "advice" | "anchor" | "meihua-reading" | "clarify" | "followup" | "weekly-summary";
 
 export interface LLMRuntimeOptions {
-  provider?: "kimi" | "xiaomi";
+  provider?: "kimi" | "xiaomi" | "deepseek";
   model?: string;
   temperature?: number;
   maxTokens?: number;
+}
+
+export type ModelTier = "basic" | "pro";
+export type ModelEntry = "tarot" | "meihua" | "dual" | "daily" | "followup" | "weekly";
+export type SpreadType = "single" | "three_current_resistance_next" | "relationship_tension" | "choice_a_b_reminder";
+
+export interface SpreadCard {
+  name: string;
+  label: string;
+  position: string;
+  orientation: Orientation;
+}
+
+export interface ModelRouteHints {
+  tier?: ModelTier;
+  entry?: ModelEntry;
 }
 
 export interface ReadingRequest {
   mode: "reading";
   cardName: string;
   orientation: Orientation;
+  spreadType?: SpreadType;
+  cards?: SpreadCard[];
   intent: string;
   question: string;
   round: number;
@@ -43,10 +60,10 @@ export interface AnchorRequest {
 
 export interface MeihuaReadingRequest {
   mode: "meihua-reading";
-  guaName: string;       // "乾" / "坤" / ...
+  guaName: string;
   intent: string;
   question: string;
-  language: "zh" | "en";
+  language: Language;
 }
 
 export interface ClarifyRequest {
@@ -56,10 +73,37 @@ export interface ClarifyRequest {
   language: Language;
 }
 
+export interface FollowupRequest {
+  mode: "followup";
+  originalQuestion: string;
+  resultSummary: string;
+  followupQuestion: string;
+  language: Language;
+}
+
+export interface WeeklySummaryRecord {
+  mode: string;
+  title: string;
+  question: string;
+  summary: string;
+  action: string;
+  actionStatus?: string;
+  reviewNote?: string;
+  createdAt: string;
+}
+
+export interface WeeklySummaryRequest {
+  mode: "weekly-summary";
+  records: WeeklySummaryRecord[];
+  language: Language;
+}
+
 export type AnyReadingRequest = (
-  ReadingRequest | AdviceRequest | AnchorRequest | MeihuaReadingRequest | ClarifyRequest
+  ReadingRequest | AdviceRequest | AnchorRequest | MeihuaReadingRequest | ClarifyRequest | FollowupRequest | WeeklySummaryRequest
 ) & {
   llm?: LLMRuntimeOptions;
+  tier?: ModelTier;
+  entry?: ModelEntry;
 };
 
 export interface DrawEvent {

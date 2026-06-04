@@ -31,6 +31,8 @@ desktop.ini
 npm-debug.log*
 tmp-dev-server.*
 tmp-static-server.mjs
+docs/smoke-reports/**/chrome-profile/
+docs/smoke-reports/**/profile-*/
 
 # Local scratch / generated assets
 tmp/

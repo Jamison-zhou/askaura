@@ -1,13 +1,27 @@
 import { createStorage, loadHistory, mergeHistory } from "./storage.js";
+import {
+  historyRecordFromRow,
+  historyRecordToRow
+} from "./history-store.js";
 
-export const SESSION_KEY = "rill.authSession.v1";
+export {
+  historyRecordFromRow,
+  historyRecordToRow
+};
 
-const HISTORY_TABLE = "rill_reflection_records";
-const DAILY_TABLE = "rill_daily_anchors";
+export const SESSION_KEY = "askaura.authSession.v1";
+
+const HISTORY_TABLE = "askaura_reflection_records";
+const DAILY_TABLE = "askaura_daily_anchors";
+const COMPANION_TABLE = "askaura_companion_profiles";
+const ENTITLEMENT_TABLE = "askaura_entitlements";
+const USAGE_TABLE = "askaura_usage_events";
+const SHARE_LINK_FUNCTION = "/functions/v1/share-link";
+const RESONANCE_FUNCTION = "/functions/v1/resonance-pool";
 
 export function createSyncClient({
-  supabaseUrl = globalThis.RILL_SUPABASE_URL,
-  anonKey = globalThis.RILL_SUPABASE_ANON_KEY,
+  supabaseUrl = globalThis.ASKAURA_SUPABASE_URL,
+  anonKey = globalThis.ASKAURA_SUPABASE_ANON_KEY,
   fetchImpl = globalThis.fetch,
   store = createStorage(),
 } = {}) {
@@ -163,6 +177,180 @@ export function createSyncClient({
     return { status: "synced" };
   }
 
+  async function loadCompanionProfile() {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out", profile: null };
+
+    const rows = await requestRest(`/${COMPANION_TABLE}?select=profile,quiet_flags,updated_at&limit=1`, {
+      method: "GET",
+      session,
+    });
+    const row = Array.isArray(rows) ? rows[0] : null;
+    return {
+      status: "synced",
+      profile: row?.profile || null,
+      quietFlags: Array.isArray(row?.quiet_flags) ? row.quiet_flags : [],
+      updatedAt: row?.updated_at || "",
+    };
+  }
+
+  async function saveCompanionProfile(profile = {}, quietFlags = []) {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+
+    await requestRest(`/${COMPANION_TABLE}?on_conflict=user_id`, {
+      method: "POST",
+      session,
+      headers: { Prefer: "resolution=merge-duplicates" },
+      body: [{
+        profile,
+        quiet_flags: Array.isArray(quietFlags) ? quietFlags : [],
+        updated_at: new Date().toISOString(),
+      }],
+    });
+
+    return { status: "synced" };
+  }
+
+  async function loadEntitlement() {
+    const session = await ensureSession();
+    if (!session?.access_token) {
+      return { status: "signed-out", plan: "free", entitlementStatus: "inactive" };
+    }
+
+    const rows = await requestRest(`/${ENTITLEMENT_TABLE}?select=plan,status,current_period_end,cancel_at_period_end&limit=1`, {
+      method: "GET",
+      session,
+    });
+    const row = Array.isArray(rows) ? rows[0] : null;
+    return {
+      status: "synced",
+      plan: row?.plan || "free",
+      entitlementStatus: row?.status || "inactive",
+      currentPeriodEnd: row?.current_period_end || "",
+      cancelAtPeriodEnd: Boolean(row?.cancel_at_period_end),
+    };
+  }
+
+  async function loadUsageSummary() {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out", events: [] };
+
+    const rows = await requestRest(`/${USAGE_TABLE}?select=event_type,entry,tier,model,max_tokens,status,created_at&order=created_at.desc&limit=50`, {
+      method: "GET",
+      session,
+    });
+    return {
+      status: "synced",
+      events: Array.isArray(rows) ? rows.map((row) => ({
+        eventType: row.event_type || "",
+        entry: row.entry || "",
+        tier: row.tier || "basic",
+        model: row.model || "",
+        maxTokens: Number(row.max_tokens) || 0,
+        status: row.status || "",
+        createdAt: row.created_at || "",
+      })) : [],
+    };
+  }
+
+  async function createShareLink(recordId, { includeQuestion = false, origin = globalThis.location?.origin || "" } = {}) {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+
+    const result = await requestFunction(SHARE_LINK_FUNCTION, {
+      method: "POST",
+      session,
+      headers: origin ? { "x-askaura-origin": origin } : {},
+      body: {
+        action: "create",
+        recordId,
+        includeQuestion,
+      },
+    });
+    return { status: "created", ...result };
+  }
+
+  async function revokeShareLink(id) {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+
+    await requestFunction(SHARE_LINK_FUNCTION, {
+      method: "POST",
+      session,
+      body: {
+        action: "revoke",
+        id,
+      },
+    });
+    return { status: "revoked" };
+  }
+
+  async function loadShareLink(token) {
+    const result = await requestFunction(SHARE_LINK_FUNCTION, {
+      method: "POST",
+      body: {
+        action: "get",
+        token,
+      },
+    });
+    return { status: "loaded", ...result };
+  }
+
+  async function submitResonance(recordId) {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+
+    const result = await requestFunction(RESONANCE_FUNCTION, {
+      method: "POST",
+      session,
+      body: {
+        action: "submit",
+        recordId,
+      },
+    });
+    return { status: "submitted", ...result };
+  }
+
+  async function revokeResonance(id) {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+
+    const result = await requestFunction(RESONANCE_FUNCTION, {
+      method: "POST",
+      session,
+      body: {
+        action: "revoke",
+        id,
+      },
+    });
+    return { status: "revoked", ...result };
+  }
+
+  async function loadResonancePool({ language = "zh", category = "all" } = {}) {
+    const result = await requestFunction(RESONANCE_FUNCTION, {
+      method: "POST",
+      body: {
+        action: "list",
+        language,
+        category,
+      },
+    });
+    return { status: "loaded", ...result };
+  }
+
+  async function reactToResonance(id, reaction) {
+    const result = await requestFunction(RESONANCE_FUNCTION, {
+      method: "POST",
+      body: {
+        action: "react",
+        id,
+        reaction,
+      },
+    });
+    return { status: "reacted", ...result };
+  }
+
   async function requestAuth(path, body) {
     const response = await fetchImpl(baseUrl + path, {
       method: "POST",
@@ -214,17 +402,42 @@ export function createSyncClient({
     return parseResponse(response);
   }
 
+  async function requestFunction(path, { method, session, headers = {}, body } = {}) {
+    const response = await fetchImpl(baseUrl + path, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        apikey: anonKey,
+        Authorization: `Bearer ${session?.access_token || anonKey}`,
+        ...headers,
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    return parseResponse(response);
+  }
+
   return {
     clearCloudRecords,
     completeSessionFromUrl,
+    createShareLink,
     getSession,
+    loadCompanionProfile,
     loadDailyAnchor,
+    loadEntitlement,
+    loadResonancePool,
+    loadShareLink,
+    loadUsageSummary,
     requestPasswordReset,
     refreshSession,
+    reactToResonance,
+    revokeShareLink,
+    revokeResonance,
     saveDailyAnchor,
+    saveCompanionProfile,
     signInWithPassword,
     signOut,
     signUpWithPassword,
+    submitResonance,
     syncHistory,
     updatePassword,
   };
@@ -256,40 +469,6 @@ export function parseAuthUrl(url) {
 
 export function normalizeSupabaseUrl(url) {
   return String(url || "").replace(/\/+$/, "");
-}
-
-export function historyRecordToRow(record) {
-  return {
-    id: record.id,
-    mode: record.mode,
-    title: record.title || "",
-    question: record.question || "",
-    answer: record.answer || "",
-    action: record.action || "",
-    image_src: record.imageSrc || "",
-    image_alt: record.imageAlt || "",
-    anchor: record.anchor || null,
-    language: record.language || "zh",
-    created_at: record.createdAt,
-    updated_at: record.updatedAt || record.createdAt,
-  };
-}
-
-export function historyRecordFromRow(row) {
-  return {
-    id: row.id,
-    mode: row.mode,
-    title: row.title || "",
-    question: row.question || "",
-    answer: row.answer || "",
-    action: row.action || "",
-    imageSrc: row.image_src || "",
-    imageAlt: row.image_alt || "",
-    anchor: row.anchor || null,
-    language: row.language || "zh",
-    createdAt: row.created_at,
-    updatedAt: row.updated_at || row.created_at,
-  };
 }
 
 async function parseResponse(response) {

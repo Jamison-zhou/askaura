@@ -20,8 +20,8 @@
     </noscript>
     <link rel="stylesheet" href="./styles.css?v=20260602-result-hierarchy-1" />
     <script>
-      window.RILL_SUPABASE_URL = "https://icvegpfnpkyrebtojoca.supabase.co";
-      window.RILL_SUPABASE_ANON_KEY = "sb_publishable_WBw4WUZdTCIIF3MhPtRg4w_N6MjH3hg";
+      window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
+      window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
     </script>
   </head>
   <body>
@@ -55,6 +55,7 @@
 
         <div class="rail-actions">
           <button type="button" id="history-btn" data-i18n="history">回看</button>
+          <button type="button" id="companion-btn" data-i18n="companion">同行</button>
           <button type="button" id="account-btn" data-i18n="account">登录</button>
         </div>
 
@@ -113,6 +114,27 @@
               data-i18n-placeholder="questionPlaceholder"
               placeholder="我最近总是睡不着，不知道真正烦的是什么。"
             ></textarea>
+            <div class="question-examples" id="question-examples">
+              <button type="button" data-question-example data-i18n="questionExample1">我真正想确认的，是对方态度，还是自己的边界？</button>
+              <button type="button" data-question-example data-i18n="questionExample2">这件事卡住，是缺少信息，还是我急着要答案？</button>
+              <button type="button" data-question-example data-i18n="questionExample3">如果这周只做一步，哪一步最不消耗？</button>
+              <button type="button" data-question-example data-i18n="questionExample4">我现在该观察什么，而不是立刻推进什么？</button>
+            </div>
+            <div class="spread-selector" id="spread-selector">
+              <span data-i18n="spreadSelectorLabel">牌阵</span>
+              <button type="button" class="is-selected" data-spread-type="single" data-i18n="spreadSingle">单牌</button>
+              <button type="button" data-spread-type="three_current_resistance_next" data-i18n="spreadThree">现状 / 阻力 / 下一步</button>
+              <button type="button" data-spread-type="relationship_tension" data-i18n="spreadRelationship">关系张力</button>
+              <button type="button" data-spread-type="choice_a_b_reminder" data-i18n="spreadChoice">选择 A / B</button>
+            </div>
+            <div class="gua-cast-selector" id="gua-cast-selector" hidden>
+              <span data-i18n="guaCastLabel">起卦方式</span>
+              <button type="button" class="is-selected" data-gua-cast="time" data-i18n="guaCastTime">当前时间</button>
+              <button type="button" data-gua-cast="character" data-i18n="guaCastCharacter">一个汉字</button>
+              <button type="button" data-gua-cast="number" data-i18n="guaCastNumber">一个数字</button>
+              <button type="button" data-gua-cast="casual_number" data-i18n="guaCastCasual">随手数字</button>
+              <input id="gua-seed-input" maxlength="12" data-i18n-placeholder="guaSeedPlaceholder" placeholder="输入一个字或数字" hidden />
+            </div>
             <div class="gua-compose-mark" id="gua-compose-mark" hidden aria-hidden="true">
               <span></span>
               <span class="split"><i></i><i></i></span>
@@ -196,6 +218,21 @@
                 <p id="action-watch"></p>
               </section>
             </div>
+            <div class="action-status" id="action-status" hidden>
+              <span data-i18n="actionStatusLabel">这一步后来怎么样？</span>
+              <div>
+                <button type="button" data-action-status="done" data-i18n="actionStatusDone">做了，有帮助</button>
+                <button type="button" data-action-status="not_done" data-i18n="actionStatusNotDone">还没做</button>
+                <button type="button" data-action-status="skipped" data-i18n="actionStatusSkipped">跳过了</button>
+                <button type="button" data-action-status="not_fit" data-i18n="actionStatusNotFit">不太适合</button>
+              </div>
+            </div>
+            <div class="review-box" id="review-box" hidden>
+              <span data-i18n="reviewLabel">三天后复盘</span>
+              <p id="review-status"></p>
+              <textarea id="review-note-input" rows="3" maxlength="180" data-i18n-placeholder="reviewPlaceholder" placeholder="三天后，这个行动带来了什么变化？"></textarea>
+              <button type="button" class="secondary muted" id="review-save-btn" data-i18n="reviewSave">保存复盘</button>
+            </div>
             <p class="action-sentence" id="action-sentence"></p>
             <div class="followup-chips" id="followup-chips" hidden aria-label="继续探索这次结果">
               <span class="followup-label" data-i18n="followupLabel">继续探索这次结果</span>
@@ -233,12 +270,33 @@
               <div><span data-i18n="anchorMoment">时刻</span><strong id="anchor-moment"></strong></div>
             </div>
             <p class="daily-note-status" id="daily-note-status" hidden data-i18n="dailyNoteStatus">已收入回看</p>
+            <div class="share-panel" id="share-panel" hidden>
+              <label>
+                <input type="checkbox" id="share-include-question" />
+                <span data-i18n="shareIncludeQuestion">分享时包含原问题</span>
+              </label>
+              <div class="private-share">
+                <button class="secondary muted" type="button" id="create-share-link-btn" data-i18n="createShareLink">生成私密链接</button>
+                <button class="secondary muted subtle-danger" type="button" id="revoke-share-link-btn" data-i18n="revokeShareLink" hidden>撤销链接</button>
+              </div>
+              <div class="private-share">
+                <button class="secondary muted" type="button" id="resonance-submit-btn" data-i18n="resonanceSubmit">匿名放入共鸣池</button>
+                <button class="secondary muted" type="button" id="resonance-open-btn" data-i18n="resonanceOpen">看看相似主题</button>
+                <button class="secondary muted subtle-danger" type="button" id="resonance-revoke-btn" data-i18n="resonanceRevoke" hidden>撤回共鸣</button>
+              </div>
+              <p class="share-link-status" id="share-link-status"></p>
+              <textarea id="copy-fallback-text" class="copy-fallback" readonly hidden aria-label="可手动复制的内容"></textarea>
+            </div>
             <p class="loading-line" id="loading-line" hidden data-i18n="loading">正在整理本次线索…</p>
           </article>
         </div>
 
         <div class="result-actions">
           <button class="secondary muted" type="button" id="copy-btn" data-i18n="copy">复制行动句</button>
+          <button class="secondary muted" type="button" id="copy-summary-btn" data-i18n="copySummary">复制摘要</button>
+          <button class="secondary muted" type="button" id="copy-full-btn" data-i18n="copyFull">复制完整结果</button>
+          <button class="secondary muted" type="button" id="share-image-btn" data-i18n="shareImage">下载分享图</button>
+          <button class="secondary muted" type="button" id="export-pdf-btn" data-i18n="exportPdf">导出 PDF</button>
           <button class="secondary muted" type="button" id="save-btn" data-i18n="saveHistory">保存到回看</button>
           <button class="secondary muted subtle-danger" type="button" id="new-reading-btn" data-i18n="newReadingTarot">重新抽牌（新结果）</button>
           <button class="secondary muted" type="button" id="again-btn" data-i18n="again">回到问题</button>
@@ -289,6 +347,18 @@
       <section class="utility-sheet" aria-label="回看">
         <button class="utility-close" type="button" data-close-utility aria-label="关闭回看">×</button>
         <p class="panel-kicker" data-i18n="historyKicker">最近的象</p>
+        <div class="history-filters" id="history-filters" aria-label="筛选回看">
+          <button type="button" data-history-filter="all" data-i18n="historyFilterAll">全部</button>
+          <button type="button" data-history-filter="tarot" data-i18n="modeTarot">塔罗</button>
+          <button type="button" data-history-filter="meihua" data-i18n="modeMeihua">梅花</button>
+          <button type="button" data-history-filter="dual" data-i18n="modeDual">双象</button>
+          <button type="button" data-history-filter="daily" data-i18n="modeDaily">当下</button>
+        </div>
+        <div class="weekly-summary" id="weekly-summary">
+          <button class="secondary muted" type="button" id="weekly-summary-btn" data-i18n="weeklySummaryButton">生成周复盘</button>
+          <p id="weekly-summary-status" data-i18n="weeklySummaryHint">至少 3 条记录后可生成。</p>
+          <div class="weekly-summary-result" id="weekly-summary-result" hidden></div>
+        </div>
         <div class="history-list" id="history-list"></div>
         <button class="history-clear" type="button" id="history-clear-btn" data-i18n="clearHistory">清空记录</button>
       </section>
@@ -300,6 +370,11 @@
         <button class="utility-close" type="button" data-close-utility aria-label="关闭登录">×</button>
         <p class="panel-kicker" data-i18n="authKicker">登录同步</p>
         <p class="auth-status" id="auth-status"></p>
+        <div class="plan-status" id="plan-status">
+          <strong data-i18n="planFreeTitle">免费版</strong>
+          <span data-i18n="planFreeCopy">保留核心解读、回看和基础追问。</span>
+          <span class="plan-note" data-i18n="planPaidClosed">付费入口暂未开放。</span>
+        </div>
         <form class="auth-form" id="auth-form">
           <input id="auth-email" type="email" autocomplete="email" data-i18n-placeholder="emailPlaceholder" placeholder="邮箱" required />
           <input id="auth-password" type="password" autocomplete="current-password" data-i18n-placeholder="passwordPlaceholder" placeholder="密码" required />
@@ -314,6 +389,41 @@
       </section>
     </div>
 
+    <div class="utility-panel" id="resonance-panel" hidden aria-hidden="true">
+      <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭共鸣池"></button>
+      <section class="utility-sheet" aria-label="共鸣池">
+        <button class="utility-close" type="button" data-close-utility aria-label="关闭共鸣池">×</button>
+        <p class="panel-kicker" data-i18n="resonanceKicker">匿名共鸣</p>
+        <div class="resonance-list" id="resonance-list"></div>
+      </section>
+    </div>
+
+    <div class="utility-panel" id="companion-panel" hidden aria-hidden="true">
+      <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭同行"></button>
+      <section class="utility-sheet companion-panel" aria-label="长期同行">
+        <button class="utility-close" type="button" data-close-utility aria-label="关闭同行">×</button>
+        <p class="panel-kicker" data-i18n="companionKicker">长期同行</p>
+        <div class="companion-grid">
+          <section>
+            <span data-i18n="companionTrail">观察线索</span>
+            <div id="companion-trail"></div>
+          </section>
+          <section>
+            <span data-i18n="companionThemeMap">个人主题图</span>
+            <div id="companion-theme-map"></div>
+          </section>
+          <section>
+            <span data-i18n="companionCollection">象与行动</span>
+            <div id="companion-collection"></div>
+          </section>
+          <section>
+            <span data-i18n="companionEcho">一个月回声</span>
+            <div id="companion-echo"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
     <script type="module">
       import {
         clearDailyAnchors,
@@ -325,19 +435,53 @@
         saveHistoryRecord,
         todayKey
       } from "./assets/app/storage.js";
-      import { guaFromTime } from "./assets/app/meihua.js";
+      import { guaFromCast, guaFromTime } from "./assets/app/meihua.js";
+      import {
+        TAROT_DECK,
+        cardKeywords as ritualCardKeywords,
+        primaryCardFromRecordCards as selectPrimaryCardFromRecordCards,
+        recordCardFromSelection as buildRecordCardFromSelection,
+        ritualCardLayout,
+        ritualSpreadTypeForMode,
+        spreadDisplayName as ritualSpreadDisplayName,
+        spreadPositions as ritualSpreadPositions
+      } from "./assets/app/ritual-engine.js";
+      import { deriveCompanionSnapshot } from "./assets/app/companion.js";
+      import { createReadingClient } from "./assets/app/reading-client.js";
+      import {
+        actionFromRecord as actionFromResultRecord,
+        buildActionAdvice,
+        describeGua,
+        reportFromRecord as normalizeReportFromRecord
+      } from "./assets/app/result-renderer.js";
+      import {
+        appendFollowupToRecord,
+        clarificationHistoryText as buildClarificationHistoryText,
+        clarificationLinkText as buildClarificationLinkText,
+        clarificationPromptText,
+        createClarificationContext,
+        createFollowupEntry,
+        followupQuestionText as selectFollowupQuestionText,
+        followupResultSummary as buildFollowupResultSummary,
+        formatStoredFollowups
+      } from "./assets/app/followup.js";
       import { createSyncClient } from "./assets/app/sync.js";
 
-      const API_URL = window.RILL_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/reading";
-      const CONFIG_API_URL = window.RILL_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/admin-config";
-      const API_AUTH = "Bearer " + window.RILL_SUPABASE_ANON_KEY;
-      const CONFIG_KEY = "rill_admin_config_v1";
+      const API_URL = window.ASKAURA_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/reading";
+      const CONFIG_API_URL = window.ASKAURA_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/admin-config";
+      const API_AUTH = "Bearer " + window.ASKAURA_SUPABASE_ANON_KEY;
+      const CONFIG_KEY = "askaura_admin_config_v1";
       let adminConfig = {};
       const recordStore = createStorage();
       const syncClient = createSyncClient({
-        supabaseUrl: window.RILL_SUPABASE_URL,
-        anonKey: window.RILL_SUPABASE_ANON_KEY,
+        supabaseUrl: window.ASKAURA_SUPABASE_URL,
+        anonKey: window.ASKAURA_SUPABASE_ANON_KEY,
         store: recordStore
+      });
+      const readingClient = createReadingClient({
+        apiUrl: API_URL,
+        authToken: API_AUTH,
+        getLlmOptions
       });
 
       const translations = {
@@ -364,6 +508,30 @@
           questionPlaceholderDualAlt1: "比如：这段关系的情绪和趋势，分别在提醒我什么？",
           questionPlaceholderDualAlt2: "比如：我下一步更该收束、沟通，还是等待？",
           questionPlaceholderDaily: "不用输入问题，直接打开今天的锚点。",
+          questionExample1: "我真正想确认的，是对方态度，还是自己的边界？",
+          questionExample2: "这件事卡住，是缺少信息，还是我急着要答案？",
+          questionExample3: "如果这周只做一步，哪一步最不消耗？",
+          questionExample4: "我现在该观察什么，而不是立刻推进什么？",
+          spreadSelectorLabel: "牌阵",
+          spreadSingle: "单牌",
+          spreadThree: "现状 / 阻力 / 下一步",
+          spreadRelationship: "关系张力",
+          spreadChoice: "选择 A / B",
+          spreadPositionCurrent: "现状",
+          spreadPositionResistance: "阻力",
+          spreadPositionNext: "下一步",
+          spreadPositionSelf: "自己",
+          spreadPositionOther: "对方表现",
+          spreadPositionTension: "关系张力",
+          spreadPositionChoiceA: "选择 A",
+          spreadPositionChoiceB: "选择 B",
+          spreadPositionReminder: "提醒",
+          guaCastLabel: "起卦方式",
+          guaCastTime: "当前时间",
+          guaCastCharacter: "一个汉字",
+          guaCastNumber: "一个数字",
+          guaCastCasual: "随手数字",
+          guaSeedPlaceholder: "输入一个字或数字",
           modeHintTarot: "适合关系、情绪与选择题。",
           modeHintMeihua: "基于梅花易数，观察趋势、时机与推进方式。",
           modeHintDual: "同时参考牌象与卦象，整理成摘要、依据、行动和复盘。",
@@ -391,6 +559,7 @@
           ritualShuffle: "正在洗牌…",
           ritualSpread: "牌阵正在展开",
           ritualChooseCard: "请凭第一直觉，选一张此刻最吸引你的牌",
+          ritualChoosePosition: "请为这个位置选牌：",
           ritualSelect: "你选择了这张牌",
           ritualConfirm: "确认这张牌",
           ritualReselect: "重新选择",
@@ -413,6 +582,36 @@
           loading: "正在整理本次线索…",
           again: "回到问题",
           copy: "复制行动句",
+          copySummary: "复制摘要",
+          copyFull: "复制完整结果",
+          shareImage: "下载分享图",
+          exportPdf: "导出 PDF",
+          shareIncludeQuestion: "分享时包含原问题",
+          createShareLink: "生成私密链接",
+          revokeShareLink: "撤销链接",
+          shareLinkCreated: "私密链接已复制。知道链接的人可以只读查看。",
+          shareLinkRevoked: "链接已撤销",
+          shareLinkSignin: "登录后才能生成私密链接。",
+          shareLinkFailed: "私密链接暂时不可用。",
+          sharedResultTitle: "AskAura 分享结果",
+          sharedResultMissing: "这个分享链接不可用或已撤销。",
+          resonanceSubmit: "匿名放入共鸣池",
+          resonanceOpen: "看看相似主题",
+          resonanceRevoke: "撤回共鸣",
+          resonanceKicker: "匿名共鸣",
+          resonanceSubmitted: "已匿名放入共鸣池。",
+          resonanceRevoked: "已撤回共鸣。",
+          resonanceSignin: "登录后才能提交共鸣。",
+          resonanceFailed: "共鸣池暂时不可用。",
+          resonanceEmpty: "还没有可展示的匿名主题。",
+          resonanceSame: "我也有这种感觉",
+          resonanceUseful: "这个行动有用",
+          companionKicker: "长期同行",
+          companionTrail: "观察线索",
+          companionThemeMap: "个人主题图",
+          companionCollection: "象与行动",
+          companionEcho: "一个月回声",
+          companionEmpty: "多保存几次结果后，这里会出现重复线索。",
           saveHistory: "保存到回看",
           savedHistory: "已保存到回看",
           newReadingTarot: "重新抽牌（新结果）",
@@ -422,21 +621,39 @@
           copied: "行动已复制",
           copyFailed: "复制失败",
           copyManual: "按 Ctrl+C",
+          imageSaved: "已生成图片",
+          exportOpened: "已打开打印页",
           anchorColor: "颜色",
           anchorObject: "物件",
           anchorMoment: "时刻",
           fallbackQuestion: "我现在需要看清什么？",
           history: "回看",
+          companion: "同行",
           account: "登录",
           accountReady: "我的",
           historyKicker: "最近的象",
           historyEmpty: "还没有留下记录。",
+          historyFilterAll: "全部",
+          historyFavorite: "收藏",
+          historyFavorited: "已收藏",
+          historyFollowupCount: "追问",
+          historyClarification: "澄清牌",
+          weeklySummaryButton: "生成周复盘",
+          weeklySummaryHint: "至少 3 条记录后可生成。",
+          weeklySummaryReady: "可基于最近记录生成周复盘。",
+          weeklySummaryWorking: "正在整理本周重复出现的线索…",
+          weeklySummaryFailed: "周复盘暂时没有生成，可以稍后再试。",
           clearHistory: "清空记录",
           clearDone: "已清空",
           authKicker: "登录同步",
           authSignedOut: "未登录也可以使用；登录后同步最近记录。",
           authSignedIn: "已登录：",
           authSynced: "已同步",
+          planFreeTitle: "免费版",
+          planProTitle: "Pro",
+          planFreeCopy: "保留核心解读、回看和基础追问。",
+          planProCopy: "更长的月度整理、更多追问额度、更多导出与私密链接管理。",
+          planPaidClosed: "付费入口暂未开放。",
           authFailed: "没有连上账号，请稍后再试。",
           authWorking: "正在处理…",
           authSignupPending: "注册已提交。请检查邮箱，或稍后直接登录。",
@@ -469,6 +686,16 @@
           actionDoLabel: "现在可以做",
           actionDontLabel: "先别急着做",
           actionWatchLabel: "接下来观察什么",
+          actionStatusLabel: "这一步后来怎么样？",
+          actionStatusDone: "做了，有帮助",
+          actionStatusNotDone: "还没做",
+          actionStatusSkipped: "跳过了",
+          actionStatusNotFit: "不太适合",
+          reviewLabel: "三天后复盘",
+          reviewDue: "可以写一句复盘：这一步后来有没有帮你看清一点？",
+          reviewSaved: "复盘已保存",
+          reviewPlaceholder: "三天后，这个行动带来了什么变化？",
+          reviewSave: "保存复盘",
           followupLabel: "继续探索这次结果",
           followupOpen: "打开追问面板",
           followupPanelTitle: "基于这次牌象，你还想看哪一面？",
@@ -483,6 +710,7 @@
           followupCustomSubmit: "生成补充回答",
           followupCustomSubmitSelected: "基于本次结果追问",
           followupWorking: "正在整理补充回答…",
+          followupFailed: "这次追问没有得到清晰回应。当前结果已保留，可以稍后再试。",
           followupAnswerLabel: "补充回答",
           emptyFallback: "暂无",
           emailPlaceholder: "邮箱",
@@ -516,6 +744,30 @@
           questionPlaceholderDualAlt1: "For example: what do the emotion and momentum of this relationship each point to?",
           questionPlaceholderDualAlt2: "For example: should my next move be closure, conversation, or waiting?",
           questionPlaceholderDaily: "No question needed. Open today's anchor.",
+          questionExample1: "Am I trying to confirm their attitude, or my own boundary?",
+          questionExample2: "Is this blocked by missing information, or by my urgency for an answer?",
+          questionExample3: "If I take only one step this week, which step costs me least?",
+          questionExample4: "What should I observe now instead of pushing immediately?",
+          spreadSelectorLabel: "Spread",
+          spreadSingle: "Single",
+          spreadThree: "Current / Resistance / Next",
+          spreadRelationship: "Relationship tension",
+          spreadChoice: "Choice A / B",
+          spreadPositionCurrent: "Current",
+          spreadPositionResistance: "Resistance",
+          spreadPositionNext: "Next step",
+          spreadPositionSelf: "Self",
+          spreadPositionOther: "Visible other",
+          spreadPositionTension: "Relationship tension",
+          spreadPositionChoiceA: "Choice A",
+          spreadPositionChoiceB: "Choice B",
+          spreadPositionReminder: "Reminder",
+          guaCastLabel: "Cast method",
+          guaCastTime: "Current time",
+          guaCastCharacter: "One Chinese character",
+          guaCastNumber: "One number",
+          guaCastCasual: "Casual number",
+          guaSeedPlaceholder: "Enter one character or number",
           modeHintTarot: "Good for relationships, emotions, and choices.",
           modeHintMeihua: "Based on Meihua Yishu, for timing, momentum, and next movement.",
           modeHintDual: "Reads card and gua signals together into summary, evidence, action, and review.",
@@ -543,6 +795,7 @@
           ritualShuffle: "Shuffling...",
           ritualSpread: "The spread is opening",
           ritualChooseCard: "Choose the card that first holds your attention",
+          ritualChoosePosition: "Choose a card for: ",
           ritualSelect: "You chose this card",
           ritualConfirm: "Confirm this card",
           ritualReselect: "Choose again",
@@ -565,6 +818,36 @@
           loading: "Structuring this reading...",
           again: "Back to question",
           copy: "Copy action",
+          copySummary: "Copy summary",
+          copyFull: "Copy full result",
+          shareImage: "Download image",
+          exportPdf: "Export PDF",
+          shareIncludeQuestion: "Include original question",
+          createShareLink: "Create private link",
+          revokeShareLink: "Revoke link",
+          shareLinkCreated: "Private link copied. Anyone with the link can view this read-only result.",
+          shareLinkRevoked: "Link revoked",
+          shareLinkSignin: "Sign in to create a private link.",
+          shareLinkFailed: "Private link is not available right now.",
+          sharedResultTitle: "AskAura shared result",
+          sharedResultMissing: "This shared link is unavailable or has been revoked.",
+          resonanceSubmit: "Add anonymously",
+          resonanceOpen: "View similar themes",
+          resonanceRevoke: "Withdraw",
+          resonanceKicker: "Anonymous resonance",
+          resonanceSubmitted: "Added anonymously.",
+          resonanceRevoked: "Withdrawn.",
+          resonanceSignin: "Sign in to submit resonance.",
+          resonanceFailed: "Resonance pool is not available right now.",
+          resonanceEmpty: "No anonymous themes yet.",
+          resonanceSame: "Same feeling",
+          resonanceUseful: "Useful action",
+          companionKicker: "Long-term companion",
+          companionTrail: "Observation trail",
+          companionThemeMap: "Personal theme map",
+          companionCollection: "Symbols and actions",
+          companionEcho: "One-month echo",
+          companionEmpty: "Save a few results to see repeated signals here.",
           saveHistory: "Save to history",
           savedHistory: "Saved to history",
           newReadingTarot: "Draw again (new result)",
@@ -574,21 +857,39 @@
           copied: "Action copied",
           copyFailed: "Copy failed",
           copyManual: "Press Ctrl+C",
+          imageSaved: "Image ready",
+          exportOpened: "Print page opened",
           anchorColor: "Color",
           anchorObject: "Object",
           anchorMoment: "Moment",
           fallbackQuestion: "What do I need to see right now?",
           history: "History",
+          companion: "Companion",
           account: "Sign in",
           accountReady: "Mine",
           historyKicker: "Recent symbols",
           historyEmpty: "No saved records yet.",
+          historyFilterAll: "All",
+          historyFavorite: "Favorite",
+          historyFavorited: "Favorited",
+          historyFollowupCount: "Follow-ups",
+          historyClarification: "Clarification",
+          weeklySummaryButton: "Generate weekly review",
+          weeklySummaryHint: "Available after at least 3 records.",
+          weeklySummaryReady: "Ready to summarize recent records.",
+          weeklySummaryWorking: "Finding repeated signals from this week...",
+          weeklySummaryFailed: "Weekly review could not be generated. Try again later.",
           clearHistory: "Clear records",
           clearDone: "Cleared",
           authKicker: "Sign in to sync",
           authSignedOut: "You can use AskAura without signing in. Sign in to sync recent records.",
           authSignedIn: "Signed in: ",
           authSynced: "Synced",
+          planFreeTitle: "Free",
+          planProTitle: "Pro",
+          planFreeCopy: "Core readings, history, and basic follow-ups stay available.",
+          planProCopy: "Longer monthly reviews, more follow-ups, more exports, and private link management.",
+          planPaidClosed: "Paid access is not open yet.",
           authFailed: "Could not reach your account. Try again later.",
           authWorking: "Working...",
           authSignupPending: "Sign-up submitted. Check your email, or sign in shortly.",
@@ -621,6 +922,16 @@
           actionDoLabel: "Do now",
           actionDontLabel: "Do not rush into",
           actionWatchLabel: "Watch next",
+          actionStatusLabel: "How did this step go?",
+          actionStatusDone: "Done, useful",
+          actionStatusNotDone: "Not yet",
+          actionStatusSkipped: "Skipped",
+          actionStatusNotFit: "Did not fit",
+          reviewLabel: "Three-day review",
+          reviewDue: "Add one review note: did this step help you see anything more clearly?",
+          reviewSaved: "Review saved",
+          reviewPlaceholder: "After three days, what changed from this action?",
+          reviewSave: "Save review",
           followupLabel: "Continue exploring this result",
           followupOpen: "Open follow-up panel",
           followupPanelTitle: "Based on this card, which side do you want to see?",
@@ -635,6 +946,7 @@
           followupCustomSubmit: "Generate follow-up",
           followupCustomSubmitSelected: "Ask from this result",
           followupWorking: "Organizing follow-up...",
+          followupFailed: "This follow-up did not return clearly. The current result is preserved; try again later.",
           followupAnswerLabel: "Follow-up answer",
           emptyFallback: "Not available",
           emailPlaceholder: "Email",
@@ -689,37 +1001,11 @@
       function getLlmOptions() {
         const llm = adminConfig.llm || {};
         return {
-          provider: ["kimi", "xiaomi"].includes(llm.provider) ? llm.provider : undefined,
-          model: typeof llm.model === "string" && llm.model.trim() ? llm.model.trim() : undefined,
-          temperature: clampNumber(llm.temperature, 0.7, 0, 1.5),
-          maxTokens: Math.round(clampNumber(llm.maxTokens, 2048, 128, 4096))
+          temperature: clampNumber(llm.temperature, 0.7, 0, 1.5)
         };
       }
 
-      const tarotDeck = [
-        ["The Fool", "愚者", "00-the-fool.jpg"],
-        ["The Magician", "魔术师", "01-the-magician.jpg"],
-        ["The High Priestess", "女祭司", "02-the-high-priestess.jpg"],
-        ["The Empress", "皇后", "03-the-empress.jpg"],
-        ["The Emperor", "皇帝", "04-the-emperor.jpg"],
-        ["The Hierophant", "教皇", "05-the-hierophant.jpg"],
-        ["The Lovers", "恋人", "06-the-lovers.jpg"],
-        ["The Chariot", "战车", "07-the-chariot.jpg"],
-        ["Strength", "力量", "08-strength.jpg"],
-        ["The Hermit", "隐士", "09-the-hermit.jpg"],
-        ["Wheel of Fortune", "命运之轮", "10-wheel-of-fortune.jpg"],
-        ["Justice", "正义", "11-justice.jpg"],
-        ["The Hanged Man", "倒吊人", "12-the-hanged-man.jpg"],
-        ["Death", "死神", "13-death.jpg"],
-        ["Temperance", "节制", "14-temperance.jpg"],
-        ["The Devil", "恶魔", "15-the-devil.jpg"],
-        ["The Tower", "高塔", "16-the-tower.jpg"],
-        ["The Star", "星星", "17-the-star.jpg"],
-        ["The Moon", "月亮", "18-the-moon.jpg"],
-        ["The Sun", "太阳", "19-the-sun.jpg"],
-        ["Judgement", "审判", "20-judgement.jpg"],
-        ["The World", "世界", "21-the-world.jpg"]
-      ];
+      const tarotDeck = TAROT_DECK;
 
       const els = {
         room: document.querySelector(".mirror-room"),
@@ -729,6 +1015,12 @@
         answerPanel: document.querySelector(".answer-panel"),
         form: document.getElementById("question-form"),
         input: document.getElementById("question-input"),
+        questionExamples: document.getElementById("question-examples"),
+        spreadSelector: document.getElementById("spread-selector"),
+        spreadBtns: Array.from(document.querySelectorAll("[data-spread-type]")),
+        guaCastSelector: document.getElementById("gua-cast-selector"),
+        guaCastBtns: Array.from(document.querySelectorAll("[data-gua-cast]")),
+        guaSeedInput: document.getElementById("gua-seed-input"),
         questionLabel: document.getElementById("question-label"),
         modePrimer: document.getElementById("mode-primer"),
         cast: document.getElementById("cast-btn"),
@@ -738,16 +1030,24 @@
         langBtns: Array.from(document.querySelectorAll(".lang-btn")),
         nextBtns: Array.from(document.querySelectorAll("[data-next]")),
         historyBtn: document.getElementById("history-btn"),
+        companionBtn: document.getElementById("companion-btn"),
         accountBtn: document.getElementById("account-btn"),
         historyPanel: document.getElementById("history-panel"),
         authPanel: document.getElementById("auth-panel"),
+        resonancePanel: document.getElementById("resonance-panel"),
+        companionPanel: document.getElementById("companion-panel"),
         utilityClosers: Array.from(document.querySelectorAll("[data-close-utility]")),
+        historyFilters: document.getElementById("history-filters"),
+        weeklySummaryBtn: document.getElementById("weekly-summary-btn"),
+        weeklySummaryStatus: document.getElementById("weekly-summary-status"),
+        weeklySummaryResult: document.getElementById("weekly-summary-result"),
         historyList: document.getElementById("history-list"),
         historyClear: document.getElementById("history-clear-btn"),
         authForm: document.getElementById("auth-form"),
         authEmail: document.getElementById("auth-email"),
         authPassword: document.getElementById("auth-password"),
         authStatus: document.getElementById("auth-status"),
+        planStatus: document.getElementById("plan-status"),
         signup: document.getElementById("signup-btn"),
         passwordReset: document.getElementById("password-reset-btn"),
         passwordUpdate: document.getElementById("password-update-btn"),
@@ -757,6 +1057,24 @@
         save: document.getElementById("save-btn"),
         newReading: document.getElementById("new-reading-btn"),
         copy: document.getElementById("copy-btn"),
+        copySummary: document.getElementById("copy-summary-btn"),
+        copyFull: document.getElementById("copy-full-btn"),
+        shareImage: document.getElementById("share-image-btn"),
+        exportPdf: document.getElementById("export-pdf-btn"),
+        sharePanel: document.getElementById("share-panel"),
+        shareIncludeQuestion: document.getElementById("share-include-question"),
+        createShareLink: document.getElementById("create-share-link-btn"),
+        revokeShareLink: document.getElementById("revoke-share-link-btn"),
+        resonanceSubmit: document.getElementById("resonance-submit-btn"),
+        resonanceOpen: document.getElementById("resonance-open-btn"),
+        resonanceRevoke: document.getElementById("resonance-revoke-btn"),
+        resonanceList: document.getElementById("resonance-list"),
+        companionTrail: document.getElementById("companion-trail"),
+        companionThemeMap: document.getElementById("companion-theme-map"),
+        companionCollection: document.getElementById("companion-collection"),
+        companionEcho: document.getElementById("companion-echo"),
+        shareLinkStatus: document.getElementById("share-link-status"),
+        copyFallbackText: document.getElementById("copy-fallback-text"),
         loading: document.getElementById("loading-line"),
         ritualStage: document.getElementById("ritual-stage"),
         ritualDeck: document.getElementById("ritual-deck"),
@@ -789,6 +1107,11 @@
         actionDo: document.getElementById("action-do"),
         actionDont: document.getElementById("action-dont"),
         actionWatch: document.getElementById("action-watch"),
+        actionStatus: document.getElementById("action-status"),
+        reviewBox: document.getElementById("review-box"),
+        reviewStatus: document.getElementById("review-status"),
+        reviewNoteInput: document.getElementById("review-note-input"),
+        reviewSave: document.getElementById("review-save-btn"),
         followupChips: document.getElementById("followup-chips"),
         followupPanel: document.getElementById("followup-panel"),
         followupCustomForm: document.getElementById("followup-custom-form"),
@@ -824,6 +1147,14 @@
       let currentResultContext = null;
       let selectedFollowupKind = "";
       let isRunning = false;
+      let isFollowupRunning = false;
+      let isWeeklySummaryRunning = false;
+      let pendingClarificationContext = null;
+      let historyFilter = "all";
+      let currentShareLink = null;
+      let currentResonanceSubmission = null;
+      let selectedSpreadType = "single";
+      let selectedGuaCastMethod = "time";
       let activeRitualCancel = null;
       let placeholderIndex = 0;
       let currentRitualStatusKey = "ritualIdle";
@@ -884,6 +1215,51 @@
         return config[nextMode] || config.tarot;
       }
 
+      function spreadLabels() {
+        return {
+          spreadSingle: t("spreadSingle"),
+          spreadThree: t("spreadThree"),
+          spreadRelationship: t("spreadRelationship"),
+          spreadChoice: t("spreadChoice"),
+          spreadPositionCurrent: t("spreadPositionCurrent"),
+          spreadPositionResistance: t("spreadPositionResistance"),
+          spreadPositionNext: t("spreadPositionNext"),
+          spreadPositionSelf: t("spreadPositionSelf"),
+          spreadPositionOther: t("spreadPositionOther"),
+          spreadPositionTension: t("spreadPositionTension"),
+          spreadPositionChoiceA: t("spreadPositionChoiceA"),
+          spreadPositionChoiceB: t("spreadPositionChoiceB"),
+          spreadPositionReminder: t("spreadPositionReminder")
+        };
+      }
+
+      function spreadPositions(type = selectedSpreadType) {
+        return ritualSpreadPositions(type, spreadLabels());
+      }
+
+      function spreadDisplayName(type = selectedSpreadType) {
+        return ritualSpreadDisplayName(type, spreadLabels());
+      }
+
+      function updateSpreadSelector() {
+        const show = mode === "tarot";
+        els.spreadSelector.hidden = !show;
+        if (!show) selectedSpreadType = "single";
+        els.spreadBtns.forEach((button) => {
+          button.classList.toggle("is-selected", button.dataset.spreadType === selectedSpreadType);
+        });
+      }
+
+      function updateGuaCastSelector() {
+        const show = mode === "meihua";
+        els.guaCastSelector.hidden = !show;
+        if (!show) selectedGuaCastMethod = "time";
+        els.guaSeedInput.hidden = selectedGuaCastMethod === "time";
+        els.guaCastBtns.forEach((button) => {
+          button.classList.toggle("is-selected", button.dataset.guaCast === selectedGuaCastMethod);
+        });
+      }
+
       function updateSignalCopy() {
         modeConfig().signals.forEach((key, index) => {
           const node = els.signalRow.children[index];
@@ -907,6 +1283,8 @@
         updateQuestionCopy();
         updateSignalCopy();
         updateRitualCardLabels();
+        updateSpreadSelector();
+        updateGuaCastSelector();
         setRitualStatus(currentRitualStatusKey);
         updatePlaceholderSample(true);
         updateDailyModeState();
@@ -924,6 +1302,8 @@
         if (isRunning) return;
         const previousMode = mode;
         mode = nextMode;
+        if (mode !== "tarot") selectedSpreadType = "single";
+        if (mode !== "meihua") selectedGuaCastMethod = "time";
         const active = els.modeBtns.find((btn) => btn.dataset.mode === mode);
         els.modeBtns.forEach((btn) => btn.classList.toggle("active", btn === active));
         els.room.dataset.tone = active?.dataset.tone || "tarot";
@@ -938,6 +1318,8 @@
         updateSignalCopy();
         updatePlaceholderSample(true);
         updateDailyModeState();
+        updateSpreadSelector();
+        updateGuaCastSelector();
         updateCastCopy();
       }
 
@@ -995,6 +1377,9 @@
       function prepareDailyCompose() {
         const isDaily = mode === "daily";
         els.input.hidden = isDaily || mode === "meihua";
+        els.questionExamples.hidden = els.input.hidden;
+        els.spreadSelector.hidden = mode !== "tarot";
+        els.guaCastSelector.hidden = mode !== "meihua";
         els.guaComposeMark.hidden = mode !== "meihua";
       }
 
@@ -1056,6 +1441,18 @@
         els.actionBoard.hidden = true;
         els.actionBoard.classList.remove("is-revealed");
         els.actionBoardTitle.hidden = true;
+        els.actionStatus.hidden = true;
+        els.actionStatus.querySelectorAll("[data-action-status]").forEach((button) => button.classList.remove("is-selected"));
+        els.reviewBox.hidden = true;
+        els.reviewStatus.textContent = "";
+        els.reviewNoteInput.value = "";
+        els.sharePanel.hidden = true;
+        els.shareIncludeQuestion.checked = false;
+        currentShareLink = null;
+        currentResonanceSubmission = null;
+        updateShareLinkUi();
+        els.copyFallbackText.hidden = true;
+        els.copyFallbackText.value = "";
         els.actionDo.textContent = "";
         els.actionDont.textContent = "";
         els.actionWatch.textContent = "";
@@ -1068,23 +1465,11 @@
       }
 
       function actionAdvice(actionText) {
-        const action = cleanText(actionText, "");
-        return {
-          doText: action || (lang === "zh" ? "用三句话写下已知事实、你的猜测、今天能做的一个小动作。" : "Write three lines: known facts, your guess, and one small action for today."),
-          dontText: lang === "zh" ? "先不要发长消息、追问承诺，或在情绪最满的时候要求对方立刻表态。" : "Do not send a long message, ask for a promise, or demand an immediate answer while emotion is high.",
-          watchText: lang === "zh" ? "接下来三天只观察两件事：对方是否给出更清楚的信息，以及你自己的消耗有没有下降。" : "For three days, watch two things: whether clearer information appears, and whether your own friction goes down."
-        };
+        return buildActionAdvice(actionText, { language: lang });
       }
 
       function guaDescription(gua) {
-        if (!gua) return "";
-        const name = cleanText(lang === "zh" ? gua.name : gua.en, "");
-        const image = cleanText(gua.image, "");
-        const essence = cleanText(gua.essence, "");
-        if (!name) return "";
-        return lang === "zh"
-          ? [name, [image, essence].filter(Boolean).join("，")].filter(Boolean).join("：") + "。"
-          : [name, [image, essence].filter(Boolean).join(", ")].filter(Boolean).join(": ") + ".";
+        return describeGua(gua, { language: lang });
       }
 
       function renderStructuredReport(data) {
@@ -1104,7 +1489,8 @@
         els.reportDualSection.hidden = !dualText;
         setResultLabels(data.sourceMode);
         const shouldShowReportStack = data.sourceMode === "meihua" || data.sourceMode === "dual";
-        els.reportStack.hidden = !shouldShowReportStack;
+        const hasReportSection = Boolean(tarotText || guaText || dualText);
+        els.reportStack.hidden = !(shouldShowReportStack && hasReportSection);
 
         const advice = actionAdvice(data.actionText);
         els.actionDo.textContent = advice.doText;
@@ -1115,6 +1501,9 @@
         els.action.hidden = data.sourceMode !== "daily";
         els.actionBoard.hidden = false;
         els.actionBoardTitle.hidden = false;
+        els.actionStatus.hidden = false;
+        els.sharePanel.hidden = false;
+        updateActionStatusUi(lastRecord?.actionStatus || "");
         els.followupChips.hidden = data.sourceMode === "meihua" || data.sourceMode === "daily";
         els.followupPanel.hidden = true;
         currentResultContext = {
@@ -1136,33 +1525,11 @@
       }
 
       function reportFromRecord(record) {
-        if (record.report) return { ...record.report, sourceMode: record.mode };
-        const reading = record.reading || parseTokens(record.answer || "");
-        const tarotText = cleanText(reading.tension || reading.TENSION || reading.coreQuestion || reading.CORE_QUESTION, "");
-        const summary = cleanText(
-          reading.judgment || reading.JUDGMENT || record.action || record.answer,
-          ""
-        );
-        const guaText = record.gua ? guaDescription(record.gua) : "";
-        const dualText = record.mode === "dual" && (tarotText || guaText)
-          ? (lang === "zh"
-            ? "牌象和卦象共同提醒你：先把情绪信号与推进节奏分开看，再决定下一步。"
-            : "Card and gua signals suggest separating emotion from timing before choosing the next step.")
-          : "";
-        if (!summary && !tarotText && !guaText && !dualText) return null;
-        return {
-          summary,
-          tarotText,
-          guaText,
-          dualText,
-          actionText: actionFromRecord(record),
-          sourceMode: record.mode
-        };
+        return normalizeReportFromRecord(record, { language: lang });
       }
 
       function actionFromRecord(record) {
-        const tokens = parseTokens(record?.answer || "");
-        return cleanText(record?.action || tokens.ACTION || record?.answer, "");
+        return actionFromResultRecord(record);
       }
 
       function randomItem(items) {
@@ -1174,58 +1541,7 @@
       }
 
       function cardKeywords(cardName) {
-        const name = cleanText(cardName, "");
-        const zh = {
-          "愚者": ["未知", "出发", "信任", "轻盈"],
-          "魔术师": ["开始", "资源", "表达", "行动"],
-          "女祭司": ["直觉", "沉静", "未说出", "观察"],
-          "皇后": ["滋养", "感受", "关系", "生长"],
-          "皇帝": ["边界", "秩序", "责任", "掌控"],
-          "教皇": ["规则", "经验", "确认", "传统"],
-          "恋人": ["选择", "连接", "诚实", "对齐"],
-          "战车": ["推进", "意志", "方向", "控制"],
-          "力量": ["克制", "耐心", "柔和", "稳定"],
-          "隐士": ["独处", "审视", "答案", "慢下来"],
-          "命运之轮": ["变化", "节奏", "转折", "顺势"],
-          "正义": ["事实", "权衡", "边界", "负责"],
-          "倒吊人": ["暂停", "换角度", "等待", "松手"],
-          "死神": ["结束", "清理", "更新", "放下"],
-          "节制": ["调和", "节奏", "修复", "中间路"],
-          "恶魔": ["执念", "消耗", "诱因", "看清"],
-          "高塔": ["冲击", "真相", "拆除", "重建"],
-          "星星": ["恢复", "希望", "远方", "信念"],
-          "月亮": ["不确定", "投射", "梦境", "辨认"],
-          "太阳": ["明朗", "能量", "坦诚", "看见"],
-          "审判": ["回应", "复盘", "决定", "醒来"],
-          "世界": ["完成", "整合", "闭环", "下一段"]
-        };
-        const en = {
-          "The Fool": ["Unknown", "Start", "Trust", "Lightness"],
-          "The Magician": ["Start", "Resource", "Expression", "Action"],
-          "The High Priestess": ["Intuition", "Quiet", "Unspoken", "Observe"],
-          "The Empress": ["Nurture", "Feeling", "Relation", "Growth"],
-          "The Emperor": ["Boundary", "Order", "Duty", "Control"],
-          "The Hierophant": ["Rule", "Experience", "Confirm", "Tradition"],
-          "The Lovers": ["Choice", "Bond", "Honesty", "Alignment"],
-          "The Chariot": ["Move", "Will", "Direction", "Control"],
-          "Strength": ["Restraint", "Patience", "Softness", "Steady"],
-          "The Hermit": ["Alone", "Review", "Answer", "Slow down"],
-          "Wheel of Fortune": ["Change", "Rhythm", "Turn", "Flow"],
-          "Justice": ["Fact", "Weighing", "Boundary", "Account"],
-          "The Hanged Man": ["Pause", "Angle", "Wait", "Release"],
-          "Death": ["End", "Clear", "Renew", "Let go"],
-          "Temperance": ["Blend", "Rhythm", "Repair", "Middle path"],
-          "The Devil": ["Fixation", "Drain", "Trigger", "See clearly"],
-          "The Tower": ["Impact", "Truth", "Dismantle", "Rebuild"],
-          "The Star": ["Recover", "Hope", "Distance", "Faith"],
-          "The Moon": ["Unclear", "Projection", "Dream", "Discern"],
-          "The Sun": ["Clear", "Energy", "Open", "Visible"],
-          "Judgement": ["Respond", "Review", "Decide", "Wake"],
-          "The World": ["Complete", "Integrate", "Close", "Next"]
-        };
-        return (lang === "zh" ? zh[name] : en[name]) || (lang === "zh"
-          ? ["观察", "确认", "收束", "行动"]
-          : ["Observe", "Confirm", "Narrow", "Act"]);
+        return ritualCardKeywords(cardName, { language: lang });
       }
 
       function updateSymbolSummary({ sourceMode = mode, name = "", question = "" } = {}) {
@@ -1261,48 +1577,31 @@
       function buildRitualDeck() {
         if (!els.ritualDeck) return;
         els.ritualDeck.innerHTML = "";
-        const center = (tarotDeck.length - 1) / 2;
         tarotDeck.forEach((card, index) => {
           const cardButton = document.createElement("button");
-          const offset = index - center;
+          const layout = ritualCardLayout(index, tarotDeck.length);
           cardButton.className = "ritual-card";
           cardButton.type = "button";
           cardButton.disabled = true;
           cardButton.dataset.cardIndex = String(index);
-          const normalized = offset / center;
-          const arcX = Math.round(offset * 64);
-          const arcY = Math.round(Math.abs(normalized) * 106 - 46);
-          const arcAngle = normalized * 40;
-          const arcDepth = Math.round((1 - Math.abs(normalized)) * 84);
-          const arcScale = Math.max(0.92, 1 - Math.abs(normalized) * 0.06);
-          const arcOpacity = Math.max(0.76, 1 - Math.abs(normalized) * 0.14);
-          const pullDistance = 30;
-          const selectDistance = 74;
-          const pullAngle = arcAngle * Math.PI / 180;
-          const pullX = Math.round(Math.sin(pullAngle) * pullDistance);
-          const pullY = Math.round(-Math.cos(pullAngle) * pullDistance);
-          const selectX = Math.round(Math.sin(pullAngle) * selectDistance * 0.46);
-          const selectY = Math.round(-196 + Math.abs(normalized) * 24);
-          const layerBase = Math.abs(normalized) < 0.34 ? 160 : Math.abs(normalized) < 0.72 ? 112 : 74;
-          const layerOffset = Math.round((1 - Math.abs(normalized)) * 26);
-          cardButton.style.setProperty("--card-index", index);
-          cardButton.style.setProperty("--card-mid", offset.toFixed(2));
-          cardButton.style.setProperty("--card-x", `${arcX}px`);
-          cardButton.style.setProperty("--card-y", `${arcY}px`);
-          cardButton.style.setProperty("--card-angle", `${arcAngle.toFixed(2)}deg`);
-          cardButton.style.setProperty("--card-depth", `${arcDepth}px`);
-          cardButton.style.setProperty("--card-scale", arcScale.toFixed(3));
-          cardButton.style.setProperty("--card-opacity", arcOpacity.toFixed(3));
-          cardButton.style.setProperty("--card-pull-x", `${pullX}px`);
-          cardButton.style.setProperty("--card-pull-y", `${pullY}px`);
-          cardButton.style.setProperty("--card-select-x", `${selectX}px`);
-          cardButton.style.setProperty("--card-select-y", `${selectY}px`);
-          cardButton.style.setProperty("--shuffle-x", `${((index % 7) - 3) * 8}px`);
-          cardButton.style.setProperty("--shuffle-y", `${((index % 5) - 2) * 3}px`);
-          cardButton.style.setProperty("--cut-x", `${index < center ? -54 + index * 1.5 : 54 - (index - center) * 1.5}px`);
-          cardButton.style.setProperty("--cut-y", `${index < center ? -7 : 8}px`);
-          cardButton.style.setProperty("--spread-z", layerBase + layerOffset);
-          cardButton.style.setProperty("--delay", `${index * 16}ms`);
+          cardButton.style.setProperty("--card-index", layout.cardIndex);
+          cardButton.style.setProperty("--card-mid", layout.cardMid);
+          cardButton.style.setProperty("--card-x", layout.cardX);
+          cardButton.style.setProperty("--card-y", layout.cardY);
+          cardButton.style.setProperty("--card-angle", layout.cardAngle);
+          cardButton.style.setProperty("--card-depth", layout.cardDepth);
+          cardButton.style.setProperty("--card-scale", layout.cardScale);
+          cardButton.style.setProperty("--card-opacity", layout.cardOpacity);
+          cardButton.style.setProperty("--card-pull-x", layout.cardPullX);
+          cardButton.style.setProperty("--card-pull-y", layout.cardPullY);
+          cardButton.style.setProperty("--card-select-x", layout.cardSelectX);
+          cardButton.style.setProperty("--card-select-y", layout.cardSelectY);
+          cardButton.style.setProperty("--shuffle-x", layout.shuffleX);
+          cardButton.style.setProperty("--shuffle-y", layout.shuffleY);
+          cardButton.style.setProperty("--cut-x", layout.cutX);
+          cardButton.style.setProperty("--cut-y", layout.cutY);
+          cardButton.style.setProperty("--spread-z", layout.spreadZ);
+          cardButton.style.setProperty("--delay", layout.delay);
           cardButton.innerHTML = '<span class="ritual-card-3d"><span class="ritual-card-back"></span><span class="ritual-card-face"></span></span>';
           cardButton.querySelector(".ritual-card-face").style.backgroundImage = `url("./assets/cards/${card[2]}")`;
           els.ritualDeck.appendChild(cardButton);
@@ -1355,13 +1654,20 @@
         });
       }
 
-      function waitForCardChoice() {
-        setRitualStatus("ritualChooseCard");
+      function waitForCardChoice(positionLabel = "", excludedIndexes = []) {
+        if (positionLabel) {
+          currentRitualStatusKey = "ritualChooseCard";
+          els.ritualStatus.textContent = `${t("ritualChoosePosition")}${positionLabel}`;
+          els.ritualHeading.textContent = `${t("ritualChoosePosition")}${positionLabel}`;
+        } else {
+          setRitualStatus("ritualChooseCard");
+        }
         setRitualStep(1);
         els.ritualStage.classList.add("is-awaiting-card");
         els.ritualClose.disabled = false;
         els.ritualCards.forEach((card) => {
-          card.disabled = false;
+          card.disabled = excludedIndexes.includes(Number(card.dataset.cardIndex));
+          card.classList.toggle("is-dimmed", card.disabled);
         });
         return new Promise((resolve, reject) => {
           let selectedCard = null;
@@ -1395,7 +1701,8 @@
           };
           const confirmChoice = () => {
             if (!selectedCard) return;
-            const selected = tarotDeck[Number(selectedCard.dataset.cardIndex)];
+            const index = Number(selectedCard.dataset.cardIndex);
+            const selected = tarotDeck[index];
             if (!selected) {
               clearListeners();
               reject(new Error("Missing selected card"));
@@ -1404,23 +1711,31 @@
             clearListeners();
             els.ritualPreviewActions.hidden = true;
             selectedCard.disabled = true;
-            resolve(selected);
+            resolve({ card: selected, index });
           };
           const reselect = () => {
             selectedCard = null;
             resetCardChoice();
             els.ritualStage.classList.add("is-spread", "is-awaiting-card");
-            setRitualStatus("ritualChooseCard");
+            if (positionLabel) {
+              els.ritualStatus.textContent = `${t("ritualChoosePosition")}${positionLabel}`;
+              els.ritualHeading.textContent = `${t("ritualChoosePosition")}${positionLabel}`;
+            } else {
+              setRitualStatus("ritualChooseCard");
+            }
             els.ritualCards.forEach((card) => {
-              card.disabled = false;
-              card.addEventListener("click", choose);
+              card.disabled = excludedIndexes.includes(Number(card.dataset.cardIndex));
+              card.classList.toggle("is-dimmed", card.disabled);
+              if (!card.disabled) card.addEventListener("click", choose);
             });
             els.ritualCards[Math.floor(els.ritualCards.length / 2)]?.focus();
           };
           const handleKeydown = (event) => {
             if (event.key === "Escape" && selectedCard) reselect();
           };
-          els.ritualCards.forEach((card) => card.addEventListener("click", choose));
+          els.ritualCards.forEach((card) => {
+            if (!card.disabled) card.addEventListener("click", choose);
+          });
           els.ritualConfirm.addEventListener("click", confirmChoice);
           els.ritualReselect.addEventListener("click", reselect);
           window.addEventListener("keydown", handleKeydown);
@@ -1439,9 +1754,12 @@
         resetCardChoice();
         els.ritualGuaLines.forEach((line) => line.classList.remove("is-drawn"));
         setSignalPhase(1);
-        let selectedCard = null;
+        let selectedCards = [];
 
         if (nextMode === "tarot" || nextMode === "dual") {
+          const spreadType = ritualSpreadTypeForMode(nextMode, selectedSpreadType);
+          const positions = spreadPositions(spreadType);
+          const excludedIndexes = [];
           setRitualStatus("ritualShuffle");
           setRitualStep(0);
           await ritualDelay(300);
@@ -1452,7 +1770,13 @@
           setRitualStatus("ritualSpread");
           els.ritualStage.classList.add("is-spread");
           await ritualDelay(1000);
-          selectedCard = await waitForCardChoice();
+          for (const position of positions) {
+            const selection = await waitForCardChoice(positions.length > 1 ? position.label : "", excludedIndexes);
+            excludedIndexes.push(selection.index);
+            selectedCards.push({ ...selection, position });
+            resetCardChoice();
+            els.ritualStage.classList.add("is-spread");
+          }
           setRitualStatus("ritualRevealingCard");
           setRitualStep(2);
           els.ritualStage.classList.add("is-selected", "is-revealing-card");
@@ -1480,7 +1804,7 @@
         setRitualStatus(nextMode === "dual" ? "ritualSummarize" : "ritualAi");
         els.ritualStage.classList.add("is-revealing");
         await ritualDelay(500);
-        return selectedCard;
+        return selectedCards.length ? { spreadType: ritualSpreadTypeForMode(nextMode, selectedSpreadType), cards: selectedCards } : null;
       }
 
       function hideRitual() {
@@ -1531,59 +1855,7 @@
       }
 
       async function streamReading(payload, onText) {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 45000);
-        try {
-          const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: API_AUTH
-            },
-            body: JSON.stringify({ ...payload, llm: getLlmOptions() }),
-            signal: controller.signal
-          }).catch((error) => {
-            if (error.name === "AbortError") throw new Error("Request timed out");
-            throw error;
-          });
-          if (!response.ok || !response.body) {
-            const body = await response.text().catch(() => "");
-            throw new Error(body || "Request failed");
-          }
-
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-          let fullText = "";
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            const events = buffer.split("\n\n");
-            buffer = events.pop() || "";
-            for (const event of events) {
-              const line = event.split("\n").find((item) => item.startsWith("data: "));
-              if (!line) continue;
-              const raw = line.slice(6).trim();
-              if (raw === "[DONE]") return fullText;
-              let json;
-              try {
-                json = JSON.parse(raw);
-              } catch {
-                continue;
-              }
-              if (json.error) throw new Error(json.error);
-              if (json.delta) {
-                fullText += json.delta;
-                onText(fullText);
-              }
-            }
-          }
-          return fullText;
-        } finally {
-          clearTimeout(timeout);
-        }
+        return readingClient.stream(payload, onText);
       }
 
       function showResult() {
@@ -1603,9 +1875,16 @@
         hideTarotReading();
         hideReport();
         els.copy.textContent = t("copy");
+        els.copySummary.textContent = t("copySummary");
+        els.copyFull.textContent = t("copyFull");
+        els.shareImage.textContent = t("shareImage");
+        els.exportPdf.textContent = t("exportPdf");
         updateSymbolSummary({ sourceMode: mode, name: t("modeTarot"), question: "" });
         lastAction = "";
         lastQuestion = "";
+        lastRecord = null;
+        currentResultContext = null;
+        pendingClarificationContext = null;
       }
 
       function openCardLightbox() {
@@ -1627,12 +1906,24 @@
       function createRecord(data) {
         const createdAt = new Date().toISOString();
         return {
-          id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `rill-${Date.now()}`,
+          id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `askaura-${Date.now()}`,
           createdAt,
           updatedAt: createdAt,
+          reviewAt: reviewDateAfter(createdAt),
           language: lang,
           ...data
         };
+      }
+
+      function recordCardFromSelection(selection) {
+        return buildRecordCardFromSelection(selection, {
+          language: lang,
+          singleLabel: t("spreadSingle")
+        });
+      }
+
+      function primaryCardFromRecordCards(cards = []) {
+        return selectPrimaryCardFromRecordCards(cards);
       }
 
       function saveResultRecord(data) {
@@ -1642,14 +1933,124 @@
         syncAfterSave(record);
         renderHistoryList();
         lastRecord = record;
+        currentShareLink = null;
+        currentResonanceSubmission = null;
+        updateShareLinkUi();
+        updateResonanceUi();
+        updateActionStatusUi(record.actionStatus || "");
+        updateReviewUi(record);
         if (els.save) els.save.textContent = t("savedHistory");
         return record;
+      }
+
+      function saveFollowupToCurrentRecord(question, answer) {
+        if (!lastRecord) return null;
+        const followup = createFollowupEntry({
+          question,
+          answer,
+          sourceResultId: lastRecord.id
+        });
+        const record = appendFollowupToRecord(lastRecord, followup);
+        saveHistoryRecord(recordStore, record);
+        syncAfterSave(record);
+        renderHistoryList();
+        lastRecord = record;
+        return followup;
+      }
+
+      function updateActionStatusUi(status = "") {
+        if (!els.actionStatus) return;
+        els.actionStatus.querySelectorAll("[data-action-status]").forEach((button) => {
+          button.classList.toggle("is-selected", button.dataset.actionStatus === status);
+        });
+      }
+
+      function saveActionStatus(status) {
+        if (!lastRecord) return;
+        const updatedAt = new Date().toISOString();
+        const record = {
+          ...lastRecord,
+          actionStatus: status,
+          updatedAt
+        };
+        saveHistoryRecord(recordStore, record);
+        syncAfterSave(record);
+        renderHistoryList();
+        lastRecord = record;
+        updateActionStatusUi(status);
+        updateReviewUi(record);
+      }
+
+      function reviewDateAfter(value, days = 3) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        date.setDate(date.getDate() + days);
+        return date.toISOString();
+      }
+
+      function isReviewDue(record, now = new Date()) {
+        const time = Date.parse(record?.reviewAt || "");
+        return Number.isFinite(time) && time <= now.getTime();
+      }
+
+      function updateReviewUi(record = lastRecord) {
+        if (!els.reviewBox) return;
+        const shouldShow = Boolean(record?.reviewNote) || isReviewDue(record);
+        els.reviewBox.hidden = !shouldShow;
+        if (!shouldShow) {
+          els.reviewStatus.textContent = "";
+          els.reviewNoteInput.value = "";
+          return;
+        }
+        els.reviewStatus.textContent = record.reviewNote ? t("reviewSaved") : t("reviewDue");
+        els.reviewNoteInput.value = record.reviewNote || "";
+      }
+
+      function saveReviewNote() {
+        if (!lastRecord) return;
+        const note = cleanText(els.reviewNoteInput.value, "");
+        const updatedAt = new Date().toISOString();
+        const record = {
+          ...lastRecord,
+          reviewNote: note,
+          updatedAt
+        };
+        saveHistoryRecord(recordStore, record);
+        syncAfterSave(record);
+        renderHistoryList();
+        lastRecord = record;
+        updateReviewUi(record);
+      }
+
+      function renderStoredFollowups(record) {
+        const text = formatStoredFollowups(record);
+        if (!text) return;
+        els.followupAnswerText.textContent = text;
+        els.followupAnswer.hidden = false;
+      }
+
+      function clarificationLinkText(context) {
+        return buildClarificationLinkText(context, { language: lang });
+      }
+
+      function renderClarificationLink(context) {
+        const text = clarificationLinkText(context);
+        if (!text || !els.resultSummary.textContent) return;
+        els.resultSummary.textContent = `${els.resultSummary.textContent}\n${text}`;
+      }
+
+      function clarificationHistoryText(context) {
+        return buildClarificationHistoryText(context);
       }
 
       function showStoredRecord(record) {
         if (!record) return false;
 
         lastRecord = record;
+        currentShareLink = null;
+        currentResonanceSubmission = null;
+        updateShareLinkUi();
+        updateResonanceUi();
         showResult();
         els.answerPanel.classList.toggle("is-daily-note", record.mode === "daily");
         els.tarotSymbol.hidden = !record.imageSrc;
@@ -1661,6 +2062,9 @@
         const report = reportFromRecord(record);
         if (report) renderStructuredReport(report);
         else hideReport();
+        renderClarificationLink(record.clarificationOf);
+        renderStoredFollowups(record);
+        updateReviewUi(record);
         setResultLabels(record.mode);
         els.answerKicker.textContent = record.mode === "daily" ? t("dailyNoteTitle") : record.title || t("modeDaily");
         els.action.textContent = actionFromRecord(record);
@@ -1709,7 +2113,7 @@
       }
 
       function closeUtilityPanels() {
-        [els.historyPanel, els.authPanel].forEach((panel) => {
+        [els.historyPanel, els.authPanel, els.resonancePanel, els.companionPanel].forEach((panel) => {
           panel.hidden = true;
           panel.setAttribute("aria-hidden", "true");
         });
@@ -1717,9 +2121,14 @@
 
       function renderHistoryList() {
         const records = loadHistory(recordStore);
+        const visibleRecords = historyFilter === "all"
+          ? records
+          : records.filter((record) => record.mode === historyFilter);
         els.historyList.innerHTML = "";
+        updateHistoryFilters();
+        updateWeeklySummaryUi(records);
 
-        if (!records.length) {
+        if (!visibleRecords.length) {
           const empty = document.createElement("p");
           empty.className = "history-empty";
           empty.textContent = t("historyEmpty");
@@ -1727,27 +2136,180 @@
           return;
         }
 
-        records.forEach((record) => {
-          const item = document.createElement("button");
-          item.type = "button";
-          item.className = "history-item";
-          item.dataset.id = record.id;
+        groupHistoryByDate(visibleRecords).forEach((group) => {
+          const section = document.createElement("section");
+          section.className = "history-group";
 
-          const title = document.createElement("strong");
-          title.textContent = record.mode === "daily"
-            ? `${formatDate(record.createdAt)} ${lang === "zh" ? "复盘" : "Review"}`
-            : record.title || t(modeConfig(record.mode).label);
-          const meta = document.createElement("span");
-          meta.textContent = record.mode === "daily"
-            ? formatDailyAnchor(record)
-            : formatDate(record.createdAt);
-          const action = document.createElement("em");
-          action.textContent = cleanText(record.action || record.answer, "");
-          item.classList.toggle("is-daily", record.mode === "daily");
+          const heading = document.createElement("h3");
+          heading.textContent = group.label;
+          section.appendChild(heading);
 
-          item.append(title, meta, action);
-          els.historyList.appendChild(item);
+          group.records.forEach((record) => {
+            const row = document.createElement("div");
+            row.className = "history-row";
+
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "history-item";
+            item.dataset.id = record.id;
+
+            const title = document.createElement("strong");
+            title.textContent = recordTitle(record);
+            const meta = document.createElement("span");
+            meta.textContent = historyMeta(record);
+            const action = document.createElement("em");
+            action.textContent = historySummary(record);
+            item.classList.toggle("is-daily", record.mode === "daily");
+
+            const favorite = document.createElement("button");
+            favorite.type = "button";
+            favorite.className = "history-favorite";
+            favorite.dataset.historyFavorite = record.id;
+            favorite.classList.toggle("is-selected", Boolean(record.favorite));
+            favorite.setAttribute("aria-pressed", record.favorite ? "true" : "false");
+            favorite.textContent = record.favorite ? t("historyFavorited") : t("historyFavorite");
+
+            item.append(title, meta, action);
+            row.append(item, favorite);
+            section.appendChild(row);
+          });
+
+          els.historyList.appendChild(section);
         });
+      }
+
+      function updateHistoryFilters() {
+        els.historyFilters.querySelectorAll("[data-history-filter]").forEach((button) => {
+          button.classList.toggle("is-selected", button.dataset.historyFilter === historyFilter);
+        });
+      }
+
+      function groupHistoryByDate(records) {
+        const groups = new Map();
+        records.forEach((record) => {
+          const key = historyDateKey(record.createdAt);
+          if (!groups.has(key)) groups.set(key, { label: historyDateLabel(record.createdAt), records: [] });
+          groups.get(key).records.push(record);
+        });
+        return Array.from(groups.values());
+      }
+
+      function historyDateKey(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "unknown";
+        return date.toLocaleDateString("en-CA");
+      }
+
+      function historyDateLabel(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return lang === "zh" ? "时间未知" : "Unknown date";
+        return date.toLocaleDateString(lang === "zh" ? "zh-CN" : "en", {
+          month: "2-digit",
+          day: "2-digit",
+          weekday: "short"
+        });
+      }
+
+      function recordTitle(record) {
+        return record.mode === "daily"
+          ? `${formatDate(record.createdAt)} ${lang === "zh" ? "复盘" : "Review"}`
+          : record.title || t(modeConfig(record.mode).label);
+      }
+
+      function historyMeta(record) {
+        const modeLabel = t(modeConfig(record.mode).label);
+        const detail = record.mode === "daily" ? formatDailyAnchor(record) : formatDate(record.createdAt);
+        return [modeLabel, detail].filter(Boolean).join(" · ");
+      }
+
+      function historySummary(record) {
+        const followupCount = Array.isArray(record.followups) ? record.followups.length : 0;
+        const relation = record.clarificationOf ? t("historyClarification") : "";
+        const followups = followupCount ? `${t("historyFollowupCount")} ${followupCount}` : "";
+        return [
+          cleanText(record.action || record.answer, ""),
+          actionStatusLabel(record.actionStatus),
+          isReviewDue(record) && !record.reviewNote ? t("reviewLabel") : "",
+          followups,
+          relation
+        ].filter(Boolean).join(" · ");
+      }
+
+      function toggleHistoryFavorite(id) {
+        const record = loadHistory(recordStore).find((entry) => entry.id === id);
+        if (!record) return;
+        const updated = {
+          ...record,
+          favorite: !record.favorite,
+          updatedAt: new Date().toISOString()
+        };
+        saveHistoryRecord(recordStore, updated);
+        if (lastRecord?.id === updated.id) lastRecord = updated;
+        syncAfterSave(updated);
+        renderHistoryList();
+      }
+
+      function weeklySummaryRecords(records = loadHistory(recordStore)) {
+        return records
+          .map((record) => {
+            const summary = cleanText(record.report?.summary || record.reading?.judgment || record.action || record.title, "");
+            const action = cleanText(record.action || record.report?.actionText || "", "");
+            if (!summary && !action) return null;
+            return {
+              mode: record.mode || "tarot",
+              title: cleanText(record.title || record.imageAlt || record.gua?.name, "").slice(0, 80),
+              question: cleanText(record.question, "").slice(0, 80),
+              summary: summary.slice(0, 220),
+              action: action.slice(0, 160),
+              actionStatus: record.actionStatus || "",
+              reviewNote: cleanText(record.reviewNote, "").slice(0, 140),
+              createdAt: record.createdAt
+            };
+          })
+          .filter(Boolean)
+          .slice(0, 7);
+      }
+
+      function updateWeeklySummaryUi(records = loadHistory(recordStore)) {
+        const usable = weeklySummaryRecords(records);
+        const ready = usable.length >= 3;
+        els.weeklySummaryBtn.disabled = isWeeklySummaryRunning || !ready;
+        if (isWeeklySummaryRunning) {
+          els.weeklySummaryStatus.textContent = t("weeklySummaryWorking");
+        } else {
+          els.weeklySummaryStatus.textContent = ready ? t("weeklySummaryReady") : t("weeklySummaryHint");
+        }
+      }
+
+      async function generateWeeklySummary() {
+        if (isWeeklySummaryRunning) return;
+        const records = weeklySummaryRecords();
+        if (records.length < 3) {
+          updateWeeklySummaryUi();
+          return;
+        }
+        isWeeklySummaryRunning = true;
+        els.weeklySummaryResult.hidden = false;
+        els.weeklySummaryResult.textContent = "";
+        updateWeeklySummaryUi();
+        try {
+          const full = await streamReading({
+            mode: "weekly-summary",
+            tier: "basic",
+            entry: "weekly",
+            records,
+            language: lang
+          }, (text) => {
+            els.weeklySummaryResult.textContent = text;
+          });
+          els.weeklySummaryResult.textContent = cleanText(full, t("weeklySummaryFailed"));
+        } catch (error) {
+          console.error(error);
+          els.weeklySummaryResult.textContent = t("weeklySummaryFailed");
+        } finally {
+          isWeeklySummaryRunning = false;
+          updateWeeklySummaryUi();
+        }
       }
 
       function formatDate(value) {
@@ -1767,12 +2329,45 @@
         return parts.length ? parts.join(" · ") : formatDate(record.createdAt);
       }
 
+      function actionStatusLabel(status) {
+        const labels = {
+          done: t("actionStatusDone"),
+          not_done: t("actionStatusNotDone"),
+          skipped: t("actionStatusSkipped"),
+          not_fit: t("actionStatusNotFit")
+        };
+        return labels[status] || "";
+      }
+
       function updateAuthUi(message = "") {
         const session = syncClient.getSession();
         els.accountBtn.textContent = session?.access_token ? t("accountReady") : t("account");
         els.authStatus.textContent = message || (session?.user?.email ? `${t("authSignedIn")}${session.user.email}` : t("authSignedOut"));
         els.signout.hidden = !session?.access_token;
         els.passwordUpdate.hidden = !session?.access_token;
+        refreshPlanUi();
+      }
+
+      function setPlanUi(plan = "free") {
+        if (!els.planStatus) return;
+        const title = els.planStatus.querySelector("strong");
+        const copy = els.planStatus.querySelector("span:not(.plan-note)");
+        if (title) title.textContent = plan === "pro" ? t("planProTitle") : t("planFreeTitle");
+        if (copy) copy.textContent = plan === "pro" ? t("planProCopy") : t("planFreeCopy");
+      }
+
+      async function refreshPlanUi() {
+        const session = syncClient.getSession();
+        if (!session?.access_token) {
+          setPlanUi("free");
+          return;
+        }
+        try {
+          const entitlement = await syncClient.loadEntitlement();
+          setPlanUi(entitlement.plan === "pro" ? "pro" : "free");
+        } catch {
+          setPlanUi("free");
+        }
       }
 
       async function syncAndRefresh() {
@@ -1930,9 +2525,7 @@
             : "";
         lastQuestion = question;
         try {
-          lastRecord = null;
-          currentResultContext = null;
-          const selectedCard = await playRitual(mode);
+          const ritualResult = await playRitual(mode);
           hideRitual();
           showResult();
           els.answerPanel.classList.toggle("is-daily-note", mode === "daily");
@@ -1949,26 +2542,36 @@
           els.save.disabled = true;
           els.newReading.disabled = true;
           els.copy.disabled = true;
+          els.copySummary.disabled = true;
+          els.copyFull.disabled = true;
+          els.shareImage.disabled = true;
+          els.exportPdf.disabled = true;
           els.room.setAttribute("aria-busy", "true");
           lastAction = "";
 
           if (mode === "tarot") {
-            if (!selectedCard) throw new Error("Card selection missing");
-            const card = selectedCard;
+            if (!ritualResult?.cards?.length) throw new Error("Card selection missing");
+            const selectedCards = ritualResult.cards.map(recordCardFromSelection);
+            const primaryCard = primaryCardFromRecordCards(selectedCards);
+            const clarificationContext = pendingClarificationContext;
             els.tarotSymbol.hidden = false;
             els.guaSymbol.hidden = true;
-            els.cardImage.src = "./assets/cards/" + card[2];
-            els.cardImage.alt = lang === "zh" ? card[1] : card[0];
-            els.answerKicker.textContent = `${t("modeTarot")} · ${lang === "zh" ? card[1] : card[0]}`;
+            els.cardImage.src = primaryCard.imageSrc;
+            els.cardImage.alt = primaryCard.imageAlt;
+            els.answerKicker.textContent = `${t("modeTarot")} · ${spreadDisplayName(ritualResult.spreadType)} · ${primaryCard.imageAlt}`;
             updateSymbolSummary({ sourceMode: "tarot", name: els.cardImage.alt, question });
             const full = await streamReading({
               mode: "reading",
-              cardName: card[0],
-              orientation: Math.random() > 0.5 ? "upright" : "reversed",
+              tier: "basic",
+              entry: "tarot",
+              cardName: primaryCard.name,
+              orientation: primaryCard.orientation,
+              spreadType: ritualResult.spreadType,
+              cards: selectedCards.map(({ name, label, position, orientation }) => ({ name, label, position, orientation })),
               intent: lang === "zh" ? "鐪嬫竻" : "clarity",
               question,
               round: 1,
-              sessionHistory: "",
+              sessionHistory: clarificationHistoryText(clarificationContext),
               language: lang
             }, renderAction);
             const readingParts = renderTarotReading(full);
@@ -1979,6 +2582,7 @@
               sourceMode: "tarot"
             };
             renderStructuredReport(report);
+            renderClarificationLink(clarificationContext);
             saveResultRecord({
               mode: "tarot",
               title: els.answerKicker.textContent,
@@ -1988,10 +2592,14 @@
               reading: readingParts,
               report,
               imageSrc: els.cardImage.getAttribute("src"),
-              imageAlt: els.cardImage.alt
+              imageAlt: els.cardImage.alt,
+              spreadType: ritualResult.spreadType,
+              cards: selectedCards,
+              ...(clarificationContext ? { clarificationOf: clarificationContext } : {})
             });
           } else if (mode === "meihua") {
-            const gua = guaFromTime();
+            const guaSeed = selectedGuaCastMethod === "time" ? "" : cleanText(els.guaSeedInput.value, "1");
+            const gua = guaFromCast(selectedGuaCastMethod, guaSeed);
             els.tarotSymbol.hidden = true;
             els.guaSymbol.hidden = false;
             renderGua(gua.binary);
@@ -1999,6 +2607,8 @@
             updateSymbolSummary({ sourceMode: "meihua", name: lang === "zh" ? gua.name : gua.en, question });
             const full = await streamReading({
               mode: "meihua-reading",
+              tier: "basic",
+              entry: "meihua",
               guaName: gua.name,
               intent: lang === "zh" ? "鐪嬫竻" : "clarity",
               question,
@@ -2023,20 +2633,25 @@
               gua
             });
           } else if (mode === "dual") {
-            if (!selectedCard) throw new Error("Card selection missing");
-            const card = selectedCard;
+            if (!ritualResult?.cards?.length) throw new Error("Card selection missing");
+            const selectedCards = ritualResult.cards.map(recordCardFromSelection);
+            const primaryCard = primaryCardFromRecordCards(selectedCards);
             const gua = guaFromTime();
             els.tarotSymbol.hidden = false;
             els.guaSymbol.hidden = false;
-            els.cardImage.src = "./assets/cards/" + card[2];
-            els.cardImage.alt = lang === "zh" ? card[1] : card[0];
+            els.cardImage.src = primaryCard.imageSrc;
+            els.cardImage.alt = primaryCard.imageAlt;
             renderGua(gua.binary);
-            els.answerKicker.textContent = `${t("modeDual")} · ${lang === "zh" ? card[1] : card[0]} / ${lang === "zh" ? gua.name : gua.en}`;
+            els.answerKicker.textContent = `${t("modeDual")} · ${primaryCard.imageAlt} / ${lang === "zh" ? gua.name : gua.en}`;
             updateSymbolSummary({ sourceMode: "dual", name: els.cardImage.alt, question });
             const tarotFull = await streamReading({
               mode: "reading",
-              cardName: card[0],
-              orientation: Math.random() > 0.5 ? "upright" : "reversed",
+              tier: "basic",
+              entry: "dual",
+              cardName: primaryCard.name,
+              orientation: primaryCard.orientation,
+              spreadType: "single",
+              cards: selectedCards.map(({ name, label, position, orientation }) => ({ name, label, position, orientation })),
               intent: lang === "zh" ? "鐪嬫竻" : "clarity",
               question,
               round: 1,
@@ -2046,6 +2661,8 @@
             const tarotParts = renderTarotReading(tarotFull);
             const meihuaFull = await streamReading({
               mode: "meihua-reading",
+              tier: "basic",
+              entry: "dual",
               guaName: gua.name,
               intent: lang === "zh" ? "鐪嬫竻" : "clarity",
               question,
@@ -2075,7 +2692,9 @@
               report,
               gua,
               imageSrc: els.cardImage.getAttribute("src"),
-              imageAlt: els.cardImage.alt
+              imageAlt: els.cardImage.alt,
+              spreadType: "single",
+              cards: selectedCards
             });
           } else {
             els.tarotSymbol.hidden = true;
@@ -2083,6 +2702,8 @@
             els.answerKicker.textContent = t("dailyNoteTitle");
             const full = await streamReading({
               mode: "anchor",
+              tier: "basic",
+              entry: "daily",
               cardName: t("dailyNoteTitle"),
               orientation: "upright",
               language: lang
@@ -2119,8 +2740,13 @@
           els.save.disabled = false;
           els.newReading.disabled = false;
           els.copy.disabled = false;
+          els.copySummary.disabled = false;
+          els.copyFull.disabled = false;
+          els.shareImage.disabled = false;
+          els.exportPdf.disabled = false;
           els.room.removeAttribute("aria-busy");
           isRunning = false;
+          pendingClarificationContext = null;
           setNavigationLocked(false);
           updateCastCopy();
           setResultLabels(mode);
@@ -2247,47 +2873,439 @@
         window.getSelection()?.removeAllRanges();
       }
 
-      function followupText(kind, customText = "") {
-        const context = currentResultContext || {};
-        const base = cleanText(context.summary || context.actionText || lastAction, "");
-        const watch = cleanText(context.watchText, "");
-        const doText = cleanText(context.doText, "");
-        const dontText = cleanText(context.dontText, "");
-        const templates = {
-          push: lang === "zh"
-            ? `如果主动推进，先把动作缩小到一个可撤回的试探：${doText}。推进后重点看对方是否更清楚，而不是只看对方是否立刻答应。`
-            : `If you move first, make it a small reversible test: ${doText}. Watch whether the situation becomes clearer, not only whether the other side agrees immediately.`,
-          avoid: lang === "zh"
-            ? `现在最该避免的是：${dontText}。这会把问题从观察变成逼问，反而让你更难判断。`
-            : `What to avoid most now: ${dontText}. It can turn observation into pressure and make the situation harder to read.`,
-          blocker: lang === "zh"
-            ? `真正的阻力不一定是事件本身，而是你还没有分清“事实、猜测、期待”。先按这个结论看：${base}`
-            : `The real blocker may not be the event itself, but the mix of fact, guess, and expectation. Start from this conclusion: ${base}`,
-          review: lang === "zh"
-            ? `三天后复盘时只看一个问题：${watch || "这件事有没有变得更具体，还是只让你更消耗。"}` 
-            : `In three days, review one question: ${watch || "Did this become more concrete, or only more draining?"}`,
-          custom: lang === "zh"
-            ? `围绕“${cleanText(customText, "这个追问")}”，这次结果给出的补充线索是：先回到核心结论，再用一个小动作验证，不要把它变成新一轮猜测。`
-            : `For "${cleanText(customText, "this follow-up")}", this result adds: return to the core conclusion, test with one small action, and do not turn it into another round of guessing.`
-        };
-        return templates[kind] || templates.custom;
+      function shareSymbolLabel(record = lastRecord) {
+        if (record?.mode === "meihua" && record.gua) return guaDescription(record.gua);
+        const card = primaryCardFromRecordCards(record?.cards);
+        return cleanText(card?.name || record?.title || els.symbolNameLabel.textContent, "");
       }
 
-      function showFollowupAnswer(kind, customText = "") {
+      function shareResultData({ includeQuestion = false } = {}) {
+        const context = currentResultContext || {};
+        const record = lastRecord || {};
+        const summary = cleanText(context.summary || record.report?.summary || record.reading?.judgment || els.resultSummary.textContent, "");
+        const action = cleanText(context.actionText || record.action || lastAction || els.action.textContent, "");
+        const doText = cleanText(context.doText || els.actionDo.textContent || action, "");
+        const dontText = cleanText(context.dontText || els.actionDont.textContent, "");
+        const watchText = cleanText(context.watchText || els.actionWatch.textContent, "");
+        const reviewNote = cleanText(record.reviewNote, "");
+        const question = includeQuestion ? cleanText(record.question || lastQuestion, "") : "";
+        return {
+          brand: "AskAura",
+          title: cleanText(record.title || els.answerKicker.textContent || t("answerTitle"), ""),
+          symbol: shareSymbolLabel(record),
+          summary,
+          action: action || doText,
+          doText,
+          dontText,
+          watchText,
+          reviewNote,
+          question
+        };
+      }
+
+      function compactShareLines(data) {
+        return [
+          data.symbol,
+          data.summary,
+          data.action ? `${lang === "zh" ? "行动" : "Action"}: ${data.action}` : ""
+        ].filter(Boolean);
+      }
+
+      function fullShareLines(data) {
+        return [
+          data.title,
+          data.question ? `${lang === "zh" ? "问题" : "Question"}: ${data.question}` : "",
+          data.symbol ? `${lang === "zh" ? "象" : "Symbol"}: ${data.symbol}` : "",
+          data.summary ? `${lang === "zh" ? "核心结论" : "Core"}: ${data.summary}` : "",
+          data.doText ? `${lang === "zh" ? "今天可以做" : "Do"}: ${data.doText}` : "",
+          data.dontText ? `${lang === "zh" ? "今天不要做" : "Do not"}: ${data.dontText}` : "",
+          data.watchText ? `${lang === "zh" ? "接下来观察" : "Watch"}: ${data.watchText}` : "",
+          data.reviewNote ? `${lang === "zh" ? "复盘" : "Review"}: ${data.reviewNote}` : ""
+        ].filter(Boolean);
+      }
+
+      function setCopyFallback(text, result) {
+        els.copyFallbackText.value = text;
+        els.copyFallbackText.hidden = result !== "manual";
+        if (result === "manual") {
+          els.copyFallbackText.focus();
+          els.copyFallbackText.select();
+        }
+      }
+
+      function updateShareLinkUi(message = "") {
+        if (!els.createShareLink || !els.revokeShareLink || !els.shareLinkStatus) return;
+        els.revokeShareLink.hidden = !currentShareLink?.id;
+        els.createShareLink.textContent = t("createShareLink");
+        els.revokeShareLink.textContent = t("revokeShareLink");
+        els.shareLinkStatus.textContent = message;
+      }
+
+      async function createPrivateShareLink() {
+        if (!lastRecord?.id) return;
+        els.createShareLink.disabled = true;
+        try {
+          const result = await syncClient.createShareLink(lastRecord.id, {
+            includeQuestion: els.shareIncludeQuestion.checked,
+            origin: location.origin,
+          });
+          if (result.status === "signed-out") {
+            updateShareLinkUi(t("shareLinkSignin"));
+            openUtilityPanel(els.authPanel);
+            return;
+          }
+          currentShareLink = { id: result.id, url: result.url };
+          const copyResult = await copyTextToClipboard(result.url);
+          setCopyFallback(result.url, copyResult);
+          updateShareLinkUi(copyResult === "manual" ? t("copyManual") : t("shareLinkCreated"));
+        } catch (error) {
+          console.error(error);
+          updateShareLinkUi(t("shareLinkFailed"));
+        } finally {
+          els.createShareLink.disabled = false;
+        }
+      }
+
+      async function revokePrivateShareLink() {
+        if (!currentShareLink?.id) return;
+        els.revokeShareLink.disabled = true;
+        try {
+          const result = await syncClient.revokeShareLink(currentShareLink.id);
+          if (result.status === "signed-out") {
+            updateShareLinkUi(t("shareLinkSignin"));
+            openUtilityPanel(els.authPanel);
+            return;
+          }
+          currentShareLink = null;
+          updateShareLinkUi(t("shareLinkRevoked"));
+        } catch (error) {
+          console.error(error);
+          updateShareLinkUi(t("shareLinkFailed"));
+        } finally {
+          els.revokeShareLink.disabled = false;
+        }
+      }
+
+      function updateResonanceUi(message = "") {
+        if (!els.resonanceRevoke || !els.shareLinkStatus) return;
+        els.resonanceRevoke.hidden = !currentResonanceSubmission?.id;
+        if (message) els.shareLinkStatus.textContent = message;
+      }
+
+      async function submitCurrentToResonance() {
+        if (!lastRecord?.id) return;
+        els.resonanceSubmit.disabled = true;
+        try {
+          const result = await syncClient.submitResonance(lastRecord.id);
+          if (result.status === "signed-out") {
+            updateResonanceUi(t("resonanceSignin"));
+            openUtilityPanel(els.authPanel);
+            return;
+          }
+          currentResonanceSubmission = result.submission || result;
+          updateResonanceUi(t("resonanceSubmitted"));
+        } catch (error) {
+          console.error(error);
+          updateResonanceUi(t("resonanceFailed"));
+        } finally {
+          els.resonanceSubmit.disabled = false;
+        }
+      }
+
+      async function revokeCurrentResonance() {
+        if (!currentResonanceSubmission?.id) return;
+        els.resonanceRevoke.disabled = true;
+        try {
+          const result = await syncClient.revokeResonance(currentResonanceSubmission.id);
+          if (result.status === "signed-out") {
+            updateResonanceUi(t("resonanceSignin"));
+            openUtilityPanel(els.authPanel);
+            return;
+          }
+          currentResonanceSubmission = null;
+          updateResonanceUi(t("resonanceRevoked"));
+        } catch (error) {
+          console.error(error);
+          updateResonanceUi(t("resonanceFailed"));
+        } finally {
+          els.resonanceRevoke.disabled = false;
+        }
+      }
+
+      function renderResonancePool(items = []) {
+        els.resonanceList.innerHTML = "";
+        if (!items.length) {
+          const empty = document.createElement("p");
+          empty.className = "history-empty";
+          empty.textContent = t("resonanceEmpty");
+          els.resonanceList.appendChild(empty);
+          return;
+        }
+        items.forEach((item) => {
+          const row = document.createElement("article");
+          row.className = "resonance-item";
+          row.innerHTML = `
+            <span>${cleanText(item.symbol || item.category, "")}</span>
+            <strong>${cleanText(item.theme, "")}</strong>
+            <p>${cleanText(item.action, "")}</p>
+            <div>
+              <button type="button" data-resonance-reaction="same" data-resonance-id="${cleanText(item.id, "")}">${t("resonanceSame")} · ${Number(item.reactions?.same || 0)}</button>
+              <button type="button" data-resonance-reaction="useful" data-resonance-id="${cleanText(item.id, "")}">${t("resonanceUseful")} · ${Number(item.reactions?.useful || 0)}</button>
+            </div>
+          `;
+          els.resonanceList.appendChild(row);
+        });
+      }
+
+      async function openResonancePool() {
+        openUtilityPanel(els.resonancePanel);
+        try {
+          const result = await syncClient.loadResonancePool({ language: lang });
+          renderResonancePool(Array.isArray(result.items) ? result.items : []);
+        } catch (error) {
+          console.error(error);
+          renderResonancePool([]);
+        }
+      }
+
+      async function reactToResonance(event) {
+        const button = event.target.closest("[data-resonance-reaction]");
+        if (!button) return;
+        button.disabled = true;
+        try {
+          await syncClient.reactToResonance(button.dataset.resonanceId, button.dataset.resonanceReaction);
+          await openResonancePool();
+        } catch (error) {
+          console.error(error);
+          button.disabled = false;
+        }
+      }
+
+      function renderCompanionList(container, items, renderItem) {
+        container.innerHTML = "";
+        if (!items.length) {
+          const empty = document.createElement("p");
+          empty.className = "history-empty";
+          empty.textContent = t("companionEmpty");
+          container.appendChild(empty);
+          return;
+        }
+        items.forEach((item) => {
+          const row = document.createElement("p");
+          row.textContent = renderItem(item);
+          container.appendChild(row);
+        });
+      }
+
+      function openCompanionPanel() {
+        const snapshot = deriveCompanionSnapshot(loadHistory(recordStore));
+        renderCompanionList(els.companionTrail, snapshot.observationTrail || [], (item) =>
+          [item.symbol, item.action, item.actionStatus].filter(Boolean).join(" · ")
+        );
+        renderCompanionList(els.companionThemeMap, Object.entries(snapshot.modeCounts || {}), ([modeName, count]) =>
+          `${modeName}: ${count}`
+        );
+        renderCompanionList(els.companionCollection, [
+          ...(snapshot.topSymbols || []).map((item) => `${item.name} · ${item.count}`),
+          ...(snapshot.actionWords || []).map((item) => `${item.word} · ${item.count}`)
+        ], (item) => item);
+        renderCompanionList(els.companionEcho, snapshot.oneMonthEcho ? [snapshot.oneMonthEcho] : [], (item) =>
+          [item.symbol, item.action, item.actionStatus].filter(Boolean).join(" · ")
+        );
+        syncClient.saveCompanionProfile(snapshot, snapshot.quietFlags || [])
+          .catch((error) => console.warn("Companion sync skipped", error));
+        openUtilityPanel(els.companionPanel);
+      }
+
+      async function copyShareText(kind) {
+        const includeQuestion = els.shareIncludeQuestion.checked;
+        const data = shareResultData({ includeQuestion });
+        const lines = kind === "full" ? fullShareLines(data) : compactShareLines(data);
+        const text = lines.join("\n");
+        const result = await copyTextToClipboard(text);
+        setCopyFallback(text, result);
+        return result;
+      }
+
+      function wrapSvgText(text, maxChars = 28, maxLines = 3) {
+        const source = cleanText(text, "");
+        if (!source) return [];
+        const chunks = source.match(new RegExp(`.{1,${maxChars}}`, "g")) || [];
+        return chunks.slice(0, maxLines);
+      }
+
+      function escapeSvg(value) {
+        return cleanText(value, "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function shareCardSvg(data) {
+        const summary = wrapSvgText(data.summary, 24, 4);
+        const action = wrapSvgText(data.action, 24, 3);
+        const question = data.question ? wrapSvgText(data.question, 24, 2) : [];
+        const textLines = [
+          ...question.map((line) => ({ text: line, size: 24, fill: "#5b554b" })),
+          ...summary.map((line) => ({ text: line, size: 32, fill: "#23211c" })),
+          ...(data.action ? [{ text: lang === "zh" ? "今天可以做" : "Next action", size: 22, fill: "#9b3a32" }] : []),
+          ...action.map((line) => ({ text: line, size: 26, fill: "#23211c" }))
+        ];
+        const body = textLines.map((line, index) =>
+          `<text x="72" y="${244 + index * 46}" font-size="${line.size}" fill="${line.fill}">${escapeSvg(line.text)}</text>`
+        ).join("");
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+          <rect width="900" height="1200" fill="#f0ede5"/>
+          <rect x="48" y="48" width="804" height="1104" rx="8" fill="none" stroke="#23211c" stroke-opacity=".22"/>
+          <text x="72" y="126" font-size="28" fill="#9b3a32" letter-spacing="0">AskAura</text>
+          <text x="72" y="182" font-size="42" fill="#23211c">${escapeSvg(data.symbol || data.title)}</text>
+          ${body}
+          <text x="72" y="1100" font-size="22" fill="#5b554b">askaura.vercel.app</text>
+        </svg>`;
+      }
+
+      function downloadShareImage() {
+        const data = shareResultData({ includeQuestion: els.shareIncludeQuestion.checked });
+        const svg = shareCardSvg(data);
+        const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `askaura-share-${Date.now()}.svg`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function exportResultPdf() {
+        const data = shareResultData({ includeQuestion: els.shareIncludeQuestion.checked });
+        const lines = fullShareLines(data);
+        const page = window.open("", "_blank");
+        if (!page) return false;
+        page.document.write(`<!doctype html><html><head><title>AskAura</title><style>
+          body{font-family:Georgia,'Noto Serif SC',serif;color:#23211c;background:#f0ede5;margin:48px;line-height:1.7}
+          h1{font-size:28px;margin:0 0 24px;color:#9b3a32} p{font-size:16px;white-space:pre-wrap}
+          .box{border:1px solid rgba(35,33,28,.2);padding:28px;max-width:720px}
+        </style></head><body><main class="box"><h1>AskAura</h1>${lines.map((line) => `<p>${escapeSvg(line)}</p>`).join("")}</main><script>print();<\/script></body></html>`);
+        page.document.close();
+        return true;
+      }
+
+      async function handleSharedResult() {
+        const token = new URLSearchParams(location.search).get("share");
+        if (!token) return false;
+        try {
+          const result = await syncClient.loadShareLink(token);
+          const payload = result.payload || {};
+          const record = {
+            id: `shared-${Date.now()}`,
+            mode: cleanText(payload.mode, "tarot"),
+            title: cleanText(payload.title, t("sharedResultTitle")),
+            question: cleanText(payload.question, ""),
+            action: cleanText(payload.action || payload.doText, ""),
+            reviewNote: cleanText(payload.reviewNote, ""),
+            createdAt: cleanText(payload.createdAt, new Date().toISOString()),
+            updatedAt: cleanText(payload.createdAt, new Date().toISOString()),
+          };
+          lastRecord = record;
+          lastQuestion = record.question;
+          lastAction = record.action;
+          currentResultContext = {
+            sourceMode: record.mode,
+            summary: cleanText(payload.summary, ""),
+            actionText: record.action,
+            doText: cleanText(payload.doText || record.action, ""),
+            dontText: cleanText(payload.dontText, ""),
+            watchText: cleanText(payload.watchText, ""),
+          };
+          showResult();
+          els.answerKicker.textContent = t("sharedResultTitle");
+          els.tarotSymbol.hidden = true;
+          els.guaSymbol.hidden = true;
+          els.anchorGrid.hidden = true;
+          updateSymbolSummary({ sourceMode: record.mode, name: cleanText(payload.symbol, record.title), question: record.question });
+          renderStructuredReport({
+            sourceMode: record.mode,
+            summary: currentResultContext.summary,
+            actionText: record.action,
+          });
+          updateReviewUi(record);
+          els.save.disabled = true;
+          els.newReading.disabled = true;
+          els.createShareLink.hidden = true;
+          els.revokeShareLink.hidden = true;
+          updateShareLinkUi("");
+          return true;
+        } catch (error) {
+          console.error(error);
+          showResult();
+          els.answerKicker.textContent = t("sharedResultTitle");
+          renderStructuredReport({
+            sourceMode: "tarot",
+            summary: t("sharedResultMissing"),
+            actionText: "",
+          });
+          els.sharePanel.hidden = true;
+          els.save.disabled = true;
+          els.newReading.disabled = true;
+          return true;
+        }
+      }
+
+      function followupQuestionText(kind, customText = "") {
+        return selectFollowupQuestionText(kind, customText, {
+          push: t("followupPush"),
+          avoid: t("followupAvoid"),
+          blocker: t("followupBlocker"),
+          review: t("followupReview"),
+          fallback: t("followupCustomPlaceholder")
+        });
+      }
+
+      function followupResultSummary() {
+        return buildFollowupResultSummary(currentResultContext || {});
+      }
+
+      async function showFollowupAnswer(kind, customText = "") {
+        if (isFollowupRunning || !currentResultContext) return;
         const submit = els.followupCustomForm.querySelector("button[type='submit']");
+        const question = followupQuestionText(kind, customText);
         if (submit) {
           submit.disabled = true;
           submit.textContent = t("followupWorking");
         }
-        els.followupAnswerText.textContent = followupText(kind, customText);
+        isFollowupRunning = true;
+        els.followupAnswerText.textContent = "";
         els.followupAnswer.hidden = false;
-        setTimeout(() => {
+        try {
+          let answer = "";
+          await streamReading({
+            mode: "followup",
+            tier: "basic",
+            entry: "followup",
+            originalQuestion: lastQuestion || t("fallbackQuestion"),
+            resultSummary: followupResultSummary(),
+            followupQuestion: question,
+            language: lang
+          }, (text) => {
+            answer = text;
+            els.followupAnswerText.textContent = text;
+          });
+          els.followupAnswerText.textContent = cleanText(answer, t("followupFailed"));
+          saveFollowupToCurrentRecord(question, els.followupAnswerText.textContent);
           selectedFollowupKind = "";
           els.followupCustomInput.value = "";
           els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
+        } catch (error) {
+          console.error(error);
+          els.followupAnswerText.textContent = t("followupFailed");
+        } finally {
+          isFollowupRunning = false;
           updateFollowupSubmit();
           els.followupAnswer.scrollIntoView({ block: "nearest", behavior: "smooth" });
-        }, 180);
+        }
       }
 
       function updateFollowupSubmit() {
@@ -2295,21 +3313,33 @@
         const submit = els.followupCustomForm.querySelector("button[type='submit']");
         if (!submit) return;
         const hasCustomText = Boolean(els.followupCustomInput.value.trim());
-        submit.disabled = !(selectedFollowupKind || hasCustomText);
+        submit.disabled = isFollowupRunning || !(selectedFollowupKind || hasCustomText);
         submit.textContent = selectedFollowupKind ? t("followupCustomSubmitSelected") : t("followupCustomSubmit");
       }
 
       function drawClarificationCard() {
         if (isRunning) return;
+        pendingClarificationContext = {
+          sourceResultId: lastRecord?.id || "",
+          ...createClarificationContext({
+            lastRecord,
+            lastQuestion,
+            fallbackQuestion: t("fallbackQuestion"),
+            previousCard: lastRecord?.imageAlt || els.cardImage.alt || lastRecord?.title,
+            resultSummary: followupResultSummary()
+          })
+        };
+        selectedFollowupKind = "";
+        els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
+        updateFollowupSubmit();
         mode = "tarot";
         els.input.hidden = false;
-        els.input.value = lang === "zh"
-          ? `围绕这次结果，抽一张澄清牌：${lastQuestion || t("fallbackQuestion")}`
-          : `Draw a clarification card for this result: ${lastQuestion || t("fallbackQuestion")}`;
         setMode("tarot");
-        els.input.value = lang === "zh"
-          ? `围绕这次结果，抽一张澄清牌：${lastQuestion || t("fallbackQuestion")}`
-          : `Draw a clarification card for this result: ${lastQuestion || t("fallbackQuestion")}`;
+        els.input.value = clarificationPromptText({
+          lastQuestion,
+          fallbackQuestion: t("fallbackQuestion"),
+          language: lang
+        });
         setTimeout(() => els.form.requestSubmit(), 80);
       }
 
@@ -2397,17 +3427,57 @@
       }));
       els.modeBtns.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
       els.langBtns.forEach((btn) => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
+      els.questionExamples.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-question-example]");
+        if (!button) return;
+        els.input.value = button.textContent.trim();
+        els.input.focus();
+        updatePlaceholderSample(true);
+        updateCastCopy();
+      });
+      els.spreadSelector.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-spread-type]");
+        if (!button || mode !== "tarot") return;
+        selectedSpreadType = button.dataset.spreadType || "single";
+        updateSpreadSelector();
+      });
+      els.guaCastSelector.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-gua-cast]");
+        if (!button || mode !== "meihua") return;
+        selectedGuaCastMethod = button.dataset.guaCast || "time";
+        updateGuaCastSelector();
+        if (selectedGuaCastMethod !== "time") els.guaSeedInput.focus();
+      });
       els.form.addEventListener("submit", runExperience);
+      els.actionStatus.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-action-status]");
+        if (!button) return;
+        saveActionStatus(button.dataset.actionStatus);
+      });
+      els.reviewSave.addEventListener("click", saveReviewNote);
       els.historyBtn.addEventListener("click", () => {
         renderHistoryList();
         openUtilityPanel(els.historyPanel);
       });
+      els.companionBtn.addEventListener("click", openCompanionPanel);
+      els.historyFilters.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-history-filter]");
+        if (!button) return;
+        historyFilter = button.dataset.historyFilter || "all";
+        renderHistoryList();
+      });
+      els.weeklySummaryBtn.addEventListener("click", generateWeeklySummary);
       els.accountBtn.addEventListener("click", () => {
         updateAuthUi();
         openUtilityPanel(els.authPanel);
       });
       els.utilityClosers.forEach((button) => button.addEventListener("click", closeUtilityPanels));
       els.historyList.addEventListener("click", (event) => {
+        const favorite = event.target.closest("[data-history-favorite]");
+        if (favorite) {
+          toggleHistoryFavorite(favorite.dataset.historyFavorite);
+          return;
+        }
         const item = event.target.closest(".history-item");
         if (!item) return;
         const record = loadHistory(recordStore).find((entry) => entry.id === item.dataset.id);
@@ -2493,6 +3563,35 @@
             ? t("copyManual")
             : t("copyFailed");
       });
+      els.copySummary.addEventListener("click", async () => {
+        const result = await copyShareText("summary");
+        els.copySummary.textContent = result === "copied"
+          ? t("copied")
+          : result === "manual"
+            ? t("copyManual")
+            : t("copyFailed");
+      });
+      els.copyFull.addEventListener("click", async () => {
+        const result = await copyShareText("full");
+        els.copyFull.textContent = result === "copied"
+          ? t("copied")
+          : result === "manual"
+            ? t("copyManual")
+            : t("copyFailed");
+      });
+      els.shareImage.addEventListener("click", () => {
+        downloadShareImage();
+        els.shareImage.textContent = t("imageSaved");
+      });
+      els.exportPdf.addEventListener("click", () => {
+        els.exportPdf.textContent = exportResultPdf() ? t("exportOpened") : t("copyFailed");
+      });
+      els.createShareLink.addEventListener("click", createPrivateShareLink);
+      els.revokeShareLink.addEventListener("click", revokePrivateShareLink);
+      els.resonanceSubmit.addEventListener("click", submitCurrentToResonance);
+      els.resonanceOpen.addEventListener("click", openResonancePool);
+      els.resonanceRevoke.addEventListener("click", revokeCurrentResonance);
+      els.resonanceList.addEventListener("click", reactToResonance);
       els.cardImage.addEventListener("click", openCardLightbox);
       els.cardImage.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -2519,10 +3618,14 @@
         loadAdminConfig().then((loaded) => {
           if (loaded) refreshLocalizedUi();
         });
-        handleAuthRedirect()
-          .catch((error) => console.warn("Auth redirect skipped", error))
-          .then(() => {
-            syncAndRefresh().catch((error) => console.warn("Initial sync skipped", error));
+        handleSharedResult()
+          .then((shared) => {
+            if (shared) return;
+            return handleAuthRedirect()
+              .catch((error) => console.warn("Auth redirect skipped", error))
+              .then(() => {
+                syncAndRefresh().catch((error) => console.warn("Initial sync skipped", error));
+              });
           });
       }
 

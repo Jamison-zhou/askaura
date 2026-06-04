@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>此镜后台</title>
+    <title>AskAura Admin</title>
     <link rel="stylesheet" href="./admin-styles.css" />
   </head>
   <body>
     <section class="auth-gate" id="auth-gate">
       <form class="auth-card" id="auth-form">
-        <p class="eyebrow">RiLL Admin</p>
+        <p class="eyebrow">AskAura Admin</p>
         <h1 id="auth-title">管理员登录</h1>
         <p class="auth-copy" id="auth-copy">输入管理员账号密码后进入配置后台。</p>
         <label>
@@ -27,9 +27,9 @@
 
     <main class="admin-shell">
       <aside class="admin-rail">
-        <a class="back-home" href="./index.html">← 返回此镜</a>
+        <a class="back-home" href="./index.html">← 返回 AskAura</a>
         <div>
-          <p class="eyebrow">RiLL Admin</p>
+          <p class="eyebrow">AskAura Admin</p>
           <h1>配置后台</h1>
           <p class="rail-copy">这里改的是本浏览器配置。保存后回到首页刷新即可看到效果。</p>
         </div>
@@ -141,6 +141,7 @@
                 <label>
                   Provider
                   <select name="llm.provider">
+                    <option value="deepseek">deepseek</option>
                     <option value="xiaomi">xiaomi</option>
                     <option value="kimi">kimi</option>
                   </select>
@@ -182,6 +183,146 @@
 
             <section class="panel wide">
               <span class="panel-num">05</span>
+              <h2>Model Router</h2>
+              <div class="three-cols">
+                <label>
+                  Basic Model
+                  <input name="models.basic.model" />
+                </label>
+                <label>
+                  Basic Max Tokens
+                  <input name="models.basic.maxTokens" type="number" min="256" max="1800" step="1" />
+                </label>
+                <label>
+                  Basic Thinking
+                  <select name="models.basic.thinking">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Pro Model
+                  <input name="models.pro.model" />
+                </label>
+                <label>
+                  Pro Max Tokens
+                  <input name="models.pro.maxTokens" type="number" min="256" max="3072" step="1" />
+                </label>
+                <label>
+                  Pro Route
+                  <select name="models.pro.enabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Pro Thinking
+                  <select name="models.pro.thinking">
+                    <option value="true">enabled</option>
+                    <option value="false">disabled</option>
+                  </select>
+                </label>
+                <label>
+                  Pro Reasoning Effort
+                  <select name="models.pro.reasoningEffort">
+                    <option value="high">high</option>
+                    <option value="max">max</option>
+                  </select>
+                </label>
+                <label>
+                  Router Note
+                  <input value="Frontend model values are ignored by reading." disabled />
+                </label>
+              </div>
+              <p class="note">Model choice is owned by the Edge Function route. Public frontend requests only send tier and entry hints.</p>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">06</span>
+              <h2>Ops Quality</h2>
+              <div class="three-cols">
+                <label>
+                  Prompt Version
+                  <input name="ops.promptVersion" maxlength="80" />
+                </label>
+                <label>
+                  Quality Logging
+                  <select name="ops.qualityLoggingEnabled">
+                    <option value="true">enabled</option>
+                    <option value="false">disabled</option>
+                  </select>
+                </label>
+                <label>
+                  Safety Scan
+                  <select name="ops.contentSafetyScanEnabled">
+                    <option value="true">enabled</option>
+                    <option value="false">disabled</option>
+                  </select>
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Experiment Key
+                  <input name="ops.experimentKey" maxlength="80" />
+                </label>
+                <label>
+                  Rollback Note
+                  <input name="ops.rollbackNote" maxlength="240" />
+                </label>
+                <label>
+                  Ops Note
+                  <input value="Quality events store metadata only." disabled />
+                </label>
+              </div>
+              <p class="note">Use these switches to stop quality logging or safety scanning without deleting user data. Experiments are reserved but not active.</p>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">07</span>
+              <h2>Paid Guardrails</h2>
+              <div class="three-cols">
+                <label>
+                  Paid UI
+                  <select name="paid.enabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+                <label>
+                  Pro Model Gate
+                  <select name="paid.proModelEnabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
+                </label>
+                <label>
+                  Free Daily Follow-ups
+                  <input name="paid.freeDailyFollowups" type="number" min="0" max="20" step="1" />
+                </label>
+              </div>
+              <div class="three-cols">
+                <label>
+                  Pro Daily Follow-ups
+                  <input name="paid.proDailyFollowups" type="number" min="0" max="100" step="1" />
+                </label>
+                <label>
+                  Free Monthly Exports
+                  <input name="paid.freeMonthlyExports" type="number" min="0" max="50" step="1" />
+                </label>
+                <label>
+                  Pro Monthly Exports
+                  <input name="paid.proMonthlyExports" type="number" min="0" max="500" step="1" />
+                </label>
+              </div>
+              <p class="note">Paid features stay disabled until checkout and refund handling are selected. Pro routing requires this gate and a server-side entitlement.</p>
+            </section>
+
+            <section class="panel wide">
+              <span class="panel-num">08</span>
               <h2>结果文案</h2>
               <div class="three-cols">
                 <label>
@@ -208,18 +349,48 @@
     </main>
 
     <script>
-      const ADMIN_SESSION_KEY = "rill_admin_token_v1";
-      const SUPABASE_URL = "https://icvegpfnpkyrebtojoca.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_WBw4WUZdTCIIF3MhPtRg4w_N6MjH3hg";
+      const ADMIN_SESSION_KEY = "askaura_admin_token_v1";
+      const SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
       const CONFIG_API_URL = SUPABASE_URL + "/functions/v1/admin-config";
       const defaults = {
         llm: {
-          provider: "xiaomi",
-          model: "mimo-v2.5-pro",
-          baseUrl: "https://token-plan-cn.xiaomimimo.com/v1",
+          provider: "deepseek",
+          model: "deepseek-v4-flash",
+          baseUrl: "https://api.deepseek.com/v1",
           apiKey: "",
           temperature: 0.7,
           maxTokens: 2048
+        },
+        models: {
+          basic: {
+            model: "deepseek-v4-flash",
+            maxTokens: 1200,
+            thinking: false,
+            enabled: true
+          },
+          pro: {
+            model: "deepseek-v4-pro",
+            maxTokens: 2200,
+            thinking: true,
+            reasoningEffort: "high",
+            enabled: false
+          }
+        },
+        paid: {
+          enabled: false,
+          proModelEnabled: false,
+          freeDailyFollowups: 3,
+          proDailyFollowups: 20,
+          freeMonthlyExports: 3,
+          proMonthlyExports: 50
+        },
+        ops: {
+          promptVersion: "askaura-2026-06-03",
+          qualityLoggingEnabled: true,
+          contentSafetyScanEnabled: true,
+          experimentKey: "",
+          rollbackNote: ""
         },
         translations: {
           zh: {
@@ -302,16 +473,17 @@
 
       function fillForm(config) {
         form.querySelectorAll("[name]").forEach((field) => {
-          const path = field.name.startsWith("llm.") ? field.name : "translations." + field.name;
+          const path = field.name.includes(".") ? field.name : "translations." + field.name;
           field.value = getPath(config, path) ?? "";
         });
       }
 
       function readForm() {
-        const config = { translations: {}, llm: {} };
+        const config = { translations: {}, llm: {}, models: { basic: {}, pro: {} }, paid: {}, ops: {} };
         form.querySelectorAll("[name]").forEach((field) => {
-          const path = field.name.startsWith("llm.") ? field.name : "translations." + field.name;
-          const value = field.type === "number" ? Number(field.value) : field.value.trim();
+          const path = field.name.includes(".") ? field.name : "translations." + field.name;
+          const rawValue = field.value.trim();
+          const value = field.type === "number" ? Number(rawValue) : rawValue === "true" ? true : rawValue === "false" ? false : rawValue;
           setPath(config, path, value);
         });
         return config;
@@ -387,7 +559,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "rill-config.json";
+        link.download = "askaura-config.json";
         link.click();
         URL.revokeObjectURL(url);
       });
