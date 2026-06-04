@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AskAura Admin</title>
     <link rel="stylesheet" href="./admin-styles.css" />
+    <script>
+      window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
+      window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
+    </script>
   </head>
   <body>
     <section class="auth-gate" id="auth-gate">
@@ -348,10 +352,13 @@
       </section>
     </main>
 
-    <script>
+    <script type="module">
+      import { getAskAuraConfig } from "./assets/app/config.js";
+
       const ADMIN_SESSION_KEY = "askaura_admin_token_v1";
-      const SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
+      const publicConfig = getAskAuraConfig(window);
+      const SUPABASE_URL = publicConfig.supabaseUrl;
+      const SUPABASE_ANON_KEY = publicConfig.anonKey;
       const CONFIG_API_URL = SUPABASE_URL + "/functions/v1/admin-config";
       const defaults = {
         llm: {

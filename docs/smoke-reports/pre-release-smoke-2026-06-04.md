@@ -191,3 +191,35 @@ Auxiliary functions:
 **Go for production:** Not yet.
 
 Production should wait for the remaining authenticated smoke items and a clear release artifact or commit boundary.
+
+## Authenticated Smoke Addendum
+
+Status: Pending.
+
+Pending because live smoke secrets are unavailable in this workspace.
+
+Run `node tests/release-smoke-authenticated.mjs` with smoke credentials from the local shell before production promotion.
+
+## Final Go / No-Go Addendum
+
+Decision: No-Go for production until authenticated smoke credentials are available and the live authenticated smoke passes.
+
+- Full local `.mjs` suite: Pass
+- Local static HTTP smoke: Pass
+- Authenticated admin smoke: Pending
+- Authenticated user data smoke: Pending
+- Share/resonance authenticated smoke: Pending
+- Old cijing active-code scan: Pass, with only the guarded rejection sentinel in `assets/app/config.js`
+- Payment checkout remains disabled unless Phase 8B is separately completed: Pass
+
+Failed command:
+
+```powershell
+node tests/release-smoke-authenticated.mjs
+```
+
+Response:
+
+```text
+Missing required smoke env: ASKAURA_SMOKE_SUPABASE_URL
+```

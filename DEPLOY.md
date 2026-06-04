@@ -55,3 +55,24 @@ https://askaura.vercel.app
 - Confirm no network request goes to the old cijing Supabase project.
 - Confirm logged-in sync writes to `askaura_reflection_records` and `askaura_daily_anchors`.
 - Confirm admin config reads/writes `askaura_runtime_config`.
+
+## Authenticated Release Smoke
+
+Smoke credentials must be provided only through the local shell environment. Do not write them into code, docs, git, or chat.
+
+Required env vars:
+
+- `ASKAURA_SMOKE_SUPABASE_URL`
+- `ASKAURA_SMOKE_ANON_KEY`
+- `ASKAURA_SMOKE_USER_EMAIL`
+- `ASKAURA_SMOKE_USER_PASSWORD`
+- `ASKAURA_SMOKE_ADMIN_USERNAME`
+- `ASKAURA_SMOKE_ADMIN_PASSWORD`
+
+Run:
+
+```powershell
+node tests/release-smoke-authenticated.mjs
+```
+
+This verifies admin login and config read, signed-in record write/read/delete, share-link create/revoke, and resonance submit/revoke against AskAura Supabase.

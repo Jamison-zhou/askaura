@@ -5,20 +5,66 @@ const activeFiles = [
   "index.html",
   "admin.html",
   "_headers",
+  "assets/app/config.js",
+  "assets/app/storage.js",
   "assets/app/sync.js",
   "supabase/config.toml",
   "supabase/functions/_shared/cors.ts",
   "supabase/functions/_shared/runtime-config.ts",
   "supabase/functions/admin-config/index.ts",
+  "supabase/functions/tarot-draw/index.ts",
   "supabase/functions/reading/index.ts",
 ];
 
 for (const file of activeFiles) {
   const text = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-  assert.equal(text.includes("icvegpfnpkyrebtojoca"), false, `${file} must not target old cijing Supabase`);
-  assert.equal(text.includes("rill_reflection_records"), false, `${file} must not write old history table`);
-  assert.equal(text.includes("rill_daily_anchors"), false, `${file} must not write old daily table`);
-  assert.equal(text.includes("rill_runtime_config"), false, `${file} must not read old runtime config table`);
+  let boundaryText = text;
+
+  if (file === "assets/app/config.js") {
+    const legacyRefDeclaration = 'const LEGACY_SUPABASE_PROJECT_REF = "icvegpfnpkyrebtojoca";';
+    const declarationMatches = text.match(/const LEGACY_SUPABASE_PROJECT_REF = "icvegpfnpkyrebtojoca";/g) || [];
+    const guardMatches = text.match(/includes\(LEGACY_SUPABASE_PROJECT_REF\)/g) || [];
+    const variableMentions = text.match(/\bLEGACY_SUPABASE_PROJECT_REF\b/g) || [];
+
+    assert.equal(declarationMatches.length, 1, `${file} must declare the old ref sentinel exactly once`);
+    assert.ok(guardMatches.length <= 1, `${file} may only use the old ref sentinel in one includes() rejection check`);
+    assert.equal(
+      variableMentions.length,
+      declarationMatches.length + guardMatches.length,
+      `${file} must not reference LEGACY_SUPABASE_PROJECT_REF outside the sentinel declaration and includes() rejection check`,
+    );
+
+    boundaryText = text
+      .replace(legacyRefDeclaration, "")
+      .replace(/includes\(LEGACY_SUPABASE_PROJECT_REF\)/g, "");
+
+    assert.equal(
+      /\bLEGACY_SUPABASE_PROJECT_REF\b/.test(boundaryText),
+      false,
+      `${file} must not reference LEGACY_SUPABASE_PROJECT_REF outside the sentinel declaration and includes() rejection check`,
+    );
+  }
+
+  assert.equal(boundaryText.includes("icvegpfnpkyrebtojoca"), false, `${file} must not target old cijing Supabase`);
+  assert.equal(
+    /SUPABASE_SERVICE_ROLE_KEY\s*[:=]/.test(boundaryText),
+    false,
+    `${file} must not contain service role key assignments`,
+  );
+  assert.equal(
+    /service[_-]?role/i.test(boundaryText)
+      && /(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|sb_secret_[A-Za-z0-9_-]+)/.test(boundaryText),
+    false,
+    `${file} must not contain service role secret values`,
+  );
+  assert.equal(
+    /(sb_secret_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/.test(boundaryText),
+    false,
+    `${file} may contain a real secret value`,
+  );
+  assert.equal(boundaryText.includes("rill_reflection_records"), false, `${file} must not write old history table`);
+  assert.equal(boundaryText.includes("rill_daily_anchors"), false, `${file} must not write old daily table`);
+  assert.equal(boundaryText.includes("rill_runtime_config"), false, `${file} must not read old runtime config table`);
 }
 
 const runtimeMigration = readFileSync(

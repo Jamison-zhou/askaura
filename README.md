@@ -38,6 +38,27 @@ node tests/storage.test.mjs
 node tests/sync.test.mjs
 ```
 
+## Authenticated Release Smoke
+
+Smoke credentials must be provided only through the local shell environment. Do not write them into code, docs, git, or chat.
+
+Required env vars:
+
+- `ASKAURA_SMOKE_SUPABASE_URL`
+- `ASKAURA_SMOKE_ANON_KEY`
+- `ASKAURA_SMOKE_USER_EMAIL`
+- `ASKAURA_SMOKE_USER_PASSWORD`
+- `ASKAURA_SMOKE_ADMIN_USERNAME`
+- `ASKAURA_SMOKE_ADMIN_PASSWORD`
+
+Run:
+
+```powershell
+node tests/release-smoke-authenticated.mjs
+```
+
+This verifies admin login and config read, signed-in record write/read/delete, share-link create/revoke, and resonance submit/revoke against AskAura Supabase.
+
 ## Supabase Deployment Boundary
 
 AskAura now uses a dedicated Supabase project. Keep frontend/admin configuration pointed at:

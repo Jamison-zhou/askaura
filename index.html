@@ -467,17 +467,21 @@
         followupResultSummary as buildFollowupResultSummary,
         formatStoredFollowups
       } from "./assets/app/followup.js";
+      import { buildCompactShareLines as formatCompactShareLines } from "./assets/app/share-text.js";
+      import { getAskAuraConfig } from "./assets/app/config.js";
       import { createSyncClient } from "./assets/app/sync.js";
+      import { nextToneForMode } from "./assets/app/ui-state.js";
 
-      const API_URL = window.ASKAURA_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/reading";
-      const CONFIG_API_URL = window.ASKAURA_SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/admin-config";
-      const API_AUTH = "Bearer " + window.ASKAURA_SUPABASE_ANON_KEY;
+      const publicConfig = getAskAuraConfig(window);
+      const API_URL = publicConfig.supabaseUrl + "/functions/v1/reading";
+      const CONFIG_API_URL = publicConfig.supabaseUrl + "/functions/v1/admin-config";
+      const API_AUTH = "Bearer " + publicConfig.anonKey;
       const CONFIG_KEY = "askaura_admin_config_v1";
       let adminConfig = {};
       const recordStore = createStorage();
       const syncClient = createSyncClient({
-        supabaseUrl: window.ASKAURA_SUPABASE_URL,
-        anonKey: window.ASKAURA_SUPABASE_ANON_KEY,
+        supabaseUrl: publicConfig.supabaseUrl,
+        anonKey: publicConfig.anonKey,
         store: recordStore
       });
       const readingClient = createReadingClient({
@@ -1355,7 +1359,7 @@
         if (mode !== "meihua") selectedGuaCastMethod = "time";
         const active = els.modeBtns.find((btn) => btn.dataset.mode === mode);
         els.modeBtns.forEach((btn) => btn.classList.toggle("active", btn === active));
-        els.room.dataset.tone = active?.dataset.tone || "tarot";
+        els.room.dataset.tone = nextToneForMode(mode);
         els.composePanel.dataset.mode = mode;
         els.signalRow.dataset.mode = mode;
         resetExperience();
@@ -2968,11 +2972,9 @@
       }
 
       function compactShareLines(data) {
-        return [
-          data.symbol,
-          data.summary,
-          data.action ? `${lang === "zh" ? "行动" : "Action"}: ${data.action}` : ""
-        ].filter(Boolean);
+        return formatCompactShareLines(data, {
+          action: lang === "zh" ? "行动" : "Action"
+        });
       }
 
       function fullShareLines(data) {
