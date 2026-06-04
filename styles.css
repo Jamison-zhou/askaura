@@ -122,11 +122,11 @@ textarea:focus-visible,
 
 .surface-noise {
   z-index: 1;
-  opacity: 0.18;
+  opacity: 0.14;
   background-image:
     linear-gradient(rgba(240, 237, 229, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(240, 237, 229, 0.04) 1px, transparent 1px);
-  background-size: 72px 72px;
+  background-size: 96px 96px;
   mask-image: radial-gradient(circle at 55% 42%, black, transparent 76%);
 }
 
@@ -143,6 +143,45 @@ textarea:focus-visible,
   grid-template-rows: 1fr;
   gap: 0 clamp(48px, 6vw, 84px);
   overflow: hidden;
+}
+
+.mirror-room::before,
+.mirror-room::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.mirror-room::before {
+  z-index: 0;
+  inset: clamp(14px, 3dvh, 36px) clamp(-80px, -5vw, -28px);
+  border: 1px solid rgba(240, 237, 229, 0.075);
+  background:
+    radial-gradient(circle at var(--mx, 61%) var(--my, 44%), rgba(156, 122, 74, 0.12), transparent 20rem),
+    radial-gradient(circle at 70% 46%, rgba(103, 84, 127, 0.11), transparent 23rem),
+    linear-gradient(90deg, transparent 0 22%, rgba(240, 237, 229, 0.026) 22% 22.2%, transparent 22.2%),
+    linear-gradient(180deg, rgba(240, 237, 229, 0.016), transparent 42%, rgba(156, 122, 74, 0.025));
+  box-shadow:
+    inset 0 0 90px rgba(0, 0, 0, 0.42),
+    0 34px 120px rgba(0, 0, 0, 0.36);
+  opacity: 0.88;
+  animation: gallery-room-arrive 980ms var(--ease) both;
+}
+
+.mirror-room::after {
+  z-index: 0;
+  right: clamp(0px, 5vw, 72px);
+  top: clamp(110px, 18dvh, 168px);
+  width: min(46vw, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(240, 237, 229, 0.055), transparent 44%),
+    radial-gradient(circle, transparent 0 34%, rgba(156, 122, 74, 0.12) 34.2% 34.5%, transparent 34.7% 44%, rgba(240, 237, 229, 0.06) 44.2% 44.5%, transparent 44.8%);
+  filter: blur(0.1px);
+  opacity: 0.68;
+  transform: translate3d(0, 0, 0);
+  animation: gallery-orbit-arrive 1180ms var(--ease) 120ms both;
 }
 
 .side-rail {
@@ -177,6 +216,7 @@ textarea:focus-visible,
   display: grid;
   gap: 6px;
   text-align: left;
+  filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.32));
 }
 
 .brand strong {
@@ -219,13 +259,14 @@ textarea:focus-visible,
 
 .mode-nav {
   display: grid;
-  gap: 4px;
+  gap: 6px;
+  padding: 8px 0;
 }
 
 .mode-nav button {
   position: relative;
   width: 100%;
-  padding: 12px 12px 12px 18px;
+  padding: 13px 12px 13px 18px;
   color: var(--soft);
   text-align: left;
   overflow: hidden;
@@ -259,8 +300,10 @@ textarea:focus-visible,
 .mode-nav button:hover,
 .mode-nav button.active {
   color: var(--ink);
-  background: rgba(240, 237, 229, 0.04);
-  outline: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(156, 122, 74, 0.12), rgba(240, 237, 229, 0.028) 62%, transparent),
+    rgba(240, 237, 229, 0.025);
+  outline: 1px solid rgba(240, 237, 229, 0.13);
   transform: translateX(3px);
 }
 
@@ -332,9 +375,10 @@ textarea:focus-visible,
 .hero-ritual {
   position: relative;
   height: 260px;
-  opacity: 1;
+  opacity: 0.86;
   transform-style: preserve-3d;
   pointer-events: none;
+  animation: gallery-symbol-arrive 1120ms var(--ease) 180ms both;
 }
 
 .hero-ritual::before {
@@ -368,7 +412,7 @@ textarea:focus-visible,
   position: absolute;
   width: 86px;
   height: 128px;
-  opacity: 0.095;
+  opacity: 0.13;
   border: 1px solid rgba(156, 122, 74, 0.58);
   background:
     linear-gradient(145deg, rgba(240, 237, 229, 0.09), transparent 42%),
@@ -402,7 +446,7 @@ textarea:focus-visible,
 .hero-card-b {
   left: 68px;
   top: 0;
-  opacity: 0.12;
+  opacity: 0.16;
   transform: translateZ(26px) rotate(2deg);
   border-color: rgba(156, 122, 74, 0.64);
 }
@@ -420,7 +464,7 @@ textarea:focus-visible,
   width: 132px;
   display: grid;
   gap: 11px;
-  opacity: 0.10;
+  opacity: 0.18;
 }
 
 .hero-gua-mark span {
@@ -482,8 +526,8 @@ textarea:focus-visible,
   align-self: center;
   width: min(100%, 980px);
   display: grid;
-  gap: clamp(24px, 4dvh, 36px);
-  transform: translateY(clamp(-44px, -4dvh, -22px));
+  gap: clamp(22px, 3.2dvh, 32px);
+  transform: translateY(clamp(-34px, -3dvh, -14px));
 }
 
 .copy-block {
@@ -501,15 +545,16 @@ textarea:focus-visible,
 
 .copy-block h1 {
   margin: 0;
-  max-width: 780px;
+  max-width: 840px;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: clamp(52px, 5.5vw, 76px);
+  font-size: clamp(56px, 6.2vw, 90px);
   font-weight: 500;
-  line-height: 1.08;
-  letter-spacing: 0.02em;
+  line-height: 1.02;
+  letter-spacing: 0;
   text-wrap: balance;
   animation: reveal-section 880ms var(--ease) 160ms both;
+  text-shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
 }
 
 .copy-block .hero-subcopy {
@@ -526,13 +571,17 @@ textarea:focus-visible,
 .work-panel {
   position: relative;
   background:
-    radial-gradient(circle at 74% 14%, rgba(156, 122, 74, 0.10), transparent 30%),
-    linear-gradient(120deg, rgba(240, 237, 229, 0.035), transparent 28%, rgba(156, 122, 74, 0.025) 72%, transparent),
-    linear-gradient(180deg, rgba(18, 22, 34, 0.78), rgba(8, 10, 16, 0.82));
+    radial-gradient(circle at 76% 12%, rgba(156, 122, 74, 0.13), transparent 28%),
+    radial-gradient(circle at 12% 88%, rgba(103, 84, 127, 0.08), transparent 34%),
+    linear-gradient(120deg, rgba(240, 237, 229, 0.046), transparent 28%, rgba(156, 122, 74, 0.030) 72%, transparent),
+    linear-gradient(180deg, rgba(18, 22, 34, 0.84), rgba(8, 10, 16, 0.88));
   border: 1px solid var(--line);
   backdrop-filter: blur(22px);
   overflow: hidden;
   transition: border-color 520ms ease, background 520ms ease, filter 520ms ease;
+  box-shadow:
+    0 24px 82px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(240, 237, 229, 0.035);
 }
 
 .work-panel::before {
@@ -2369,7 +2418,18 @@ textarea:disabled {
     grid-template-rows: auto;
     align-content: start;
     gap: 18px;
-    overflow: visible;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .mirror-room::before {
+    inset: 10px 0;
+  }
+
+  .mirror-room::after {
+    right: -72px;
+    top: 160px;
+    width: min(78vw, 360px);
   }
 
   .side-rail {
@@ -2453,10 +2513,29 @@ textarea:disabled {
   .mirror-room {
     width: min(100% - 20px, 520px);
     padding: 14px 0;
+    gap: 14px;
+  }
+
+  .side-rail {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 12px 14px;
+    padding-bottom: 12px;
+  }
+
+  .brand {
+    grid-column: 1;
+  }
+
+  .brand strong {
+    font-size: 28px;
   }
 
   .mode-nav {
+    grid-column: 1 / -1;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0;
   }
 
   .mode-nav button {
@@ -2470,10 +2549,24 @@ textarea:disabled {
     transform: none;
   }
 
+  .rail-actions {
+    grid-column: 1;
+    display: flex;
+    gap: 14px;
+    align-content: start;
+    font-size: 13px;
+  }
+
+  .language {
+    grid-column: 2;
+    align-self: end;
+    font-size: 13px;
+  }
+
   .mirror-stage {
-    opacity: 0.45;
-    right: 0;
-    top: 126px;
+    opacity: 0.32;
+    right: -18px;
+    top: 156px;
   }
 
   .hero-ritual {
@@ -2499,7 +2592,17 @@ textarea:disabled {
   }
 
   .copy-block h1 {
-    font-size: 42px;
+    font-size: 38px;
+    line-height: 1.08;
+  }
+
+  .copy-block .hero-subcopy {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .hero-content {
+    gap: 18px;
   }
 
   textarea {
@@ -2672,6 +2775,41 @@ textarea:disabled {
   .ritual-stage.is-cutting .ritual-card,
   .ritual-stage.is-spread .ritual-card {
     transform: translate3d(var(--card-x), var(--card-y), 0) rotateZ(var(--card-angle));
+  }
+}
+
+@keyframes gallery-room-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 0.88;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes gallery-orbit-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.92);
+  }
+  to {
+    opacity: 0.68;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes gallery-symbol-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 0.86;
+    transform: translateY(0) scale(1);
   }
 }
 
