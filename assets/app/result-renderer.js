@@ -1,7 +1,16 @@
-export function cleanResultText(value, fallback = "") {
-  const text = String(value ?? "").replace(/\s+/g, " ").trim();
+const TAG_LINE_REGEX = /^\s*\[([A-Z0-9_]+)\]\s*(.*)$/;
+
+function normalizeResultText(value, fallback = "", { collapseWhitespace = true } = {}) {
+  const source = String(value ?? "").replace(/\r\n/g, "\n").trim();
+  const text = collapseWhitespace
+    ? source.replace(/\s+/g, " ").trim()
+    : source.split("\n").map((line) => line.trim()).filter(Boolean).join("\n");
   if (!text || text === "undefined" || text === "null" || text === "NaN") return fallback;
   return text;
+}
+
+export function cleanResultText(value, fallback = "") {
+  return normalizeResultText(value, fallback);
 }
 
 export function parseTaggedTokens(text) {
@@ -9,7 +18,7 @@ export function parseTaggedTokens(text) {
   const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
   let current = null;
   for (const line of lines) {
-    const match = line.match(/^\s*\[([A-Z0-9_]+)\]\s*(.*)$/);
+    const match = line.match(TAG_LINE_REGEX);
     if (match) {
       current = match[1];
       out[current] = match[2] ? match[2].trim() : "";
@@ -18,6 +27,42 @@ export function parseTaggedTokens(text) {
     }
   }
   return out;
+}
+
+export function cleanTaggedOutputText(
+  value,
+  fallback = "",
+  { preferredOrder = [], joinWith = "\n" } = {},
+) {
+  const source = String(value ?? "").replace(/\r\n/g, "\n").trim();
+  const tokens = parseTaggedTokens(source);
+  const names = Object.keys(tokens);
+  if (names.length) {
+    const seen = new Set();
+    const ordered = [...preferredOrder, ...names].filter((name) => {
+      if (!name || seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    });
+    const parts = ordered
+      .map((name) => normalizeResultText(tokens[name], "", { collapseWhitespace: joinWith !== "\n" }))
+      .filter(Boolean);
+    return normalizeResultText(parts.join(joinWith), fallback, { collapseWhitespace: joinWith !== "\n" });
+  }
+  return normalizeResultText(
+    source.replace(/^\s*\[[A-Z0-9_]+\]\s*/gm, ""),
+    fallback,
+    { collapseWhitespace: joinWith !== "\n" },
+  );
+}
+
+export function meihuaReportFromText(text) {
+  const tokens = parseTaggedTokens(text);
+  return {
+    signal: cleanTaggedOutputText(tokens.GUA_SIGNAL, ""),
+    trend: cleanTaggedOutputText(tokens.GUA_TREND, ""),
+    action: cleanTaggedOutputText(tokens.ACTION, ""),
+  };
 }
 
 export function buildActionAdvice(actionText, { language = "zh" } = {}) {
@@ -47,14 +92,27 @@ export function describeGua(gua, { language = "zh" } = {}) {
 }
 
 export function actionFromRecord(record) {
+  const meihua = meihuaReportFromText(record?.answer || "");
+  if (meihua.action) return meihua.action;
   const tokens = parseTaggedTokens(record?.answer || "");
-  return cleanResultText(record?.action || tokens.ACTION || record?.answer, "");
+  return cleanTaggedOutputText(record?.action || tokens.ACTION || record?.answer, "");
 }
 
 export function reportFromRecord(record, { language = "zh" } = {}) {
   if (record?.report) return { ...record.report, sourceMode: record.mode };
+  const meihua = meihuaReportFromText(record?.answer || "");
+  if (record?.mode === "meihua" && (meihua.signal || meihua.trend || meihua.action)) {
+    return {
+      summary: meihua.signal || meihua.trend || meihua.action,
+      tarotText: meihua.signal,
+      guaText: meihua.trend,
+      dualText: "",
+      actionText: meihua.action,
+      sourceMode: record.mode,
+    };
+  }
   const reading = record?.reading || parseTaggedTokens(record?.answer || "");
-  const tarotText = cleanResultText(reading.tension || reading.TENSION || reading.coreQuestion || reading.CORE_QUESTION, "");
+  const tarotText = cleanTaggedOutputText(reading.tension || reading.TENSION || reading.coreQuestion || reading.CORE_QUESTION, "");
   const summary = cleanResultText(
     reading.judgment || reading.JUDGMENT || record?.action || record?.answer,
     ""

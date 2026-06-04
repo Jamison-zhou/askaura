@@ -7,6 +7,8 @@ This folder contains AskAura Edge Functions and migrations. It must be linked on
 - `reading`: SSE reading generation.
 - `tarot-draw`: draw event logging, returns `{ ok: true }`.
 - `admin-config`: admin login and runtime config read/write.
+- `share-link`: private link creation and revocation.
+- `resonance-pool`: anonymous resonance pool interactions.
 
 ## Tables
 
@@ -41,6 +43,8 @@ supabase db push --project-ref <ASKAURA_PROJECT_REF>
 supabase functions deploy reading --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 supabase functions deploy tarot-draw --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 supabase functions deploy admin-config --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
+supabase functions deploy share-link --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
+supabase functions deploy resonance-pool --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 ```
 
 ## Local Function Contract
@@ -50,4 +54,3 @@ supabase functions deploy admin-config --project-ref <ASKAURA_PROJECT_REF> --no-
 `language` is `zh` or `en`.
 
 `tarot-draw` does not return a server-selected card.
-

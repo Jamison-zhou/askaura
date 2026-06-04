@@ -83,7 +83,7 @@ function assertDynamicContextLast(name, prompt, dynamicMarkers, stableMarkers = 
 }
 
 assertDynamicContextLast("reading", prompts.reading, ["DYNAMIC_READING_QUESTION", "DYNAMIC_READING_HISTORY"], ["[CORE_QUESTION]", "[ACTION]"]);
-assertDynamicContextLast("meihua", prompts.meihua, ["DYNAMIC_MEIHUA_QUESTION"], ["[ACTION]"]);
+assertDynamicContextLast("meihua", prompts.meihua, ["DYNAMIC_MEIHUA_QUESTION"], ["[GUA_SIGNAL]", "[GUA_TREND]", "[ACTION]"]);
 assertDynamicContextLast("advice", prompts.advice, ["DYNAMIC_ADVICE_QUESTION", "DYNAMIC_ADVICE_SUMMARY"], ["[ACTION]"]);
 assertDynamicContextLast("anchor", prompts.anchor, ["Temperance"], ["[ANCHOR_CORE]", "[ANCHOR_TAKEAWAY]"]);
 assertDynamicContextLast("clarify", prompts.clarify, ["DYNAMIC_CLARIFY_QUESTION"], ["[CLARIFIED_QUESTION]", "[CLARIFY_NOTE]"]);

@@ -8,6 +8,8 @@ const sync = readFileSync(new URL("../assets/app/sync.js", import.meta.url), "ut
 const historyStore = readFileSync(new URL("../assets/app/history-store.js", import.meta.url), "utf8");
 const types = readFileSync(new URL("../supabase/functions/_shared/types.ts", import.meta.url), "utf8");
 const readingPrompt = readFileSync(new URL("../supabase/functions/_shared/prompts/reading.ts", import.meta.url), "utf8");
+const meihuaPrompt = readFileSync(new URL("../supabase/functions/_shared/prompts/meihua.ts", import.meta.url), "utf8");
+const tokenValidator = readFileSync(new URL("../supabase/functions/_shared/token-validator.ts", import.meta.url), "utf8");
 const migration = readFileSync(new URL("../supabase/migrations/202606030008_askaura_spread_cards.sql", import.meta.url), "utf8");
 
 assert.match(types, /export type SpreadType = "single" \| "three_current_resistance_next" \| "relationship_tension" \| "choice_a_b_reminder"/, "backend types define all spread types");
@@ -44,6 +46,12 @@ assert.match(readingPrompt, /must not decide A or B for the user/, "choice sprea
 assert.match(html, /id="gua-cast-selector"/, "meihua mode exposes cast method selector");
 assert.equal((html.match(/data-gua-cast=/g) || []).length, 4, "front-end exposes four gua cast methods");
 assert.match(html, /guaFromCast\(selectedGuaCastMethod, guaSeed\)/, "meihua flow uses deterministic cast method and seed");
+assert.match(html, /const meihua = renderMeihuaReading\(full\);[\s\S]*summary: meihua\.signal \|\| meihua\.trend \|\| meihua\.action[\s\S]*tarotText: meihua\.signal[\s\S]*guaText: meihua\.trend/, "meihua mode maps signal and trend into the report stack");
+assert.match(html, /const meihua = renderMeihuaReading\(meihuaFull\);[\s\S]*guaText: \[meihua\.signal, meihua\.trend\]\.filter\(Boolean\)\.join\("\\n"\)/, "dual mode reuses richer meihua report tokens");
+assert.match(meihuaPrompt, /\[GUA_SIGNAL\]/, "meihua prompt requires signal token");
+assert.match(meihuaPrompt, /\[GUA_TREND\]/, "meihua prompt requires trend token");
+assert.match(meihuaPrompt, /\[ACTION\]/, "meihua prompt keeps action token");
+assert.match(tokenValidator, /"meihua-reading": \["GUA_SIGNAL", "GUA_TREND", "ACTION"\]/, "token validator requires richer meihua output");
 assert.match(css, /\.spread-selector,[\s\S]*\.gua-cast-selector/, "spread and gua controls share compact styling");
 
 console.log("phase4 spreads and gua contract passed");

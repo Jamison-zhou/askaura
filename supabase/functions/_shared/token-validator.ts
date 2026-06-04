@@ -13,7 +13,7 @@ const REQUIRED_TOKENS: Record<ReadingMode, string[]> = {
     "ANCHOR_MOMENT",
     "ANCHOR_TAKEAWAY",
   ],
-  "meihua-reading": ["ACTION"],
+  "meihua-reading": ["GUA_SIGNAL", "GUA_TREND", "ACTION"],
   clarify: ["CLARIFIED_QUESTION", "CLARIFY_NOTE"],
   followup: [],
   "weekly-summary": ["THEME", "STUCK_POINT", "NEXT_ACTION"],

@@ -70,6 +70,7 @@ assert.match(adminConfig, /contentSafetyScanEnabled/, "admin config sanitizes sa
 assert.match(adminConfig, /rollbackNote/, "admin config sanitizes rollback note");
 
 const adminHtml = read("admin.html");
+const indexHtml = read("index.html");
 assert.match(adminHtml, /Ops Quality/, "admin page exposes ops panel");
 assert.match(adminHtml, /name="ops\.promptVersion"/, "admin page exposes prompt version");
 assert.match(adminHtml, /name="ops\.qualityLoggingEnabled"/, "admin page exposes quality logging switch");
@@ -87,5 +88,7 @@ assert.doesNotMatch(reading, /recordQualityEvent\([\s\S]*?(question|answer|follo
 
 const sync = read("assets/app/sync.js");
 assert.doesNotMatch(sync, /askaura_quality_events/, "browser sync does not directly access quality events");
+assert.match(indexHtml, /const parsed = payload\.config;[\s\S]*if \(parsed && typeof parsed !== "object"\) \{[\s\S]*console\.warn\("Invalid admin config", parsed\);/, "front-end still warns on malformed admin config payloads");
+assert.match(indexHtml, /async function loadAdminConfig\(\)[\s\S]*catch \{\s*return false;\s*\}/, "front-end skips noisy warnings for expected local config fetch failures");
 
 console.log("phase9 ops quality contract passed");

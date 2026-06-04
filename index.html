@@ -18,7 +18,7 @@
         rel="stylesheet"
       />
     </noscript>
-    <link rel="stylesheet" href="./styles.css?v=20260602-result-hierarchy-1" />
+    <link rel="stylesheet" href="./styles.css?v=20260604-defect-polish-1" />
     <script>
       window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
       window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
@@ -451,7 +451,9 @@
       import {
         actionFromRecord as actionFromResultRecord,
         buildActionAdvice,
+        cleanTaggedOutputText,
         describeGua,
+        meihuaReportFromText,
         reportFromRecord as normalizeReportFromRecord
       } from "./assets/app/result-renderer.js";
       import {
@@ -619,6 +621,9 @@
           newReadingDual: "重新生成报告（新结果）",
           newReadingConfirm: "重新抽牌会生成一次新的结果，当前结果仍会保留在回看中。",
           copied: "行动已复制",
+          copiedAction: "行动已复制",
+          copiedSummary: "摘要已复制",
+          copiedFull: "完整结果已复制",
           copyFailed: "复制失败",
           copyManual: "按 Ctrl+C",
           imageSaved: "已生成图片",
@@ -855,6 +860,9 @@
           newReadingDual: "New dual report",
           newReadingConfirm: "Drawing again will create a new result. This result will remain in history.",
           copied: "Action copied",
+          copiedAction: "Action copied",
+          copiedSummary: "Summary copied",
+          copiedFull: "Full result copied",
           copyFailed: "Copy failed",
           copyManual: "Press Ctrl+C",
           imageSaved: "Image ready",
@@ -982,12 +990,26 @@
             body: JSON.stringify({ action: "public" })
           });
           if (!response.ok) return false;
-          const parsed = (await response.json()).config;
+          let payload;
+          try {
+            payload = await response.json();
+          } catch (error) {
+            console.warn("Invalid admin config", error);
+            return false;
+          }
+          if (!payload || typeof payload !== "object") {
+            console.warn("Invalid admin config", payload);
+            return false;
+          }
+          const parsed = payload.config;
+          if (parsed && typeof parsed !== "object") {
+            console.warn("Invalid admin config", parsed);
+            return false;
+          }
           adminConfig = parsed || {};
           if (adminConfig.translations) mergeConfig(translations, adminConfig.translations);
           return true;
-        } catch (error) {
-          console.warn("Invalid admin config", error);
+        } catch {
           return false;
         }
       }
@@ -1167,6 +1189,34 @@
         const text = String(value ?? "").replace(/\s+/g, " ").trim();
         if (!text || text === "undefined" || text === "null" || text === "NaN") return fallback;
         return text;
+      }
+
+      function modeLabelText(modeName) {
+        const labels = {
+          tarot: "modeTarot",
+          meihua: "modeMeihua",
+          dual: "modeDual",
+          daily: "modeDaily",
+        };
+        return labels[modeName] ? t(labels[modeName]) : cleanText(modeName, "");
+      }
+
+      function normalizedTitleText(record = {}) {
+        const title = cleanText(record.title, "");
+        const modeLabel = modeLabelText(record.mode);
+        if (!title || !modeLabel) return title;
+        const prefixes = [`${modeLabel} · `, `${modeLabel}: `, `${modeLabel}：`];
+        for (const prefix of prefixes) {
+          if (title.startsWith(prefix)) return cleanText(title.slice(prefix.length), "");
+        }
+        return title === modeLabel ? "" : title;
+      }
+
+      function resultHeadingText(record = {}) {
+        if (record.mode === "daily") return t("dailyNoteTitle");
+        const detail = normalizedTitleText(record);
+        const modeLabel = modeLabelText(record.mode);
+        return [modeLabel, detail].filter(Boolean).join(" · ") || modeLabel || t("answerTitle");
       }
 
       function modeConfig(nextMode = mode) {
@@ -1927,7 +1977,10 @@
       }
 
       function saveResultRecord(data) {
-        const record = createRecord(data);
+        const record = createRecord({
+          ...data,
+          title: data.mode === "daily" ? cleanText(data.title, "") : normalizedTitleText(data),
+        });
         saveHistoryRecord(recordStore, record);
         if (record.mode === "daily") saveDailyAnchor(recordStore, todayKey(), record);
         syncAfterSave(record);
@@ -2066,7 +2119,7 @@
         renderStoredFollowups(record);
         updateReviewUi(record);
         setResultLabels(record.mode);
-        els.answerKicker.textContent = record.mode === "daily" ? t("dailyNoteTitle") : record.title || t("modeDaily");
+        els.answerKicker.textContent = resultHeadingText(record);
         els.action.textContent = actionFromRecord(record);
         lastAction = els.action.textContent;
         lastQuestion = cleanText(record.question, "");
@@ -2089,7 +2142,7 @@
 
         updateSymbolSummary({
           sourceMode: record.mode,
-          name: record.imageAlt || record.gua?.name || record.title || "",
+          name: record.imageAlt || record.gua?.name || normalizedTitleText(record) || record.title || "",
           question: record.question || ""
         });
 
@@ -2213,11 +2266,11 @@
       function recordTitle(record) {
         return record.mode === "daily"
           ? `${formatDate(record.createdAt)} ${lang === "zh" ? "复盘" : "Review"}`
-          : record.title || t(modeConfig(record.mode).label);
+          : normalizedTitleText(record) || modeLabelText(record.mode);
       }
 
       function historyMeta(record) {
-        const modeLabel = t(modeConfig(record.mode).label);
+        const modeLabel = modeLabelText(record.mode);
         const detail = record.mode === "daily" ? formatDailyAnchor(record) : formatDate(record.createdAt);
         return [modeLabel, detail].filter(Boolean).join(" · ");
       }
@@ -2227,7 +2280,7 @@
         const relation = record.clarificationOf ? t("historyClarification") : "";
         const followups = followupCount ? `${t("historyFollowupCount")} ${followupCount}` : "";
         return [
-          cleanText(record.action || record.answer, ""),
+          actionFromRecord(record),
           actionStatusLabel(record.actionStatus),
           isReviewDue(record) && !record.reviewNote ? t("reviewLabel") : "",
           followups,
@@ -2252,8 +2305,9 @@
       function weeklySummaryRecords(records = loadHistory(recordStore)) {
         return records
           .map((record) => {
-            const summary = cleanText(record.report?.summary || record.reading?.judgment || record.action || record.title, "");
-            const action = cleanText(record.action || record.report?.actionText || "", "");
+            const report = reportFromRecord(record) || {};
+            const summary = cleanTaggedOutputText(record.report?.summary || report.summary || record.reading?.judgment || record.action || record.title, "");
+            const action = cleanTaggedOutputText(record.action || record.report?.actionText || report.actionText || "", "");
             if (!summary && !action) return null;
             return {
               mode: record.mode || "tarot",
@@ -2300,9 +2354,13 @@
             records,
             language: lang
           }, (text) => {
-            els.weeklySummaryResult.textContent = text;
+            els.weeklySummaryResult.textContent = cleanTaggedOutputText(text, "", {
+              preferredOrder: ["THEME", "STUCK_POINT", "NEXT_ACTION"]
+            });
           });
-          els.weeklySummaryResult.textContent = cleanText(full, t("weeklySummaryFailed"));
+          els.weeklySummaryResult.textContent = cleanTaggedOutputText(full, t("weeklySummaryFailed"), {
+            preferredOrder: ["THEME", "STUCK_POINT", "NEXT_ACTION"]
+          });
         } catch (error) {
           console.error(error);
           els.weeklySummaryResult.textContent = t("weeklySummaryFailed");
@@ -2614,12 +2672,12 @@
               question,
               language: lang
             }, renderAction);
-            renderAction(full);
-            const guaText = guaDescription(gua);
+            const meihua = renderMeihuaReading(full);
             const report = {
-              summary: lastAction,
-              guaText,
-              actionText: lastAction,
+              summary: meihua.signal || meihua.trend || meihua.action,
+              tarotText: meihua.signal,
+              guaText: meihua.trend,
+              actionText: meihua.action,
               sourceMode: "meihua"
             };
             renderStructuredReport(report);
@@ -2627,7 +2685,7 @@
               mode: "meihua",
               title: els.answerKicker.textContent,
               question,
-              answer: lastAction || full,
+              answer: full,
               action: lastAction,
               report,
               gua
@@ -2668,13 +2726,13 @@
               question,
               language: lang
             }, renderAction);
-            const meihuaAction = renderAction(meihuaFull);
+            const meihua = renderMeihuaReading(meihuaFull);
+            const meihuaAction = meihua.action;
             showDualReading(tarotParts, gua, meihuaAction);
-            const guaText = guaDescription(gua);
             const report = {
               summary: meihuaAction || tarotParts.judgment || lastAction,
               tarotText: tarotParts.tension || tarotParts.coreQuestion,
-              guaText,
+              guaText: [meihua.signal, meihua.trend].filter(Boolean).join("\n"),
               dualText: lang === "zh"
                 ? "牌象先提醒你看见情绪张力，卦象再提醒你观察推进节奏。两者合在一起，重点不是立刻求证，而是降低噪音后再行动。"
                 : "The card points to emotional tension, while the gua points to timing. Together they suggest reducing noise before acting.",
@@ -2686,7 +2744,7 @@
               mode: "dual",
               title: els.answerKicker.textContent,
               question,
-              answer: lastAction || `${tarotFull}\n${meihuaFull}`,
+              answer: `${tarotFull}\n${meihuaFull}`,
               action: lastAction,
               reading: tarotParts,
               report,
@@ -2755,13 +2813,19 @@
 
       function renderAction(rawText) {
         const tokens = parseTokens(rawText);
-        const sentence = cleanText(tokens.ACTION, "");
+        const sentence = cleanTaggedOutputText(tokens.ACTION, "");
         if (!sentence) return "";
         lastAction = sentence;
         els.action.hidden = false;
         els.action.textContent = sentence;
         els.action.classList.add("is-typing");
         return sentence;
+      }
+
+      function renderMeihuaReading(rawText) {
+        const report = meihuaReportFromText(rawText);
+        renderAction(rawText);
+        return report;
       }
 
       function renderTarotReading(rawText) {
@@ -2876,14 +2940,15 @@
       function shareSymbolLabel(record = lastRecord) {
         if (record?.mode === "meihua" && record.gua) return guaDescription(record.gua);
         const card = primaryCardFromRecordCards(record?.cards);
-        return cleanText(card?.name || record?.title || els.symbolNameLabel.textContent, "");
+        return cleanText(card?.name || normalizedTitleText(record) || record?.title || els.symbolNameLabel.textContent, "");
       }
 
       function shareResultData({ includeQuestion = false } = {}) {
         const context = currentResultContext || {};
         const record = lastRecord || {};
-        const summary = cleanText(context.summary || record.report?.summary || record.reading?.judgment || els.resultSummary.textContent, "");
-        const action = cleanText(context.actionText || record.action || lastAction || els.action.textContent, "");
+        const report = reportFromRecord(record) || {};
+        const summary = cleanTaggedOutputText(context.summary || report.summary || record.report?.summary || record.reading?.judgment || els.resultSummary.textContent, "");
+        const action = cleanTaggedOutputText(context.actionText || report.actionText || record.action || lastAction || els.action.textContent, "");
         const doText = cleanText(context.doText || els.actionDo.textContent || action, "");
         const dontText = cleanText(context.dontText || els.actionDont.textContent, "");
         const watchText = cleanText(context.watchText || els.actionWatch.textContent, "");
@@ -2891,7 +2956,7 @@
         const question = includeQuestion ? cleanText(record.question || lastQuestion, "") : "";
         return {
           brand: "AskAura",
-          title: cleanText(record.title || els.answerKicker.textContent || t("answerTitle"), ""),
+          title: cleanText(resultHeadingText(record) || els.answerKicker.textContent || t("answerTitle"), ""),
           symbol: shareSymbolLabel(record),
           summary,
           action: action || doText,
@@ -2922,6 +2987,15 @@
           data.watchText ? `${lang === "zh" ? "接下来观察" : "Watch"}: ${data.watchText}` : "",
           data.reviewNote ? `${lang === "zh" ? "复盘" : "Review"}: ${data.reviewNote}` : ""
         ].filter(Boolean);
+      }
+
+      function copySuccessText(kind) {
+        const keys = {
+          action: "copiedAction",
+          summary: "copiedSummary",
+          full: "copiedFull",
+        };
+        return t(keys[kind] || keys.action);
       }
 
       function setCopyFallback(text, result) {
@@ -3083,35 +3157,54 @@
 
       function renderCompanionList(container, items, renderItem) {
         container.innerHTML = "";
-        if (!items.length) {
+        const lines = Array.isArray(items)
+          ? items.map((item) => cleanText(renderItem(item), "")).filter(Boolean)
+          : [];
+        if (!lines.length) {
           const empty = document.createElement("p");
           empty.className = "history-empty";
           empty.textContent = t("companionEmpty");
           container.appendChild(empty);
           return;
         }
-        items.forEach((item) => {
+        lines.forEach((line) => {
           const row = document.createElement("p");
-          row.textContent = renderItem(item);
+          row.textContent = line;
           container.appendChild(row);
         });
       }
 
+      function companionCountText(label, count) {
+        const safeLabel = cleanText(label, "");
+        if (!safeLabel) return "";
+        return lang === "zh" ? `${safeLabel}：${count}` : `${safeLabel}: ${count}`;
+      }
+
+      function companionJoinText(parts = []) {
+        const safeParts = parts.map((part) => cleanText(part, "")).filter(Boolean);
+        return safeParts.join(lang === "zh" ? "｜" : " · ");
+      }
+
+      function companionTrailText(item = {}) {
+        return companionJoinText([
+          modeLabelText(item.mode),
+          item.symbol,
+          item.action,
+          actionStatusLabel(item.actionStatus),
+        ]);
+      }
+
       function openCompanionPanel() {
         const snapshot = deriveCompanionSnapshot(loadHistory(recordStore));
-        renderCompanionList(els.companionTrail, snapshot.observationTrail || [], (item) =>
-          [item.symbol, item.action, item.actionStatus].filter(Boolean).join(" · ")
-        );
+        renderCompanionList(els.companionTrail, snapshot.observationTrail || [], companionTrailText);
         renderCompanionList(els.companionThemeMap, Object.entries(snapshot.modeCounts || {}), ([modeName, count]) =>
-          `${modeName}: ${count}`
+          companionCountText(modeLabelText(modeName), count)
         );
         renderCompanionList(els.companionCollection, [
-          ...(snapshot.topSymbols || []).map((item) => `${item.name} · ${item.count}`),
-          ...(snapshot.actionWords || []).map((item) => `${item.word} · ${item.count}`)
-        ], (item) => item);
-        renderCompanionList(els.companionEcho, snapshot.oneMonthEcho ? [snapshot.oneMonthEcho] : [], (item) =>
-          [item.symbol, item.action, item.actionStatus].filter(Boolean).join(" · ")
-        );
+          ...(snapshot.topSymbols || []).map((item) => ({ label: item.name, count: item.count })),
+          ...(snapshot.actionWords || []).map((item) => ({ label: item.word, count: item.count })),
+        ], (item) => companionCountText(item.label, item.count));
+        renderCompanionList(els.companionEcho, snapshot.oneMonthEcho ? [snapshot.oneMonthEcho] : [], companionTrailText);
         syncClient.saveCompanionProfile(snapshot, snapshot.quietFlags || [])
           .catch((error) => console.warn("Companion sync skipped", error));
         openUtilityPanel(els.companionPanel);
@@ -3204,7 +3297,7 @@
             mode: cleanText(payload.mode, "tarot"),
             title: cleanText(payload.title, t("sharedResultTitle")),
             question: cleanText(payload.question, ""),
-            action: cleanText(payload.action || payload.doText, ""),
+            action: cleanTaggedOutputText(payload.action || payload.doText, ""),
             reviewNote: cleanText(payload.reviewNote, ""),
             createdAt: cleanText(payload.createdAt, new Date().toISOString()),
             updatedAt: cleanText(payload.createdAt, new Date().toISOString()),
@@ -3214,7 +3307,7 @@
           lastAction = record.action;
           currentResultContext = {
             sourceMode: record.mode,
-            summary: cleanText(payload.summary, ""),
+            summary: cleanTaggedOutputText(payload.summary, ""),
             actionText: record.action,
             doText: cleanText(payload.doText || record.action, ""),
             dontText: cleanText(payload.dontText, ""),
@@ -3291,9 +3384,9 @@
             language: lang
           }, (text) => {
             answer = text;
-            els.followupAnswerText.textContent = text;
+            els.followupAnswerText.textContent = cleanTaggedOutputText(text, "");
           });
-          els.followupAnswerText.textContent = cleanText(answer, t("followupFailed"));
+          els.followupAnswerText.textContent = cleanTaggedOutputText(answer, t("followupFailed"));
           saveFollowupToCurrentRecord(question, els.followupAnswerText.textContent);
           selectedFollowupKind = "";
           els.followupCustomInput.value = "";
@@ -3313,8 +3406,8 @@
         const submit = els.followupCustomForm.querySelector("button[type='submit']");
         if (!submit) return;
         const hasCustomText = Boolean(els.followupCustomInput.value.trim());
-        submit.disabled = isFollowupRunning || !(selectedFollowupKind || hasCustomText);
-        submit.textContent = selectedFollowupKind ? t("followupCustomSubmitSelected") : t("followupCustomSubmit");
+        submit.disabled = isFollowupRunning || !hasCustomText;
+        submit.textContent = t("followupCustomSubmit");
       }
 
       function drawClarificationCard() {
@@ -3498,11 +3591,11 @@
           drawClarificationCard();
           return;
         }
-        selectedFollowupKind = kind;
+        selectedFollowupKind = "";
         els.followupCustomInput.value = "";
         els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
-        button.classList.add("is-selected");
         updateFollowupSubmit();
+        showFollowupAnswer(kind);
       });
       els.followupCustomInput.addEventListener("input", () => {
         if (els.followupCustomInput.value.trim()) {
@@ -3558,7 +3651,7 @@
         if (!lastAction) return;
         const result = await copyTextToClipboard(lastAction);
         els.copy.textContent = result === "copied"
-          ? t("copied")
+          ? copySuccessText("action")
           : result === "manual"
             ? t("copyManual")
             : t("copyFailed");
@@ -3566,7 +3659,7 @@
       els.copySummary.addEventListener("click", async () => {
         const result = await copyShareText("summary");
         els.copySummary.textContent = result === "copied"
-          ? t("copied")
+          ? copySuccessText("summary")
           : result === "manual"
             ? t("copyManual")
             : t("copyFailed");
@@ -3574,7 +3667,7 @@
       els.copyFull.addEventListener("click", async () => {
         const result = await copyShareText("full");
         els.copyFull.textContent = result === "copied"
-          ? t("copied")
+          ? copySuccessText("full")
           : result === "manual"
             ? t("copyManual")
             : t("copyFailed");

@@ -59,7 +59,7 @@ assert.equal(appendFollowupToRecord(null, followup), null);
 
 assert.equal(formatStoredFollowups({
   followups: [
-    { question: "Q1", answer: "A1" },
+    { question: "Q1", answer: "[TOKEN] A1" },
     { question: "Q2", answer: "A2" }
   ]
 }), "Q1\nA1\n\nQ2\nA2");

@@ -2,6 +2,12 @@ const ONE_MONTH_MS = 28 * 24 * 60 * 60 * 1000;
 const TOP_LIMIT = 6;
 const OBSERVATION_LIMIT = 5;
 const QUIET_LIMIT = 6;
+const MODE_TITLE_ALIASES = {
+  tarot: ["\u724c\u8c61\u89e3\u8bfb", "Card reading"],
+  meihua: ["\u5366\u8c61\u89e3\u8bfb", "Gua reading"],
+  dual: ["\u53cc\u8c61\u62a5\u544a", "Dual report"],
+  daily: ["\u6bcf\u65e5\u955c\u7b3a", "Daily note"],
+};
 
 const ACTION_STOP_WORDS = new Set([
   "a",
@@ -82,23 +88,36 @@ function countActionStatuses(records) {
 
 function collectTopSymbols(records) {
   const symbols = new Map();
+  const aliasLookup = new Map();
 
   records.forEach((record, recordIndex) => {
+    const seenKeys = new Set();
     const candidates = symbolCandidates(record);
-    candidates.forEach((name, candidateIndex) => {
-      if (!name) return;
-      const key = normalizeKey(name);
+    candidates.forEach((candidate, candidateIndex) => {
+      const aliases = normalizeAliases(candidate?.aliases || [candidate?.label]);
+      if (!aliases.length) return;
+
+      let key = aliases
+        .map((alias) => aliasLookup.get(normalizeKey(alias)))
+        .find(Boolean);
+
+      if (!key) key = normalizeKey(candidate?.key || aliases[0]);
       if (!key) return;
+      if (seenKeys.has(key)) return;
+
+      aliases.forEach((alias) => aliasLookup.set(normalizeKey(alias), key));
+      seenKeys.add(key);
 
       const existing = symbols.get(key);
       if (existing) {
         existing.count += 1;
+        existing.name = preferredLabel([existing.name, ...aliases]);
         existing.modes.add(cleanText(record.mode, "unknown"));
         return;
       }
 
       symbols.set(key, {
-        name,
+        name: preferredLabel(aliases),
         count: 1,
         firstSeen: recordIndex * 10 + candidateIndex,
         modes: new Set([cleanText(record.mode, "unknown")]),
@@ -124,27 +143,24 @@ function symbolCandidates(record) {
 
   cards.forEach((card) => {
     if (!card || typeof card !== "object") return;
-    values.push(cleanText(card.name, ""));
-    values.push(cleanText(card.label, ""));
+    const legacyLabelAlias = cleanText(card.position, "") ? "" : cleanText(card.label, "");
+    pushCandidate(values, [cleanText(card.imageAlt, ""), cleanText(card.name, ""), legacyLabelAlias]);
   });
 
   const gua = record.gua && typeof record.gua === "object" ? record.gua : null;
   if (gua) {
-    values.push(cleanText(gua.name, ""));
-    values.push(cleanText(gua.en, ""));
+    pushCandidate(values, [cleanText(gua.name, ""), cleanText(gua.en, "")]);
   }
 
   const anchor = record.anchor && typeof record.anchor === "object" ? record.anchor : null;
   if (anchor) {
-    values.push(cleanText(anchor.color, ""));
-    values.push(cleanText(anchor.object, ""));
-    values.push(cleanText(anchor.moment, ""));
+    pushCandidate(values, [cleanText(anchor.object, ""), cleanText(anchor.color, ""), cleanText(anchor.moment, "")]);
   }
 
-  values.push(cleanText(record.title, ""));
-  values.push(cleanText(record.imageAlt, ""));
+  pushCandidate(values, [cleanText(record.imageAlt, "")]);
+  if (!values.length) pushCandidate(values, [normalizedRecordTitle(record)]);
 
-  return values.filter(Boolean);
+  return values;
 }
 
 function collectActionWords(records) {
@@ -201,12 +217,12 @@ function buildRecordSummary(record) {
   ].filter(Boolean);
 
   if (parts.length) return parts.join(" · ");
-  return cleanText(record.title, "") || cleanText(record.answer, "");
+  return normalizedRecordTitle(record) || cleanText(record.answer, "");
 }
 
 function symbolForTrail(record) {
   const symbols = symbolCandidates(record);
-  return symbols[0] || "";
+  return symbols[0]?.label || "";
 }
 
 function buildOneMonthEcho(records, now) {
@@ -222,7 +238,7 @@ function buildOneMonthEcho(records, now) {
   return {
     createdAt: cleanText(candidate.createdAt, ""),
     mode: cleanText(candidate.mode, "unknown"),
-    title: cleanText(candidate.title, ""),
+    title: normalizedRecordTitle(candidate),
     action: cleanText(candidate.action, ""),
     actionStatus: cleanText(candidate.actionStatus, ""),
     symbol: symbolForTrail(candidate),
@@ -259,6 +275,45 @@ function buildQuietFlags(records) {
 
 function normalizeKey(value) {
   return cleanText(value, "").trim().toLowerCase();
+}
+
+function pushCandidate(list, aliases) {
+  const normalized = normalizeAliases(aliases);
+  if (!normalized.length) return;
+  list.push({
+    key: normalized[0],
+    label: preferredLabel(normalized),
+    aliases: normalized,
+  });
+}
+
+function normalizeAliases(aliases) {
+  return aliases
+    .map((alias) => cleanText(alias, ""))
+    .filter(Boolean)
+    .filter((alias, index, items) => items.indexOf(alias) === index);
+}
+
+function preferredLabel(aliases) {
+  return aliases.find(containsHanText) || aliases[0] || "";
+}
+
+function containsHanText(value) {
+  return /[\u3400-\u9fff]/.test(cleanText(value, ""));
+}
+
+function normalizedRecordTitle(record) {
+  const title = cleanText(record?.title, "");
+  const prefixes = MODE_TITLE_ALIASES[cleanText(record?.mode, "")] || [];
+  for (const prefix of prefixes) {
+    const titledPrefix = `${prefix} \u00B7 `;
+    if (title.startsWith(titledPrefix)) return cleanText(title.slice(titledPrefix.length), "");
+    const colonPrefix = `${prefix}: `;
+    if (title.startsWith(colonPrefix)) return cleanText(title.slice(colonPrefix.length), "");
+    const fullwidthColonPrefix = `${prefix}\uFF1A`;
+    if (title.startsWith(fullwidthColonPrefix)) return cleanText(title.slice(fullwidthColonPrefix.length), "");
+  }
+  return title;
 }
 
 function cleanText(value, fallback = "") {

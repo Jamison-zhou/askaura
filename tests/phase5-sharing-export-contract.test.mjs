@@ -14,6 +14,8 @@ assert.match(html, /id="share-include-question"/, "question inclusion is an expl
 
 assert.match(html, /shareResultData\(\{ includeQuestion = false \} = \{\}\)/, "share payload excludes question by default");
 assert.match(html, /const question = includeQuestion \? cleanText\(record\.question \|\| lastQuestion, ""\) : ""/, "original question is only included after opt-in");
+assert.match(html, /const report = reportFromRecord\(record\) \|\| \{\};[\s\S]*const summary = cleanTaggedOutputText\(/, "share payload strips leaked protocol tags from summary fields");
+assert.match(html, /const action = cleanTaggedOutputText\(/, "share payload strips leaked protocol tags from action fields");
 assert.doesNotMatch(shareModule, /user\.email|access_token|refresh_token|service_role/i, "share output does not reference account tokens or email");
 assert.match(html, /fullShareLines\(data\)/, "full copy uses a sanitized line builder");
 assert.match(html, /reviewNote \? `\$\{lang === "zh" \? "复盘" : "Review"\}: \$\{data\.reviewNote\}`/, "PDF/full export can include review note");

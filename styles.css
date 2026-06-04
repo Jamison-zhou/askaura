@@ -2128,9 +2128,8 @@ textarea:disabled {
 }
 
 .result-actions {
-  position: sticky;
-  bottom: 0;
-  z-index: 4;
+  position: static;
+  z-index: auto;
   margin-top: auto;
   padding: 18px 28px 28px;
   background:
@@ -2363,9 +2362,14 @@ textarea:disabled {
 
 @media (max-width: 980px) {
   .mirror-room {
+    height: auto;
+    min-height: 100dvh;
     width: min(100% - 28px, 720px);
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    align-content: start;
     gap: 18px;
+    overflow: visible;
   }
 
   .side-rail {
@@ -2387,6 +2391,12 @@ textarea:disabled {
   .answer-panel,
   .mirror-stage {
     grid-column: 1;
+  }
+
+  .answer-panel {
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .hero-content {
@@ -2446,12 +2456,23 @@ textarea:disabled {
   }
 
   .mode-nav {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mode-nav button {
+    min-width: 0;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .mode-nav button:hover,
+  .mode-nav button.active {
+    transform: none;
   }
 
   .mirror-stage {
     opacity: 0.45;
-    right: -72px;
+    right: 0;
     top: 126px;
   }
 
@@ -2490,6 +2511,17 @@ textarea:disabled {
   .compose-panel form,
   .result-body {
     padding: 22px;
+  }
+
+  .result-actions {
+    padding: 14px 22px 22px;
+  }
+
+  .result-actions .secondary {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
   }
 
   .question-examples {

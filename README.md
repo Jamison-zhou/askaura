@@ -54,6 +54,8 @@ supabase db push --project-ref <ASKAURA_PROJECT_REF>
 supabase functions deploy reading --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 supabase functions deploy tarot-draw --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 supabase functions deploy admin-config --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
+supabase functions deploy share-link --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
+supabase functions deploy resonance-pool --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 ```
 
 Never deploy AskAura changes to `icvegpfnpkyrebtojoca`.

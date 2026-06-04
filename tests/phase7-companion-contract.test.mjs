@@ -55,4 +55,38 @@ assert.equal(snapshot.topSymbols[0].name, "The Star", "snapshot extracts symbols
 assert.ok(snapshot.actionWords.some((item) => item.word.toLowerCase() === "write"), "snapshot extracts action words");
 assert.ok(snapshot.oneMonthEcho, "snapshot returns one-month echo when old history exists");
 
+const deduped = deriveCompanionSnapshot([
+  {
+    mode: "dual",
+    title: "双象报告 · 正义 / 兑",
+    imageAlt: "正义",
+    cards: [{ name: "Justice", imageAlt: "正义" }],
+    gua: { name: "兑", en: "Dui" },
+    createdAt: "2026-06-02T00:00:00.000Z",
+  },
+  {
+    mode: "tarot",
+    title: "牌象解读 · Justice",
+    cards: [{ name: "Justice", label: "正义" }],
+    createdAt: "2026-06-01T00:00:00.000Z",
+  },
+  {
+    mode: "tarot",
+    title: "牌象解读 · 当前 / Justice",
+    cards: [{ name: "Justice", label: "当前", position: "current" }],
+    createdAt: "2026-05-30T00:00:00.000Z",
+  },
+  {
+    mode: "meihua",
+    title: "卦象解读 · Dui",
+    gua: { en: "Dui" },
+    createdAt: "2026-05-31T00:00:00.000Z",
+  },
+]);
+
+assert.equal(deduped.topSymbols.find((item) => item.name === "正义")?.count, 3, "snapshot dedupes Justice and 正义");
+assert.equal(deduped.topSymbols.find((item) => item.name === "兑")?.count, 2, "snapshot dedupes gua zh/en aliases");
+assert.ok(!deduped.topSymbols.some((item) => item.name === "当前"), "snapshot does not count spread position labels as symbols");
+assert.ok(!deduped.topSymbols.some((item) => item.name.includes("双象报告")), "snapshot drops mode-prefixed titles from symbol candidates");
+
 console.log("phase7 companion contract passed");

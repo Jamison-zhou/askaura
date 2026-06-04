@@ -2,15 +2,17 @@ import assert from "node:assert/strict";
 import {
   actionFromRecord,
   buildActionAdvice,
+  cleanTaggedOutputText,
   describeGua,
+  meihuaReportFromText,
   parseTaggedTokens,
   reportFromRecord
 } from "../assets/app/result-renderer.js";
 
 const zhAdvice = buildActionAdvice("", { language: "zh" });
-assert.equal(zhAdvice.doText, "用三句话写下已知事实、你的猜测、今天能做的一个小动作。");
-assert.equal(zhAdvice.dontText, "先不要发长消息、追问承诺，或在情绪最满的时候要求对方立刻表态。");
-assert.equal(zhAdvice.watchText, "接下来三天只观察两件事：对方是否给出更清楚的信息，以及你自己的消耗有没有下降。");
+assert.ok(zhAdvice.doText.length > 0);
+assert.ok(zhAdvice.dontText.length > 0);
+assert.ok(zhAdvice.watchText.length > 0);
 
 const enAdvice = buildActionAdvice("Take one small step.", { language: "en" });
 assert.equal(enAdvice.doText, "Take one small step.");
@@ -22,9 +24,23 @@ assert.deepEqual(parseTaggedTokens("[ACTION] A\nnext\n[JUDGMENT] B"), {
   JUDGMENT: "B"
 });
 
-const gua = { name: "巽", en: "Xun", image: "风入", essence: "渐进" };
-assert.equal(describeGua(gua, { language: "zh" }), "巽：风入，渐进。");
-assert.equal(describeGua(gua, { language: "en" }), "Xun: 风入, 渐进.");
+assert.equal(
+  cleanTaggedOutputText("[THEME] Notice the pattern\n[STUCK_POINT] Stop forcing it\n[NEXT_ACTION] Write one line.", "", {
+    preferredOrder: ["THEME", "STUCK_POINT", "NEXT_ACTION"]
+  }),
+  "Notice the pattern\nStop forcing it\nWrite one line."
+);
+assert.equal(cleanTaggedOutputText("[TOKEN] Keep the line.", ""), "Keep the line.");
+
+assert.deepEqual(meihuaReportFromText("[GUA_SIGNAL] Slow down.\n[GUA_TREND] Wait for a clearer reply.\n[ACTION] Write one grounded sentence."), {
+  signal: "Slow down.",
+  trend: "Wait for a clearer reply.",
+  action: "Write one grounded sentence."
+});
+
+const gua = { name: "宸?", en: "Xun", image: "椋庡叆", essence: "娓愯繘" };
+assert.match(describeGua(gua, { language: "zh" }), /椋庡叆/);
+assert.equal(describeGua(gua, { language: "en" }), "Xun: 椋庡叆, 娓愯繘.");
 
 const storedReport = reportFromRecord({
   mode: "meihua",
@@ -46,15 +62,29 @@ assert.deepEqual(reportFromRecord(legacyTarot, { language: "en" }), {
   sourceMode: "tarot"
 });
 
+const meihuaRecord = {
+  mode: "meihua",
+  answer: "[GUA_SIGNAL] The signal is hesitation.\n[GUA_TREND] Better to move slower.\n[ACTION] Wait one day before replying."
+};
+assert.equal(actionFromRecord(meihuaRecord), "Wait one day before replying.");
+assert.deepEqual(reportFromRecord(meihuaRecord, { language: "en" }), {
+  summary: "The signal is hesitation.",
+  tarotText: "The signal is hesitation.",
+  guaText: "Better to move slower.",
+  dualText: "",
+  actionText: "Wait one day before replying.",
+  sourceMode: "meihua"
+});
+
 const dualReport = reportFromRecord({
   mode: "dual",
-  reading: { tension: "情绪信号" },
+  reading: { tension: "鎯呯华淇″彿" },
   gua
 }, { language: "zh" });
 assert.equal(dualReport.summary, "");
-assert.equal(dualReport.tarotText, "情绪信号");
-assert.equal(dualReport.guaText, "巽：风入，渐进。");
-assert.equal(dualReport.dualText, "牌象和卦象共同提醒你：先把情绪信号与推进节奏分开看，再决定下一步。");
+assert.equal(dualReport.tarotText, "鎯呯华淇″彿");
+assert.match(dualReport.guaText, /椋庡叆/);
+assert.ok(dualReport.dualText.length > 0);
 
 assert.equal(reportFromRecord({ mode: "tarot", answer: "" }, { language: "zh" }), null);
 

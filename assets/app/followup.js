@@ -1,7 +1,7 @@
+import { cleanResultText, cleanTaggedOutputText } from "./result-renderer.js";
+
 export function cleanFollowupText(value, fallback = "") {
-  const text = String(value ?? "").replace(/\s+/g, " ").trim();
-  if (!text || text === "undefined" || text === "null" || text === "NaN") return fallback;
-  return text;
+  return cleanResultText(value, fallback);
 }
 
 export function followupQuestionText(kind, customText = "", labels = {}) {
@@ -26,7 +26,7 @@ export function followupResultSummary(context = {}) {
     context.doText,
     context.dontText,
     context.watchText
-  ].map((item) => cleanFollowupText(item, "")).filter(Boolean).join("\n");
+  ].map((item) => cleanTaggedOutputText(item, "", { joinWith: "\n" })).filter(Boolean).join("\n");
 }
 
 export function createFollowupEntry({
@@ -58,7 +58,11 @@ export function appendFollowupToRecord(record, followup) {
 export function formatStoredFollowups(record) {
   const followups = Array.isArray(record?.followups) ? record.followups : [];
   return followups
-    .map((item) => `${item.question}\n${item.answer}`)
+    .map((item) => [
+      cleanFollowupText(item.question, ""),
+      cleanTaggedOutputText(item.answer, "", { joinWith: "\n" }),
+    ].filter(Boolean).join("\n"))
+    .filter(Boolean)
     .join("\n\n");
 }
 

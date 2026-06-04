@@ -87,4 +87,17 @@ assert.ok(promptStyle.includes("AskAura"));
 assert.ok(promptStyle.includes("象问"));
 assert.equal(promptStyle.includes("RiLL"), false);
 
+const docs = [
+  readFileSync(new URL("../README.md", import.meta.url), "utf8"),
+  readFileSync(new URL("../DEPLOY.md", import.meta.url), "utf8"),
+  readFileSync(new URL("../supabase/README.md", import.meta.url), "utf8"),
+];
+for (const doc of docs) {
+  assert.match(doc, /reading/);
+  assert.match(doc, /tarot-draw/);
+  assert.match(doc, /admin-config/);
+  assert.match(doc, /share-link/);
+  assert.match(doc, /resonance-pool/);
+}
+
 console.log("askaura migration static tests passed");

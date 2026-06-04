@@ -74,6 +74,8 @@ assert.match(weeklyFunction, /action: action\.slice\(0, 160\)/, "weekly payload 
 assert.doesNotMatch(weeklyFunction, /answer: record\.answer/, "weekly payload does not send full answer text");
 assert.match(html, /records\.length < 3[\s\S]*return;/, "front-end does not call weekly summary below three usable records");
 assert.match(html, /mode:\s*"weekly-summary"[\s\S]*entry:\s*"weekly"[\s\S]*records,/, "front-end submits weekly summary with weekly route hint");
+assert.match(html, /weeklySummaryResult\.textContent = cleanTaggedOutputText\(text, "", \{[\s\S]*THEME[\s\S]*STUCK_POINT[\s\S]*NEXT_ACTION/, "weekly summary streaming strips protocol tags before display");
+assert.match(html, /weeklySummaryResult\.textContent = cleanTaggedOutputText\(full, t\("weeklySummaryFailed"\), \{[\s\S]*THEME[\s\S]*STUCK_POINT[\s\S]*NEXT_ACTION/, "weekly summary final display strips protocol tags");
 assert.match(weeklyPrompt, /\[THEME\]/, "weekly prompt asks for repeated theme");
 assert.match(weeklyPrompt, /\[STUCK_POINT\]/, "weekly prompt asks for stuck point");
 assert.match(weeklyPrompt, /\[NEXT_ACTION\]/, "weekly prompt asks for one next action");

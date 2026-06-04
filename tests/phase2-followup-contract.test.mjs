@@ -27,6 +27,8 @@ assert.match(html, /mode:\s*"followup"[\s\S]*tier:\s*"basic"[\s\S]*entry:\s*"fol
 assert.match(html, /originalQuestion:\s*lastQuestion \|\| t\("fallbackQuestion"\)/, "front-end sends original question context");
 assert.match(html, /resultSummary:\s*followupResultSummary\(\)/, "front-end sends compact result summary");
 assert.match(html, /followupQuestion:\s*question/, "front-end sends the selected followup question");
+assert.match(html, /els\.followupAnswerText\.textContent = cleanTaggedOutputText\(text, ""\);/, "followup streaming strips leaked protocol tags");
+assert.match(html, /els\.followupAnswerText\.textContent = cleanTaggedOutputText\(answer, t\("followupFailed"\)\);/, "followup final display strips leaked protocol tags");
 assert.match(html, /catch \(error\) \{[\s\S]*els\.followupAnswerText\.textContent = t\("followupFailed"\);/, "front-end keeps result visible and shows inline followup failure");
 assert.match(html, /function drawClarificationCard\(\)[\s\S]*pendingClarificationContext = \{[\s\S]*sourceResultId: lastRecord\?\.id/, "clarification card captures previous result context");
 assert.match(html, /sessionHistory:\s*clarificationHistoryText\(clarificationContext\)/, "clarification card passes previous context to the reading request");
@@ -48,6 +50,8 @@ const followupSubmit = html.match(/els\.followupCustomForm\.addEventListener\("s
 assert.ok(followupSubmit, "followup submit listener exists");
 assert.doesNotMatch(followupSubmit[1], /requestSubmit/, "ordinary followup submit does not trigger the ritual form");
 assert.doesNotMatch(followupSubmit[1], /playRitual/, "ordinary followup submit does not start the ritual");
+assert.match(html, /els\.followupPanel\.addEventListener\("click"[\s\S]*if \(kind === "clarify-card"\) \{[\s\S]*drawClarificationCard\(\);[\s\S]*return;[\s\S]*showFollowupAnswer\(kind\);/, "preset followup buttons submit immediately while clarify-card keeps ritual flow");
+assert.match(html, /submit\.disabled = isFollowupRunning \|\| !hasCustomText;/, "custom followup input stays explicit submit");
 
 assert.match(prompt, /Do not draw a new card/, "followup prompt forbids a new draw");
 assert.match(prompt, /Do not predict the future/, "followup prompt forbids prediction");

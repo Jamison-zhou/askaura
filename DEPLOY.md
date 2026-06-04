@@ -8,7 +8,7 @@ AskAura has no frontend build step. Deploy the repository root as a static site 
 - `index.html`, `admin.html`, and `_headers` use the real AskAura Supabase URL and anon publishable key.
 - Supabase secrets are set on the AskAura project only.
 - `supabase db push` has been run against the AskAura project.
-- `reading`, `tarot-draw`, and `admin-config` have been deployed with `--no-verify-jwt`.
+- `reading`, `tarot-draw`, `admin-config`, `share-link`, and `resonance-pool` have been deployed with `--no-verify-jwt` where applicable.
 - Current runtime provider is DeepSeek.
 
 ## Supabase Commands
@@ -19,6 +19,8 @@ supabase db push --project-ref <ASKAURA_PROJECT_REF>
 supabase functions deploy reading --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 supabase functions deploy tarot-draw --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 supabase functions deploy admin-config --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
+supabase functions deploy share-link --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
+supabase functions deploy resonance-pool --project-ref <ASKAURA_PROJECT_REF> --no-verify-jwt
 ```
 
 Do not use the old cijing project ref for any AskAura deployment.
