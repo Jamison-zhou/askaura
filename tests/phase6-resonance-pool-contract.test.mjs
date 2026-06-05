@@ -36,6 +36,7 @@ assert.match(html, /id="resonance-open-btn"/, "UI exposes open-pool action");
 assert.match(html, /id="resonance-panel"/, "UI includes read-only pool panel");
 assert.match(html, /data-resonance-reaction/, "UI supports lightweight reactions");
 assert.doesNotMatch(html, /lastQuestion[\s\S]{0,120}submitResonance/, "resonance submission must not send raw question from UI");
+assert.doesNotMatch(html, /if \(result\.status === "signed-out"\) \{\s*updateResonanceUi\(t\("resonanceSignin"\)\);\s*openUtilityPanel\(els\.authPanel\);/, "anonymous resonance signed-out branch does not open the sign-in panel");
 assert.match(css, /\.resonance-list/, "resonance list has styling");
 assert.match(css, /\.resonance-item/, "resonance items have styling");
 

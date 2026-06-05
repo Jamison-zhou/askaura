@@ -26,11 +26,12 @@ assert.match(readingPrompt, /\[JUDGMENT\]/, "reading prompt asks for judgment");
 const tarotCards = ritualEngine.match(/\["[^"]+",\s*"[^"]+",\s*"\d\d-[^"]+\.jpg"\]/g) || [];
 assert.equal(tarotCards.length, 22, "ritual engine tarot deck includes 22 major arcana cards");
 assert.match(html, /const tarotDeck = TAROT_DECK;/, "front-end uses ritual engine tarot deck data");
-assert.doesNotMatch(html, /id="clarify-box"/, "front-end no longer blocks drawing with a clarification box");
-assert.doesNotMatch(html, /id="clarify-confirm"/, "front-end has no confirm-before-draw action");
-assert.doesNotMatch(html, /id="clarify-retry"/, "front-end has no retry clarification action");
-assert.doesNotMatch(html, /id="clarify-edit"/, "front-end has no edit clarification action");
-assert.doesNotMatch(html, /clarifyTarotQuestion/, "front-end does not call a clarification round before the ritual");
+assert.match(html, /id="question-assist"/, "front-end has a non-blocking question assist panel");
+assert.match(html, /function shouldOfferQuestionAssist/, "front-end uses a local question assist heuristic");
+assert.match(html, /mode:\s*"clarify"/, "front-end reuses the clarify backend mode");
+assert.match(html, /skipQuestionAssist/, "front-end can continue after a question assist choice");
+assert.match(html, /questionAssistAccept/, "front-end has accept copy for the question assist");
+assert.match(html, /questionAssistOriginal/, "front-end has original-question copy for the question assist");
 
 assert.match(html, /id="ritual-deck"/, "front-end has a ritual deck container");
 assert.match(html, /function buildRitualDeck/, "front-end builds ritual cards from deck data");

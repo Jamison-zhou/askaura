@@ -18,7 +18,7 @@
         rel="stylesheet"
       />
     </noscript>
-    <link rel="stylesheet" href="./styles.css?v=20260604-lowlight-gallery-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260605-low-light-redesign-2" />
     <script>
       window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
       window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
@@ -42,14 +42,17 @@
         </button>
 
         <nav class="mode-nav" aria-label="三象入口">
-          <button class="active" type="button" data-mode="tarot" data-tone="tarot">
-            <span data-i18n="modeTarot">牌象解读</span>
+          <button class="entry-nav active" type="button" data-next="idle">
+            <span data-i18n="modeTarotNav">开始提问</span>
+          </button>
+          <button type="button" data-mode="tarot" data-tone="tarot">
+            <span data-i18n="modeTarotRail">牌象</span>
           </button>
           <button type="button" data-mode="meihua" data-tone="meihua">
-            <span data-i18n="modeMeihua">卦象解读</span>
+            <span data-i18n="modeMeihuaRail">卦象</span>
           </button>
           <button type="button" data-mode="dual" data-tone="dual">
-            <span data-i18n="modeDual">双象报告</span>
+            <span data-i18n="modeDualRail">双象</span>
           </button>
         </nav>
 
@@ -58,6 +61,15 @@
           <button type="button" id="companion-btn" data-i18n="companion">同行</button>
           <button type="button" id="account-btn" data-i18n="account">登录</button>
         </div>
+
+        <details class="mobile-rail-menu">
+          <summary data-i18n="mobileMenu">菜单</summary>
+          <div>
+            <button type="button" data-mobile-panel="history" data-i18n="history">回看</button>
+            <button type="button" data-mobile-panel="companion" data-i18n="companion">同行</button>
+            <button type="button" data-mobile-panel="account" data-i18n="account">登录</button>
+          </div>
+        </details>
 
         <div class="language" role="group" aria-label="语言">
           <button type="button" class="lang-btn is-active" data-lang="zh">中文</button>
@@ -91,7 +103,6 @@
 
       <div class="hero-content">
         <section class="copy-block idle-copy">
-          <p>AskAura / Symbolic interpretation</p>
           <h1 data-i18n="heroCopy">问一件事，看两种象。</h1>
           <p class="hero-subcopy" data-i18n="heroSubcopy">牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。</p>
         </section>
@@ -120,6 +131,29 @@
               <button type="button" data-question-example data-i18n="questionExample3">如果这周只做一步，哪一步最不消耗？</button>
               <button type="button" data-question-example data-i18n="questionExample4">我现在该观察什么，而不是立刻推进什么？</button>
             </div>
+            <div class="question-assist" id="question-assist" hidden>
+              <span class="question-assist-label" data-i18n="questionAssistLabel">可以先把问题收窄一点</span>
+              <p id="question-assist-note"></p>
+              <button type="button" class="secondary muted" id="question-assist-accept" data-i18n="questionAssistAccept">用这个问题继续</button>
+              <button type="button" class="secondary muted" id="question-assist-original" data-i18n="questionAssistOriginal">按原问题继续</button>
+            </div>
+            <div class="mode-card-grid" id="mode-card-grid" role="group" aria-label="选择观察方式">
+              <button type="button" class="mode-card is-selected" data-mode-card="tarot" aria-pressed="true">
+                <span class="mode-card-dot" aria-hidden="true"></span>
+                <strong data-i18n="modeTarotResult">牌象解读</strong>
+                <span data-i18n="modeCardTarotCopy">抽取牌象，照见当下处境与情绪线索。</span>
+              </button>
+              <button type="button" class="mode-card" data-mode-card="meihua" aria-pressed="false">
+                <span class="mode-card-dot" aria-hidden="true"></span>
+                <strong data-i18n="modeMeihua">卦象解读</strong>
+                <span data-i18n="modeCardMeihuaCopy">通过卦象结构，观察趋势与推进方式。</span>
+              </button>
+              <button type="button" class="mode-card" data-mode-card="dual" aria-pressed="false">
+                <span class="mode-card-dot" aria-hidden="true"></span>
+                <strong data-i18n="modeDual">双象报告</strong>
+                <span data-i18n="modeCardDualCopy">合并牌象与卦象，整理成一份完整观察。</span>
+              </button>
+            </div>
             <div class="spread-selector" id="spread-selector">
               <span data-i18n="spreadSelectorLabel">牌阵</span>
               <button type="button" class="is-selected" data-spread-type="single" data-i18n="spreadSingle">单牌</button>
@@ -145,6 +179,7 @@
             </div>
             <p class="hint" id="mode-hint" data-i18n="modeHintTarot">适合关系、情绪与选择题。</p>
             <button class="primary" type="submit" id="cast-btn" data-i18n="cast">生成解读</button>
+            <p class="privacy-note" data-i18n="privacyNote">你的问题与结果仅对你可见，象问为你保留。</p>
           </form>
         </section>
       </div>
@@ -154,7 +189,8 @@
         <span class="panel-index">02</span>
         <p class="panel-kicker" id="answer-kicker">牌象解读</p>
 
-        <div class="result-body">
+        <div class="result-layout">
+          <aside class="result-symbol-panel">
           <article class="symbol-card" id="symbol-card">
             <div class="symbol-summary-head">
               <span id="symbol-mode-label">牌象解读</span>
@@ -165,16 +201,22 @@
             </div>
             <div class="gua-symbol" id="gua-symbol" hidden aria-hidden="true"></div>
             <div class="symbol-keywords" id="symbol-keywords" hidden></div>
+            <div class="symbol-spread-list" id="symbol-spread-list" hidden></div>
             <div class="symbol-question" id="symbol-question" hidden>
               <span data-i18n="symbolQuestionLabel">本次问题</span>
               <p id="symbol-question-text"></p>
             </div>
           </article>
+          </aside>
 
+          <section class="result-main-panel">
           <article class="answer-copy">
             <h2 class="answer-title" data-i18n="answerTitle">解读结果</h2>
-            <span class="result-summary-label" data-i18n="coreConclusionLabel">核心结论</span>
-            <p class="result-summary" id="result-summary"></p>
+            <div class="core-conclusion">
+              <span class="result-summary-label" data-i18n="coreConclusionLabel">当前主线</span>
+              <p class="result-summary" id="result-summary"></p>
+              <p class="action-sentence" id="action-sentence"></p>
+            </div>
             <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
               <section>
                 <span data-i18n="tarotCoreLabel">牌面告诉你</span>
@@ -203,7 +245,7 @@
                 <p id="report-dual"></p>
               </section>
             </div>
-            <h3 class="result-section-title" id="action-board-title" data-i18n="nextStepTitle" hidden>下一步怎么做</h3>
+            <h3 class="result-section-title action-board-heading" id="action-board-title" data-i18n="nextStepHeading" hidden>下一步怎么做</h3>
             <div class="action-board" id="action-board" hidden>
               <section>
                 <span data-i18n="actionDoLabel">今天可以做</span>
@@ -233,7 +275,6 @@
               <textarea id="review-note-input" rows="3" maxlength="180" data-i18n-placeholder="reviewPlaceholder" placeholder="三天后，这个行动带来了什么变化？"></textarea>
               <button type="button" class="secondary muted" id="review-save-btn" data-i18n="reviewSave">保存复盘</button>
             </div>
-            <p class="action-sentence" id="action-sentence"></p>
             <div class="followup-chips" id="followup-chips" hidden aria-label="继续探索这次结果">
               <span class="followup-label" data-i18n="followupLabel">继续探索这次结果</span>
               <button type="button" data-open-followup data-i18n="followupOpen">打开追问面板</button>
@@ -289,17 +330,23 @@
             </div>
             <p class="loading-line" id="loading-line" hidden data-i18n="loading">正在整理本次线索…</p>
           </article>
+          </section>
         </div>
 
         <div class="result-actions">
           <button class="secondary muted" type="button" id="copy-btn" data-i18n="copy">复制行动句</button>
-          <button class="secondary muted" type="button" id="copy-summary-btn" data-i18n="copySummary">复制摘要</button>
-          <button class="secondary muted" type="button" id="copy-full-btn" data-i18n="copyFull">复制完整结果</button>
-          <button class="secondary muted" type="button" id="share-image-btn" data-i18n="shareImage">下载分享图</button>
-          <button class="secondary muted" type="button" id="export-pdf-btn" data-i18n="exportPdf">导出 PDF</button>
           <button class="secondary muted" type="button" id="save-btn" data-i18n="saveHistory">保存到回看</button>
-          <button class="secondary muted subtle-danger" type="button" id="new-reading-btn" data-i18n="newReadingTarot">重新抽牌（新结果）</button>
           <button class="secondary muted" type="button" id="again-btn" data-i18n="again">回到问题</button>
+          <details class="result-more-actions">
+            <summary data-i18n="moreActions">更多操作</summary>
+            <div>
+              <button class="secondary muted" type="button" id="copy-summary-btn" data-i18n="copySummary">复制摘要</button>
+              <button class="secondary muted" type="button" id="copy-full-btn" data-i18n="copyFull">复制完整结果</button>
+              <button class="secondary muted" type="button" id="share-image-btn" data-i18n="shareImage">下载分享图</button>
+              <button class="secondary muted" type="button" id="export-pdf-btn" data-i18n="exportPdf">导出 PDF</button>
+              <button class="secondary muted subtle-danger" type="button" id="new-reading-btn" data-i18n="newReadingTarot">重新抽牌（新结果）</button>
+            </div>
+          </details>
         </div>
       </section>
     </main>
@@ -349,7 +396,7 @@
         <p class="panel-kicker" data-i18n="historyKicker">最近的象</p>
         <div class="history-filters" id="history-filters" aria-label="筛选回看">
           <button type="button" data-history-filter="all" data-i18n="historyFilterAll">全部</button>
-          <button type="button" data-history-filter="tarot" data-i18n="modeTarot">塔罗</button>
+          <button type="button" data-history-filter="tarot" data-i18n="modeTarot">牌象</button>
           <button type="button" data-history-filter="meihua" data-i18n="modeMeihua">梅花</button>
           <button type="button" data-history-filter="dual" data-i18n="modeDual">双象</button>
           <button type="button" data-history-filter="daily" data-i18n="modeDaily">当下</button>
@@ -454,6 +501,7 @@
         cleanTaggedOutputText,
         describeGua,
         meihuaReportFromText,
+        parseTaggedTokens,
         reportFromRecord as normalizeReportFromRecord
       } from "./assets/app/result-renderer.js";
       import {
@@ -496,9 +544,24 @@
           heroSubcopy: "牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。",
           discText: "照见",
           modeTarot: "牌象解读",
+          modeTarotNav: "开始提问",
+          modeTarotRail: "牌象",
+          modeMeihuaRail: "卦象",
+          modeDualRail: "双象",
+          mobileMenu: "菜单",
           modeMeihua: "卦象解读",
           modeDual: "双象报告",
           modeDaily: "每日镜笺",
+          modeTarotResult: "牌象解读",
+          modeCardTarotCopy: "抽取牌象，照见当下处境与情绪线索。",
+          modeCardMeihuaCopy: "通过卦象结构，观察趋势与推进方式。",
+          modeCardDualCopy: "合并牌象与卦象，整理成一份完整观察。",
+          privacyNote: "你的问题与结果仅对你可见，象问为你保留。",
+          questionAssistLabel: "可以先把问题收窄一点",
+          questionAssistWorking: "正在整理一个更清晰的问法…",
+          questionAssistAccept: "用这个问题继续",
+          questionAssistOriginal: "按原问题继续",
+          questionAssistFallbackNote: "这个问法会更适合整理出下一步。",
           questionLabel: "你现在最想看清哪件事？",
           questionLabelMeihua: "此刻起卦",
           questionLabelDual: "写下一个值得认真看的问题",
@@ -590,6 +653,7 @@
           copy: "复制行动句",
           copySummary: "复制摘要",
           copyFull: "复制完整结果",
+          moreActions: "更多操作",
           shareImage: "下载分享图",
           exportPdf: "导出 PDF",
           shareIncludeQuestion: "分享时包含原问题",
@@ -607,7 +671,7 @@
           resonanceKicker: "匿名共鸣",
           resonanceSubmitted: "已匿名放入共鸣池。",
           resonanceRevoked: "已撤回共鸣。",
-          resonanceSignin: "登录后才能提交共鸣。",
+          resonanceSignin: "匿名共鸣暂时不可用，请稍后再试。",
           resonanceFailed: "共鸣池暂时不可用。",
           resonanceEmpty: "还没有可展示的匿名主题。",
           resonanceSame: "我也有这种感觉",
@@ -678,7 +742,7 @@
           authResetSent: "重置密码邮件已发送，请打开邮件后回到这里设置新密码。",
           authPasswordUpdated: "新密码已保存，可以继续同步记录。",
           authEmailRateLimited: "邮件发送太频繁了。先等几分钟，再点注册或重置密码。",
-          coreConclusionLabel: "核心结论",
+          coreConclusionLabel: "当前主线",
           tarotCardMessageLabel: "牌面告诉你",
           tarotStuckLabel: "你真正卡住的是",
           tarotCoreLabel: "牌面告诉你",
@@ -692,6 +756,7 @@
           reportGuaLabel: "卦象侧：卦象显示了什么趋势",
           reportDualLabel: "双象共同指向",
           nextStepTitle: "下一步怎么做",
+          nextStepHeading: "下一步怎么做",
           actionDoLabel: "现在可以做",
           actionDontLabel: "先别急着做",
           actionWatchLabel: "接下来观察什么",
@@ -735,9 +800,24 @@
           heroSubcopy: "Card symbols clarify emotion. Gua symbols read momentum. The result ends with one next step.",
           discText: "Mirror",
           modeTarot: "Card reading",
+          modeTarotNav: "Start a question",
+          modeTarotRail: "Cards",
+          modeMeihuaRail: "Gua",
+          modeDualRail: "Dual",
+          mobileMenu: "Menu",
           modeMeihua: "Gua reading",
           modeDual: "Dual report",
           modeDaily: "Daily note",
+          modeTarotResult: "Card reading",
+          modeCardTarotCopy: "Draw card symbols to reflect the present situation and emotional clues.",
+          modeCardMeihuaCopy: "Read the gua structure to observe momentum and the way forward.",
+          modeCardDualCopy: "Combine card and gua signals into one complete reflection.",
+          privacyNote: "Your question and result stay private to you.",
+          questionAssistLabel: "Narrow the question first",
+          questionAssistWorking: "Reframing this into a clearer question...",
+          questionAssistAccept: "Use this question",
+          questionAssistOriginal: "Continue as written",
+          questionAssistFallbackNote: "This version is easier to turn into one next step.",
           questionLabel: "What do you want to see more clearly?",
           questionLabelMeihua: "Cast this moment",
           questionLabelDual: "Write one question worth reading carefully",
@@ -829,6 +909,7 @@
           copy: "Copy action",
           copySummary: "Copy summary",
           copyFull: "Copy full result",
+          moreActions: "More",
           shareImage: "Download image",
           exportPdf: "Export PDF",
           shareIncludeQuestion: "Include original question",
@@ -846,7 +927,7 @@
           resonanceKicker: "Anonymous resonance",
           resonanceSubmitted: "Added anonymously.",
           resonanceRevoked: "Withdrawn.",
-          resonanceSignin: "Sign in to submit resonance.",
+          resonanceSignin: "Anonymous resonance is not available right now. Try again later.",
           resonanceFailed: "Resonance pool is not available right now.",
           resonanceEmpty: "No anonymous themes yet.",
           resonanceSame: "Same feeling",
@@ -917,7 +998,7 @@
           authResetSent: "Password reset email sent. Open it, then set a new password here.",
           authPasswordUpdated: "New password saved. Sync can continue.",
           authEmailRateLimited: "Too many emails were requested. Wait a few minutes, then try again.",
-          coreConclusionLabel: "Core conclusion",
+          coreConclusionLabel: "Current thread",
           tarotCardMessageLabel: "What the card shows",
           tarotStuckLabel: "Where you are stuck",
           tarotCoreLabel: "What the card shows",
@@ -931,6 +1012,7 @@
           reportGuaLabel: "Gua side: what trend it shows",
           reportDualLabel: "Shared direction",
           nextStepTitle: "What to do next",
+          nextStepHeading: "What to do next",
           actionDoLabel: "Do now",
           actionDontLabel: "Do not rush into",
           actionWatchLabel: "Watch next",
@@ -1042,6 +1124,10 @@
         form: document.getElementById("question-form"),
         input: document.getElementById("question-input"),
         questionExamples: document.getElementById("question-examples"),
+        questionAssist: document.getElementById("question-assist"),
+        questionAssistNote: document.getElementById("question-assist-note"),
+        questionAssistAccept: document.getElementById("question-assist-accept"),
+        questionAssistOriginal: document.getElementById("question-assist-original"),
         spreadSelector: document.getElementById("spread-selector"),
         spreadBtns: Array.from(document.querySelectorAll("[data-spread-type]")),
         guaCastSelector: document.getElementById("gua-cast-selector"),
@@ -1052,7 +1138,10 @@
         cast: document.getElementById("cast-btn"),
         hint: document.getElementById("mode-hint"),
         modeLabel: document.getElementById("mode-label"),
+        entryNav: document.querySelector("[data-next='idle'].entry-nav"),
         modeBtns: Array.from(document.querySelectorAll("[data-mode]")),
+        modeCards: Array.from(document.querySelectorAll("[data-mode-card]")),
+        mobileRailMenu: document.querySelector(".mobile-rail-menu"),
         langBtns: Array.from(document.querySelectorAll(".lang-btn")),
         nextBtns: Array.from(document.querySelectorAll("[data-next]")),
         historyBtn: document.getElementById("history-btn"),
@@ -1156,6 +1245,7 @@
         symbolModeLabel: document.getElementById("symbol-mode-label"),
         symbolNameLabel: document.getElementById("symbol-name-label"),
         symbolKeywords: document.getElementById("symbol-keywords"),
+        symbolSpreadList: document.getElementById("symbol-spread-list"),
         symbolQuestion: document.getElementById("symbol-question"),
         symbolQuestionText: document.getElementById("symbol-question-text"),
         anchorGrid: document.getElementById("anchor-grid"),
@@ -1351,18 +1441,29 @@
         refreshLocalizedUi();
       }
 
+      function syncRailNav() {
+        const isAnswer = els.room.dataset.step === "answer";
+        const active = els.modeBtns.find((btn) => btn.dataset.mode === mode);
+        els.entryNav?.classList.toggle("active", !isAnswer);
+        els.modeBtns.forEach((btn) => btn.classList.toggle("active", isAnswer && btn === active));
+      }
+
       function setMode(nextMode) {
         if (isRunning) return;
         const previousMode = mode;
         mode = nextMode;
         if (mode !== "tarot") selectedSpreadType = "single";
         if (mode !== "meihua") selectedGuaCastMethod = "time";
-        const active = els.modeBtns.find((btn) => btn.dataset.mode === mode);
-        els.modeBtns.forEach((btn) => btn.classList.toggle("active", btn === active));
+        els.modeCards.forEach((button) => {
+          const isSelected = button.dataset.modeCard === mode;
+          button.classList.toggle("is-selected", isSelected);
+          button.setAttribute("aria-pressed", String(isSelected));
+        });
         els.room.dataset.tone = nextToneForMode(mode);
         els.composePanel.dataset.mode = mode;
         els.signalRow.dataset.mode = mode;
         resetExperience();
+        syncRailNav();
         els.input.disabled = false;
         if (mode === "meihua" || previousMode === "meihua") els.input.value = "";
         updateModeHint();
@@ -1400,24 +1501,15 @@
       function updatePlaceholderSample(reset = false) {
         const keys = placeholderKeysForMode();
         if (reset) placeholderIndex = 0;
-        if (document.activeElement === els.input || els.input.value.trim()) {
-          els.input.placeholder = t(keys[placeholderIndex % keys.length]);
-          return;
-        }
-        els.input.classList.add("is-shifting-placeholder");
-        setTimeout(() => {
-          els.input.placeholder = t(keys[placeholderIndex % keys.length]);
-          els.input.classList.remove("is-shifting-placeholder");
-        }, 180);
+        els.input.placeholder = t(keys[placeholderIndex % keys.length]);
       }
 
-      function startPlaceholderCycle() {
-        setInterval(() => {
-          const keys = placeholderKeysForMode();
-          if (keys.length <= 1 || document.activeElement === els.input || els.input.value.trim()) return;
-          placeholderIndex = (placeholderIndex + 1) % keys.length;
-          updatePlaceholderSample();
-        }, 4600);
+      function shouldOfferQuestionAssist(question) {
+        const text = cleanText(question, "");
+        if (mode !== "tarot" && mode !== "dual") return false;
+        if (text.length < 6) return true;
+        if (lang === "zh") return /会不会|能不能|是不是|到底|什么时候|结果|复合|喜欢我|还爱|一定/.test(text);
+        return /\b(will|should i wait|does .* like me|when will|for sure|happen)\b/i.test(text);
       }
 
       function updateDailyModeState() {
@@ -1455,7 +1547,7 @@
             if (keys[index]) node.textContent = t(keys[index]);
           });
         });
-        els.actionBoardTitle.textContent = t("nextStepTitle");
+        els.actionBoardTitle.textContent = t("nextStepHeading");
         els.newReading.textContent = t(
           sourceMode === "meihua" ? "newReadingMeihua" : sourceMode === "dual" ? "newReadingDual" : "newReadingTarot"
         );
@@ -1484,6 +1576,7 @@
       }
 
       function hideReport() {
+        els.answerPanel.classList.remove("is-dual-report");
         els.resultSummary.textContent = "";
         els.action.hidden = false;
         els.reportStack.hidden = true;
@@ -1526,6 +1619,7 @@
       }
 
       function renderStructuredReport(data) {
+        els.answerPanel.classList.toggle("is-dual-report", data.sourceMode === "dual");
         const tarotText = cleanText(data.tarotText, "");
         const guaText = cleanText(data.guaText, "");
         const dualText = cleanText(data.dualText, "");
@@ -1597,7 +1691,33 @@
         return ritualCardKeywords(cardName, { language: lang });
       }
 
-      function updateSymbolSummary({ sourceMode = mode, name = "", question = "" } = {}) {
+      function renderSymbolSpread(cards = []) {
+        const spreadCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
+        els.symbolSpreadList.innerHTML = "";
+        if (spreadCards.length <= 1) {
+          els.symbolSpreadList.hidden = true;
+          return;
+        }
+        spreadCards.forEach((card, index) => {
+          const item = document.createElement("div");
+          const image = document.createElement("img");
+          const copy = document.createElement("div");
+          const label = document.createElement("span");
+          const name = document.createElement("strong");
+          const keywords = document.createElement("em");
+          image.src = card.imageSrc || "";
+          image.alt = cleanText(card.imageAlt || card.name, "");
+          label.textContent = cleanText(card.label || card.position || `${index + 1}`, "");
+          name.textContent = cleanText(card.imageAlt || card.name, "");
+          keywords.textContent = cardKeywords(card.name || card.imageAlt).slice(0, 3).join(" / ");
+          copy.append(label, name, keywords);
+          item.append(image, copy);
+          els.symbolSpreadList.appendChild(item);
+        });
+        els.symbolSpreadList.hidden = false;
+      }
+
+      function updateSymbolSummary({ sourceMode = mode, name = "", question = "", cards = [] } = {}) {
         const modeLabel = sourceMode === "meihua" ? t("modeMeihua") : sourceMode === "dual" ? t("modeDual") : t("modeTarot");
         const safeName = cleanText(name || els.cardImage?.alt || els.answerKicker?.textContent, modeLabel);
         const safeQuestion = cleanText(question || lastQuestion, "");
@@ -1613,6 +1733,7 @@
           els.symbolKeywords.appendChild(item);
         });
         els.symbolKeywords.hidden = keywords.length === 0;
+        renderSymbolSpread(sourceMode === "meihua" ? [] : cards);
         els.symbolQuestionText.textContent = safeQuestion;
         els.symbolQuestion.hidden = !safeQuestion;
       }
@@ -1911,14 +2032,93 @@
         return readingClient.stream(payload, onText);
       }
 
+      async function clarifyQuestion(originalQuestion) {
+        const full = await streamReading({
+          mode: "clarify",
+          tier: "basic",
+          entry: mode === "dual" ? "dual" : "tarot",
+          question: originalQuestion,
+          round: 1,
+          language: lang
+        }, () => {});
+        const tokens = parseTaggedTokens(full);
+        return {
+          clarifiedQuestion: cleanText(tokens.CLARIFIED_QUESTION || tokens.clarifiedQuestion || "", originalQuestion),
+          note: cleanTaggedOutputText(tokens.CLARIFY_NOTE || tokens.clarifyNote || "", t("questionAssistFallbackNote"))
+        };
+      }
+
+      function hideQuestionAssist() {
+        if (!els.questionAssist) return;
+        els.questionAssist.hidden = true;
+        els.questionAssistAccept.onclick = null;
+        els.questionAssistOriginal.onclick = null;
+        els.questionAssistAccept.disabled = false;
+        els.questionAssistOriginal.disabled = false;
+      }
+
+      function submitQuestionWithDetail(detail) {
+        els.form.dispatchEvent(new CustomEvent("submit", { cancelable: true, detail }));
+      }
+
+      async function showQuestionAssist(originalQuestion) {
+        let skipped = false;
+        const continueOriginal = () => {
+          if (skipped) return;
+          skipped = true;
+          els.input.value = originalQuestion;
+          hideQuestionAssist();
+          submitQuestionWithDetail({ question: originalQuestion, skipQuestionAssist: true });
+        };
+
+        els.questionAssist.hidden = false;
+        els.questionAssistNote.textContent = t("questionAssistWorking");
+        els.questionAssistAccept.disabled = true;
+        els.questionAssistOriginal.disabled = false;
+        els.questionAssistOriginal.onclick = continueOriginal;
+        els.cast.disabled = true;
+        els.cast.classList.add("is-loading");
+        els.cast.textContent = t("questionAssistWorking");
+
+        try {
+          const result = await clarifyQuestion(originalQuestion);
+          if (skipped) return;
+          const clarifiedQuestion = result.clarifiedQuestion || originalQuestion;
+          els.input.value = clarifiedQuestion;
+          els.questionAssistNote.textContent = result.note || t("questionAssistFallbackNote");
+          els.questionAssistAccept.disabled = false;
+          els.questionAssistOriginal.disabled = false;
+          els.questionAssistAccept.onclick = () => {
+            hideQuestionAssist();
+            submitQuestionWithDetail({ question: clarifiedQuestion, skipQuestionAssist: true });
+          };
+          els.questionAssistOriginal.onclick = continueOriginal;
+        } catch (error) {
+          console.warn("Question assist unavailable", error);
+          if (!skipped) {
+            els.input.value = originalQuestion;
+            hideQuestionAssist();
+            queueMicrotask(() => submitQuestionWithDetail({ question: originalQuestion, skipQuestionAssist: true }));
+          }
+        } finally {
+          if (!skipped) {
+            els.cast.disabled = false;
+            els.cast.classList.remove("is-loading");
+            updateCastCopy();
+          }
+        }
+      }
+
       function showResult() {
         els.room.dataset.step = "answer";
+        syncRailNav();
       }
 
       function resetExperience() {
         closeCardLightbox();
         hideRitual();
         els.room.dataset.step = "idle";
+        syncRailNav();
         els.loading.hidden = true;
         els.action.hidden = false;
         els.action.textContent = "";
@@ -1927,12 +2127,13 @@
         els.dailyNoteStatus.hidden = true;
         hideTarotReading();
         hideReport();
+        hideQuestionAssist();
         els.copy.textContent = t("copy");
         els.copySummary.textContent = t("copySummary");
         els.copyFull.textContent = t("copyFull");
         els.shareImage.textContent = t("shareImage");
         els.exportPdf.textContent = t("exportPdf");
-        updateSymbolSummary({ sourceMode: mode, name: t("modeTarot"), question: "" });
+        updateSymbolSummary({ sourceMode: mode, name: t("modeTarot"), question: "", cards: [] });
         lastAction = "";
         lastQuestion = "";
         lastRecord = null;
@@ -2146,7 +2347,8 @@
         updateSymbolSummary({
           sourceMode: record.mode,
           name: record.imageAlt || record.gua?.name || normalizedTitleText(record) || record.title || "",
-          question: record.question || ""
+          question: record.question || "",
+          cards: record.cards || []
         });
 
         return true;
@@ -2573,17 +2775,23 @@
           if (dailyRecord && showStoredRecord(dailyRecord)) return;
         }
 
+        const question = mode === "tarot" || mode === "dual"
+          ? (requestDetail.question || els.input.value.trim() || t("fallbackQuestion"))
+          : mode === "meihua"
+            ? (els.input.value.trim() || (lang === "zh" ? "此刻起卦，观察下一步方向。" : "Cast this moment and read the next direction."))
+            : "";
+
+        if (!requestDetail.skipQuestionAssist && shouldOfferQuestionAssist(question)) {
+          await showQuestionAssist(question);
+          return;
+        }
+
         isRunning = true;
         setNavigationLocked(true);
         els.cast.classList.add("is-loading");
         els.signalRow.classList.add("is-running");
         setSignalPhase(0);
         els.cast.textContent = t(modeConfig().generating);
-        const question = mode === "tarot" || mode === "dual"
-          ? (requestDetail.question || els.input.value.trim() || t("fallbackQuestion"))
-          : mode === "meihua"
-            ? (els.input.value.trim() || (lang === "zh" ? "此刻起卦，观察下一步方向。" : "Cast this moment and read the next direction."))
-            : "";
         lastQuestion = question;
         try {
           const ritualResult = await playRitual(mode);
@@ -2620,7 +2828,7 @@
             els.cardImage.src = primaryCard.imageSrc;
             els.cardImage.alt = primaryCard.imageAlt;
             els.answerKicker.textContent = `${t("modeTarot")} · ${spreadDisplayName(ritualResult.spreadType)} · ${primaryCard.imageAlt}`;
-            updateSymbolSummary({ sourceMode: "tarot", name: els.cardImage.alt, question });
+            updateSymbolSummary({ sourceMode: "tarot", name: els.cardImage.alt, question, cards: selectedCards });
             const full = await streamReading({
               mode: "reading",
               tier: "basic",
@@ -2665,7 +2873,7 @@
             els.guaSymbol.hidden = false;
             renderGua(gua.binary);
             els.answerKicker.textContent = `${t("modeMeihua")} · ${lang === "zh" ? gua.name : gua.en}`;
-            updateSymbolSummary({ sourceMode: "meihua", name: lang === "zh" ? gua.name : gua.en, question });
+            updateSymbolSummary({ sourceMode: "meihua", name: lang === "zh" ? gua.name : gua.en, question, cards: [] });
             const full = await streamReading({
               mode: "meihua-reading",
               tier: "basic",
@@ -2704,7 +2912,7 @@
             els.cardImage.alt = primaryCard.imageAlt;
             renderGua(gua.binary);
             els.answerKicker.textContent = `${t("modeDual")} · ${primaryCard.imageAlt} / ${lang === "zh" ? gua.name : gua.en}`;
-            updateSymbolSummary({ sourceMode: "dual", name: els.cardImage.alt, question });
+            updateSymbolSummary({ sourceMode: "dual", name: els.cardImage.alt, question, cards: selectedCards });
             const tarotFull = await streamReading({
               mode: "reading",
               tier: "basic",
@@ -2982,7 +3190,7 @@
           data.title,
           data.question ? `${lang === "zh" ? "问题" : "Question"}: ${data.question}` : "",
           data.symbol ? `${lang === "zh" ? "象" : "Symbol"}: ${data.symbol}` : "",
-          data.summary ? `${lang === "zh" ? "核心结论" : "Core"}: ${data.summary}` : "",
+          data.summary ? `${lang === "zh" ? "当前主线" : "Thread"}: ${data.summary}` : "",
           data.doText ? `${lang === "zh" ? "今天可以做" : "Do"}: ${data.doText}` : "",
           data.dontText ? `${lang === "zh" ? "今天不要做" : "Do not"}: ${data.dontText}` : "",
           data.watchText ? `${lang === "zh" ? "接下来观察" : "Watch"}: ${data.watchText}` : "",
@@ -3074,7 +3282,6 @@
           const result = await syncClient.submitResonance(lastRecord.id);
           if (result.status === "signed-out") {
             updateResonanceUi(t("resonanceSignin"));
-            openUtilityPanel(els.authPanel);
             return;
           }
           currentResonanceSubmission = result.submission || result;
@@ -3094,7 +3301,6 @@
           const result = await syncClient.revokeResonance(currentResonanceSubmission.id);
           if (result.status === "signed-out") {
             updateResonanceUi(t("resonanceSignin"));
-            openUtilityPanel(els.authPanel);
             return;
           }
           currentResonanceSubmission = null;
@@ -3319,7 +3525,7 @@
           els.tarotSymbol.hidden = true;
           els.guaSymbol.hidden = true;
           els.anchorGrid.hidden = true;
-          updateSymbolSummary({ sourceMode: record.mode, name: cleanText(payload.symbol, record.title), question: record.question });
+          updateSymbolSummary({ sourceMode: record.mode, name: cleanText(payload.symbol, record.title), question: record.question, cards: record.cards || [] });
           renderStructuredReport({
             sourceMode: record.mode,
             summary: currentResultContext.summary,
@@ -3512,8 +3718,10 @@
 
       els.nextBtns.forEach((button) => button.addEventListener("click", () => {
         els.room.dataset.step = button.dataset.next;
+        syncRailNav();
       }));
       els.modeBtns.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
+      els.modeCards.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.modeCard)));
       els.langBtns.forEach((btn) => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
       els.questionExamples.addEventListener("click", (event) => {
         const button = event.target.closest("[data-question-example]");
@@ -3559,6 +3767,14 @@
         updateAuthUi();
         openUtilityPanel(els.authPanel);
       });
+      els.mobileRailMenu?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-mobile-panel]");
+        if (!button) return;
+        els.mobileRailMenu.open = false;
+        if (button.dataset.mobilePanel === "history") els.historyBtn.click();
+        if (button.dataset.mobilePanel === "companion") els.companionBtn.click();
+        if (button.dataset.mobilePanel === "account") els.accountBtn.click();
+      });
       els.utilityClosers.forEach((button) => button.addEventListener("click", closeUtilityPanels));
       els.historyList.addEventListener("click", (event) => {
         const favorite = event.target.closest("[data-history-favorite]");
@@ -3571,12 +3787,20 @@
         const record = loadHistory(recordStore).find((entry) => entry.id === item.dataset.id);
         if (showStoredRecord(record)) closeUtilityPanels();
       });
-      els.followupChips.addEventListener("click", (event) => {
-        const button = event.target.closest("button");
-        if (!button) return;
+      function openFollowupPanel() {
         els.followupPanel.hidden = false;
         updateFollowupSubmit();
         els.followupPanel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+
+      document.querySelectorAll("[data-open-followup]").forEach((button) => {
+        button.addEventListener("click", openFollowupPanel);
+      });
+      document.querySelectorAll("[data-quick-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.dataset.quickAction === "copy") els.copy.click();
+          if (button.dataset.quickAction === "save") els.save.click();
+        });
       });
       els.followupPanel.addEventListener("click", (event) => {
         const button = event.target.closest("[data-followup-question]");
@@ -3705,7 +3929,6 @@
         updateAuthUi();
         initFieldCanvas();
         initPointerEffects();
-        startPlaceholderCycle();
 
         loadAdminConfig().then((loaded) => {
           if (loaded) refreshLocalizedUi();

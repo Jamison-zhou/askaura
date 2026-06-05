@@ -25,6 +25,9 @@ assert.match(html, /excludedIndexes\.push\(selection\.index\)/, "sequential card
 assert.match(html, /cards: selectedCards\.map/, "front-end sends spread cards to reading request");
 assert.match(html, /spreadType: ritualResult\.spreadType/, "front-end sends selected spread type to reading request");
 assert.match(html, /cards: selectedCards/, "saved tarot records include selected cards");
+assert.match(html, /id="symbol-spread-list"/, "result symbol panel includes a spread card list");
+assert.match(html, /function renderSymbolSpread\(cards = \[\]\)/, "front-end renders all selected spread cards, not only the primary card");
+assert.match(html, /updateSymbolSummary\(\{ sourceMode: "tarot"[\s\S]*cards: selectedCards/, "tarot results pass all selected cards into the symbol panel");
 
 assert.match(storage, /normalizeHistoryRecord/, "storage delegates spread and card normalization to history-store");
 assert.match(sync, /historyRecordToRow[\s\S]*from "\.\/history-store\.js"/, "sync imports history row mapping from history-store");
@@ -53,5 +56,8 @@ assert.match(meihuaPrompt, /\[GUA_TREND\]/, "meihua prompt requires trend token"
 assert.match(meihuaPrompt, /\[ACTION\]/, "meihua prompt keeps action token");
 assert.match(tokenValidator, /"meihua-reading": \["GUA_SIGNAL", "GUA_TREND", "ACTION"\]/, "token validator requires richer meihua output");
 assert.match(css, /\.spread-selector,[\s\S]*\.gua-cast-selector/, "spread and gua controls share compact styling");
+assert.match(css, /\.symbol-spread-list \{[\s\S]*display: grid;/, "spread cards have a compact result-panel layout");
+assert.match(css, /\.gua-cast-selector input \{[\s\S]*?background: var\(--control-bg\);[\s\S]*?color: rgba\(240, 237, 229, 0\.78\);/, "gua seed input uses the dark compact control style");
+assert.match(css, /\.gua-cast-selector input:focus \{[\s\S]*?border-color: rgba\(156, 122, 74, 0\.38\);[\s\S]*?background: rgba\(156, 122, 74, 0\.075\);/, "gua seed input focus stays in the AskAura palette");
 
 console.log("phase4 spreads and gua contract passed");
