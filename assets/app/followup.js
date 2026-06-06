@@ -11,7 +11,8 @@ export function followupQuestionText(kind, customText = "", labels = {}) {
     push: labels.push,
     avoid: labels.avoid,
     blocker: labels.blocker,
-    review: labels.review
+    review: labels.review,
+    "clarify-card": labels.clarifyCard
   };
   return questions[kind] || labels.fallback || "";
 }
@@ -85,9 +86,10 @@ export function clarificationLinkText(context, { language = "zh" } = {}) {
   if (!context) return "";
   const card = cleanFollowupText(context.previousCard, "");
   const question = cleanFollowupText(context.originalQuestion, "");
-  return language === "zh"
-    ? `这是一张澄清牌，回应上一轮${card ? `「${card}」` : "结果"}：${question}`
-    : `This is a clarification card for the previous ${card ? `"${card}" result` : "result"}: ${question}`;
+  if (language === "zh") {
+    return `这是一个澄清角度，回应上一轮${card ? `「${card}」` : "结果"}：${question}`;
+  }
+  return `This is a clarification angle for the previous ${card ? `"${card}" result` : "result"}: ${question}`;
 }
 
 export function clarificationHistoryText(context) {
@@ -103,6 +105,6 @@ export function clarificationHistoryText(context) {
 export function clarificationPromptText({ lastQuestion, fallbackQuestion, language = "zh" } = {}) {
   const question = cleanFollowupText(lastQuestion, fallbackQuestion);
   return language === "zh"
-    ? `围绕这次结果，抽一张澄清牌：${question}`
-    : `Draw a clarification card for this result: ${question}`;
+    ? `围绕这次结果，补一个澄清角度：${question}`
+    : `Add a clarification angle for this result: ${question}`;
 }

@@ -203,6 +203,19 @@ h1 {
   color: var(--paper-dim);
 }
 
+.toolbar-status {
+  flex: 1 1 260px;
+  min-height: 58px;
+  padding: 10px 14px;
+  display: grid;
+  align-items: center;
+  color: var(--paper-dim);
+  border: 1px solid rgba(246, 237, 218, 0.10);
+  background: rgba(246, 237, 218, 0.026);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .import-btn input {
   display: none;
 }
