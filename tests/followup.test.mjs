@@ -81,11 +81,11 @@ assert.deepEqual(clarification, {
 
 assert.equal(
   clarificationLinkText(clarification, { language: "zh" }),
-  "这是一张澄清牌，回应上一轮「The Star」：Original?"
+  "这是一个澄清角度，回应上一轮「The Star」：Original?"
 );
 assert.equal(
   clarificationLinkText(clarification, { language: "en" }),
-  "This is a clarification card for the previous \"The Star\" result: Original?"
+  "This is a clarification angle for the previous \"The Star\" result: Original?"
 );
 assert.equal(clarificationLinkText(null, { language: "zh" }), "");
 
@@ -98,11 +98,11 @@ assert.equal(clarificationHistoryText(clarification), [
 
 assert.equal(
   clarificationPromptText({ lastQuestion: "Original?", fallbackQuestion: "Fallback?", language: "zh" }),
-  "围绕这次结果，抽一张澄清牌：Original?"
+  "围绕这次结果，补一个澄清角度：Original?"
 );
 assert.equal(
   clarificationPromptText({ lastQuestion: "", fallbackQuestion: "Fallback?", language: "en" }),
-  "Draw a clarification card for this result: Fallback?"
+  "Add a clarification angle for this result: Fallback?"
 );
 
 console.log("followup tests passed");

@@ -41,7 +41,7 @@
           <span>AskAura</span>
         </button>
 
-        <nav class="mode-nav" aria-label="三象入口">
+        <nav class="mode-nav" aria-label="三象入口" aria-hidden="true">
           <button class="entry-nav active" type="button" data-next="idle">
             <span data-i18n="modeTarotNav">开始提问</span>
           </button>
@@ -111,6 +111,23 @@
           <button class="panel-close" type="button" data-next="idle" aria-label="收起问题">×</button>
           <span class="panel-index">New reading</span>
           <p class="panel-kicker" id="question-label" data-i18n="questionLabel">你现在最想看清哪件事？</p>
+          <div class="mode-card-grid" id="mode-card-grid" role="group" aria-label="选择观察方式">
+            <button type="button" class="mode-card is-selected" data-mode-card="tarot" aria-pressed="true">
+              <span class="mode-card-dot" aria-hidden="true"></span>
+              <strong data-i18n="modeTarotResult">牌象解读</strong>
+              <span data-i18n="modeCardTarotCopy">抽取牌象，照见当下处境与情绪线索。</span>
+            </button>
+            <button type="button" class="mode-card" data-mode-card="meihua" aria-pressed="false">
+              <span class="mode-card-dot" aria-hidden="true"></span>
+              <strong data-i18n="modeMeihua">卦象解读</strong>
+              <span data-i18n="modeCardMeihuaCopy">通过卦象结构，观察趋势与推进方式。</span>
+            </button>
+            <button type="button" class="mode-card" data-mode-card="dual" aria-pressed="false">
+              <span class="mode-card-dot" aria-hidden="true"></span>
+              <strong data-i18n="modeDual">双象报告</strong>
+              <span data-i18n="modeCardDualCopy">合并牌象与卦象，整理成一份完整观察。</span>
+            </button>
+          </div>
           <p class="mode-primer" id="mode-primer" data-i18n="modePrimerTarot">牌象先帮你聚焦问题里的情绪、关系和未说出口的信号。</p>
           <form id="question-form">
             <div class="signal-row" id="signal-row" aria-hidden="true">
@@ -136,23 +153,6 @@
               <p id="question-assist-note"></p>
               <button type="button" class="secondary muted" id="question-assist-accept" data-i18n="questionAssistAccept">用这个问题继续</button>
               <button type="button" class="secondary muted" id="question-assist-original" data-i18n="questionAssistOriginal">按原问题继续</button>
-            </div>
-            <div class="mode-card-grid" id="mode-card-grid" role="group" aria-label="选择观察方式">
-              <button type="button" class="mode-card is-selected" data-mode-card="tarot" aria-pressed="true">
-                <span class="mode-card-dot" aria-hidden="true"></span>
-                <strong data-i18n="modeTarotResult">牌象解读</strong>
-                <span data-i18n="modeCardTarotCopy">抽取牌象，照见当下处境与情绪线索。</span>
-              </button>
-              <button type="button" class="mode-card" data-mode-card="meihua" aria-pressed="false">
-                <span class="mode-card-dot" aria-hidden="true"></span>
-                <strong data-i18n="modeMeihua">卦象解读</strong>
-                <span data-i18n="modeCardMeihuaCopy">通过卦象结构，观察趋势与推进方式。</span>
-              </button>
-              <button type="button" class="mode-card" data-mode-card="dual" aria-pressed="false">
-                <span class="mode-card-dot" aria-hidden="true"></span>
-                <strong data-i18n="modeDual">双象报告</strong>
-                <span data-i18n="modeCardDualCopy">合并牌象与卦象，整理成一份完整观察。</span>
-              </button>
             </div>
             <div class="spread-selector" id="spread-selector">
               <span data-i18n="spreadSelectorLabel">牌阵</span>
@@ -215,6 +215,7 @@
             <div class="core-conclusion">
               <span class="result-summary-label" data-i18n="coreConclusionLabel">当前主线</span>
               <p class="result-summary" id="result-summary"></p>
+              <span class="action-sentence-label" data-i18n="actionSentenceLabel">今日行动</span>
               <p class="action-sentence" id="action-sentence"></p>
             </div>
             <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
@@ -275,34 +276,37 @@
               <textarea id="review-note-input" rows="3" maxlength="180" data-i18n-placeholder="reviewPlaceholder" placeholder="三天后，这个行动带来了什么变化？"></textarea>
               <button type="button" class="secondary muted" id="review-save-btn" data-i18n="reviewSave">保存复盘</button>
             </div>
-            <div class="followup-chips" id="followup-chips" hidden aria-label="继续探索这次结果">
-              <span class="followup-label" data-i18n="followupLabel">继续探索这次结果</span>
-              <button type="button" data-open-followup data-i18n="followupOpen">打开追问面板</button>
-            </div>
-            <div class="followup-panel" id="followup-panel" hidden>
-              <p data-i18n="followupPanelTitle">基于这次牌象，你还想看哪一面？</p>
-              <div class="followup-group">
-                <span data-i18n="followupQuestionGroup">继续追问</span>
-                <div class="followup-options">
-                  <button type="button" data-followup-question="push" data-i18n="followupPush">如果我主动推进，会发生什么？</button>
-                  <button type="button" data-followup-question="avoid" data-i18n="followupAvoid">我现在最该避免什么？</button>
-                  <button type="button" data-followup-question="blocker" data-i18n="followupBlocker">这件事真正的阻力是什么？</button>
-                  <button type="button" data-followup-question="review" data-i18n="followupReview">三天后我该如何复盘？</button>
-                </div>
+            <div class="result-followup-section" id="result-followup-section">
+              <div class="followup-chips" id="followup-chips" hidden aria-label="继续探索这次结果">
+                <span class="followup-label" data-i18n="followupLabel">继续探索这次结果</span>
+                <button type="button" data-open-followup data-i18n="followupOpen">打开追问面板</button>
               </div>
-              <div class="followup-group followup-ritual-group">
-                <span data-i18n="followupRitualGroup">补充仪式</span>
-                <div class="followup-options followup-options-ritual">
-                  <button type="button" data-followup-question="clarify-card" data-i18n="followupClarifyCard">抽一张澄清牌</button>
+              <div class="followup-panel" id="followup-panel" hidden>
+                <p data-i18n="followupPanelTitle">基于这次结果，你还想看哪一面？</p>
+                <div class="followup-group">
+                  <span data-i18n="followupQuestionGroup">继续追问</span>
+                  <div class="followup-options">
+                    <button type="button" data-followup-question="push" data-i18n="followupPush">如果我主动推进，会发生什么？</button>
+                    <button type="button" data-followup-question="avoid" data-i18n="followupAvoid">我现在最该避免什么？</button>
+                    <button type="button" data-followup-question="blocker" data-i18n="followupBlocker">这件事真正的阻力是什么？</button>
+                    <button type="button" data-followup-question="review" data-i18n="followupReview">三天后我该如何复盘？</button>
+                  </div>
                 </div>
-              </div>
-              <form class="followup-custom" id="followup-custom-form">
-                <input id="followup-custom-input" type="text" maxlength="80" data-i18n-placeholder="followupCustomPlaceholder" placeholder="自己输入追问" />
-                <button class="secondary muted" type="submit" data-i18n="followupCustomSubmit">生成补充回答</button>
-              </form>
-              <div class="followup-answer" id="followup-answer" hidden>
-                <span data-i18n="followupAnswerLabel">补充回答</span>
-                <p id="followup-answer-text"></p>
+                <div class="followup-group followup-ritual-group">
+                  <span data-i18n="followupRitualGroup">补充观察</span>
+                  <div class="followup-options followup-options-ritual">
+                    <button type="button" data-followup-question="clarify-card" data-i18n="followupClarifyCard">补一个澄清角度</button>
+                  </div>
+                </div>
+                <form class="followup-custom" id="followup-custom-form">
+                  <input id="followup-custom-input" type="text" maxlength="80" data-i18n-placeholder="followupCustomPlaceholder" placeholder="自己输入追问" />
+                  <button class="secondary muted" type="submit" data-i18n="followupCustomSubmit">生成补充回答</button>
+                </form>
+                <div class="followup-answer" id="followup-answer" hidden>
+                  <span data-i18n="followupAnswerLabel">补充回答</span>
+                  <p id="followup-answer-text"></p>
+                  <div class="followup-entry-list" id="followup-entry-list"></div>
+                </div>
               </div>
             </div>
             <div class="anchor-grid" id="anchor-grid" hidden>
@@ -311,29 +315,16 @@
               <div><span data-i18n="anchorMoment">时刻</span><strong id="anchor-moment"></strong></div>
             </div>
             <p class="daily-note-status" id="daily-note-status" hidden data-i18n="dailyNoteStatus">已收入回看</p>
-            <div class="share-panel" id="share-panel" hidden>
-              <label>
-                <input type="checkbox" id="share-include-question" />
-                <span data-i18n="shareIncludeQuestion">分享时包含原问题</span>
-              </label>
-              <div class="private-share">
-                <button class="secondary muted" type="button" id="create-share-link-btn" data-i18n="createShareLink">生成私密链接</button>
-                <button class="secondary muted subtle-danger" type="button" id="revoke-share-link-btn" data-i18n="revokeShareLink" hidden>撤销链接</button>
-              </div>
-              <div class="private-share">
-                <button class="secondary muted" type="button" id="resonance-submit-btn" data-i18n="resonanceSubmit">匿名放入共鸣池</button>
-                <button class="secondary muted" type="button" id="resonance-open-btn" data-i18n="resonanceOpen">看看相似主题</button>
-                <button class="secondary muted subtle-danger" type="button" id="resonance-revoke-btn" data-i18n="resonanceRevoke" hidden>撤回共鸣</button>
-              </div>
-              <p class="share-link-status" id="share-link-status"></p>
-              <textarea id="copy-fallback-text" class="copy-fallback" readonly hidden aria-label="可手动复制的内容"></textarea>
-            </div>
             <p class="loading-line" id="loading-line" hidden data-i18n="loading">正在整理本次线索…</p>
           </article>
           </section>
         </div>
 
         <div class="result-actions">
+          <div class="result-actions-head">
+            <span data-i18n="resultTakeawayLabel">保存与带走</span>
+            <p data-i18n="resultTakeawayHint">先把今天这一步留下；分享和导出放在更多操作里。</p>
+          </div>
           <button class="secondary muted" type="button" id="copy-btn" data-i18n="copy">复制行动句</button>
           <button class="secondary muted" type="button" id="save-btn" data-i18n="saveHistory">保存到回看</button>
           <button class="secondary muted" type="button" id="again-btn" data-i18n="again">回到问题</button>
@@ -345,6 +336,31 @@
               <button class="secondary muted" type="button" id="share-image-btn" data-i18n="shareImage">下载分享图</button>
               <button class="secondary muted" type="button" id="export-pdf-btn" data-i18n="exportPdf">导出 PDF</button>
               <button class="secondary muted subtle-danger" type="button" id="new-reading-btn" data-i18n="newReadingTarot">重新抽牌（新结果）</button>
+              <div class="share-panel" id="share-panel" hidden>
+                <section class="share-choice">
+                  <span data-i18n="privateShareTitle">私密链接</span>
+                  <p data-i18n="privateShareHint">只生成只读结果页；默认不包含原问题，可以随时撤销当前链接。</p>
+                </section>
+                <label>
+                  <input type="checkbox" id="share-include-question" />
+                  <span data-i18n="shareIncludeQuestion">分享时包含原问题</span>
+                </label>
+                <div class="private-share">
+                  <button class="secondary muted" type="button" id="create-share-link-btn" data-i18n="createShareLink">生成私密链接</button>
+                  <button class="secondary muted subtle-danger" type="button" id="revoke-share-link-btn" data-i18n="revokeShareLink" hidden>撤销链接</button>
+                </div>
+                <section class="share-choice">
+                  <span data-i18n="resonanceShareTitle">匿名共鸣</span>
+                  <p data-i18n="resonanceShareHint">只放入主题和行动，不展示邮箱、原问题或完整结果。</p>
+                </section>
+                <div class="private-share">
+                  <button class="secondary muted" type="button" id="resonance-submit-btn" data-i18n="resonanceSubmit">匿名放入共鸣池</button>
+                  <button class="secondary muted" type="button" id="resonance-open-btn" data-i18n="resonanceOpen">看看相似主题</button>
+                  <button class="secondary muted subtle-danger" type="button" id="resonance-revoke-btn" data-i18n="resonanceRevoke" hidden>撤回共鸣</button>
+                </div>
+                <p class="share-link-status" id="share-link-status"></p>
+                <textarea id="copy-fallback-text" class="copy-fallback" readonly hidden aria-label="可手动复制的内容"></textarea>
+              </div>
             </div>
           </details>
         </div>
@@ -401,12 +417,16 @@
           <button type="button" data-history-filter="dual" data-i18n="modeDual">双象</button>
           <button type="button" data-history-filter="daily" data-i18n="modeDaily">当下</button>
         </div>
+        <div class="history-list" id="history-list"></div>
         <div class="weekly-summary" id="weekly-summary">
-          <button class="secondary muted" type="button" id="weekly-summary-btn" data-i18n="weeklySummaryButton">生成周复盘</button>
+          <button class="secondary muted" type="button" id="weekly-summary-btn" data-i18n="weeklySummaryButton">查看本周重复线索</button>
           <p id="weekly-summary-status" data-i18n="weeklySummaryHint">至少 3 条记录后可生成。</p>
           <div class="weekly-summary-result" id="weekly-summary-result" hidden></div>
+          <div class="weekly-summary-actions" id="weekly-summary-actions" hidden>
+            <button class="secondary muted" type="button" id="weekly-summary-copy-btn" data-i18n="weeklySummaryCopy">复制本周线索</button>
+            <button class="secondary muted" type="button" id="weekly-summary-save-btn" data-i18n="weeklySummarySave">保存到回看</button>
+          </div>
         </div>
-        <div class="history-list" id="history-list"></div>
         <button class="history-clear" type="button" id="history-clear-btn" data-i18n="clearHistory">清空记录</button>
       </section>
     </div>
@@ -415,8 +435,17 @@
       <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭登录"></button>
       <section class="utility-sheet auth-sheet" aria-label="登录">
         <button class="utility-close" type="button" data-close-utility aria-label="关闭登录">×</button>
-        <p class="panel-kicker" data-i18n="authKicker">登录同步</p>
+        <p class="panel-kicker" data-i18n="authKicker">同步与备份</p>
         <p class="auth-status" id="auth-status"></p>
+        <div class="sync-benefits">
+          <span data-i18n="syncBenefitHistory">跨设备保留回看</span>
+          <span data-i18n="syncBenefitPrivateLink">生成和撤回私密链接</span>
+          <span data-i18n="syncBenefitResonance">管理匿名共鸣记录</span>
+        </div>
+        <div class="account-meta" id="account-meta">
+          <span id="account-sync-status"></span>
+          <span id="account-save-scope"></span>
+        </div>
         <div class="plan-status" id="plan-status">
           <strong data-i18n="planFreeTitle">免费版</strong>
           <span data-i18n="planFreeCopy">保留核心解读、回看和基础追问。</span>
@@ -441,6 +470,7 @@
       <section class="utility-sheet" aria-label="共鸣池">
         <button class="utility-close" type="button" data-close-utility aria-label="关闭共鸣池">×</button>
         <p class="panel-kicker" data-i18n="resonanceKicker">匿名共鸣</p>
+        <p class="panel-helper" data-i18n="resonancePanelIntro">这里只看被匿名化后的相似主题。点“我也有这种感觉”只会增加一次匿名反馈。</p>
         <div class="resonance-list" id="resonance-list"></div>
       </section>
     </div>
@@ -450,10 +480,20 @@
       <section class="utility-sheet companion-panel" aria-label="长期同行">
         <button class="utility-close" type="button" data-close-utility aria-label="关闭同行">×</button>
         <p class="panel-kicker" data-i18n="companionKicker">长期同行</p>
+        <p class="panel-helper" data-i18n="companionIntro">保存 3 次以上后，这里会开始整理重复出现的牌象、主题和行动。</p>
+        <p class="companion-insight" id="companion-insight"></p>
         <div class="companion-grid">
           <section>
             <span data-i18n="companionTrail">观察线索</span>
             <div id="companion-trail"></div>
+          </section>
+          <section>
+            <span data-i18n="companionEcho">一个月回声</span>
+            <div id="companion-echo"></div>
+          </section>
+          <section>
+            <span data-i18n="companionQuietFlags">个人信号</span>
+            <div id="companion-quiet-flags"></div>
           </section>
           <section>
             <span data-i18n="companionThemeMap">个人主题图</span>
@@ -462,10 +502,6 @@
           <section>
             <span data-i18n="companionCollection">象与行动</span>
             <div id="companion-collection"></div>
-          </section>
-          <section>
-            <span data-i18n="companionEcho">一个月回声</span>
-            <div id="companion-echo"></div>
           </section>
         </div>
       </section>
@@ -512,8 +548,7 @@
         createClarificationContext,
         createFollowupEntry,
         followupQuestionText as selectFollowupQuestionText,
-        followupResultSummary as buildFollowupResultSummary,
-        formatStoredFollowups
+        followupResultSummary as buildFollowupResultSummary
       } from "./assets/app/followup.js";
       import { buildCompactShareLines as formatCompactShareLines } from "./assets/app/share-text.js";
       import { getAskAuraConfig } from "./assets/app/config.js";
@@ -651,12 +686,17 @@
           loading: "正在整理本次线索…",
           again: "回到问题",
           copy: "复制行动句",
+          actionSentenceLabel: "今日行动",
           copySummary: "复制摘要",
           copyFull: "复制完整结果",
+          resultTakeawayLabel: "保存与带走",
+          resultTakeawayHint: "先把今天这一步留下；分享和导出放在更多操作里。",
           moreActions: "更多操作",
           shareImage: "下载分享图",
           exportPdf: "导出 PDF",
           shareIncludeQuestion: "分享时包含原问题",
+          privateShareTitle: "私密链接",
+          privateShareHint: "只生成只读结果页；默认不包含原问题，可以随时撤销当前链接。",
           createShareLink: "生成私密链接",
           revokeShareLink: "撤销链接",
           shareLinkCreated: "私密链接已复制。知道链接的人可以只读查看。",
@@ -665,23 +705,36 @@
           shareLinkFailed: "私密链接暂时不可用。",
           sharedResultTitle: "AskAura 分享结果",
           sharedResultMissing: "这个分享链接不可用或已撤销。",
+          resonanceShareTitle: "匿名共鸣",
+          resonanceShareHint: "只放入主题和行动，不展示邮箱、原问题或完整结果。",
           resonanceSubmit: "匿名放入共鸣池",
           resonanceOpen: "看看相似主题",
           resonanceRevoke: "撤回共鸣",
           resonanceKicker: "匿名共鸣",
           resonanceSubmitted: "已匿名放入共鸣池。",
           resonanceRevoked: "已撤回共鸣。",
-          resonanceSignin: "匿名共鸣暂时不可用，请稍后再试。",
+          resonanceSignin: "需要先同步账号，才可放入或撤回自己的共鸣；不会公开账号信息。",
           resonanceFailed: "共鸣池暂时不可用。",
           resonanceEmpty: "还没有可展示的匿名主题。",
+          resonancePanelIntro: "这里只看被匿名化后的相似主题。点“我也有这种感觉”只会增加一次匿名反馈。",
           resonanceSame: "我也有这种感觉",
           resonanceUseful: "这个行动有用",
-          companionKicker: "长期同行",
+          companionKicker: "个人脉络",
+          companionIntro: "保存 3 次以上后，这里会开始整理重复出现的牌象、主题和行动。",
+          companionInsightEmpty: "还没有足够线索形成一句总结。先保存 3 次结果。",
+          companionInsightTheme: "最近你更多在观察：",
+          companionInsightAction: "行动上反复出现的是：",
           companionTrail: "观察线索",
+          companionQuietFlags: "个人信号",
           companionThemeMap: "个人主题图",
           companionCollection: "象与行动",
           companionEcho: "一个月回声",
-          companionEmpty: "多保存几次结果后，这里会出现重复线索。",
+          companionEmpty: "继续保存结果后，这里会出现重复线索。",
+          companionTrailEmpty: "保存 3 次后，会看到最近几次结果的共同线索。",
+          companionEchoEmpty: "同一个主题在一个月内重复出现时，会在这里提醒你。",
+          companionQuietFlagsEmpty: "收藏、追问、复盘和完成行动会沉淀成个人信号。",
+          companionThemeMapEmpty: "不同入口使用多了之后，会看到你更常用哪种观察方式。",
+          companionCollectionEmpty: "牌象和行动词积累后，会形成你的常见主题。",
           saveHistory: "保存到回看",
           savedHistory: "已保存到回看",
           newReadingTarot: "重新抽牌（新结果）",
@@ -701,27 +754,46 @@
           anchorMoment: "时刻",
           fallbackQuestion: "我现在需要看清什么？",
           history: "回看",
-          companion: "同行",
-          account: "登录",
-          accountReady: "我的",
-          historyKicker: "最近的象",
+          companion: "脉络",
+          account: "同步",
+          accountReady: "已同步",
+          historyKicker: "最近记录",
           historyEmpty: "还没有留下记录。",
           historyFilterAll: "全部",
           historyFavorite: "收藏",
           historyFavorited: "已收藏",
           historyFollowupCount: "追问",
           historyClarification: "澄清牌",
-          weeklySummaryButton: "生成周复盘",
-          weeklySummaryHint: "至少 3 条记录后可生成。",
-          weeklySummaryReady: "可基于最近记录生成周复盘。",
+          historyTagFavorite: "收藏",
+          historyTagReview: "待复盘",
+          historyTagReviewed: "已复盘",
+          historyTagDone: "已行动",
+          historyTagFollowup: "追问",
+          historyTagClarification: "澄清",
+          weeklySummaryButton: "查看本周重复线索",
+          weeklySummaryHint: "至少 3 条记录后可生成。当前还差 ",
+          weeklySummaryReady: "可以整理最近记录里的重复线索。",
           weeklySummaryWorking: "正在整理本周重复出现的线索…",
           weeklySummaryFailed: "周复盘暂时没有生成，可以稍后再试。",
+          weeklySummaryCopy: "复制本周线索",
+          weeklySummarySave: "保存到回看",
+          weeklySummaryCopied: "本周线索已复制",
+          weeklySummarySaved: "已保存到回看",
           clearHistory: "清空记录",
           clearDone: "已清空",
-          authKicker: "登录同步",
-          authSignedOut: "未登录也可以使用；登录后同步最近记录。",
+          authKicker: "同步与备份",
+          authSignedOut: "未登录也可以使用；登录后会同步回看，并开启私密链接和共鸣撤回。",
           authSignedIn: "已登录：",
           authSynced: "已同步",
+          accountLocalScope: "当前保存：本机记录",
+          accountCloudScope: "当前保存：本机与云端同步",
+          accountRecordsCount: "本机记录：",
+          accountSyncIdle: "同步状态：未连接",
+          accountSyncReady: "同步状态：已连接",
+          accountSyncFailed: "同步状态：云端暂时失败，本机已保留",
+          syncBenefitHistory: "跨设备保留回看",
+          syncBenefitPrivateLink: "生成和撤回私密链接",
+          syncBenefitResonance: "管理匿名共鸣记录",
           planFreeTitle: "免费版",
           planProTitle: "Pro",
           planFreeCopy: "保留核心解读、回看和基础追问。",
@@ -772,20 +844,22 @@
           reviewSave: "保存复盘",
           followupLabel: "继续探索这次结果",
           followupOpen: "打开追问面板",
-          followupPanelTitle: "基于这次牌象，你还想看哪一面？",
+          followupPanelTitle: "基于这次结果，你还想看哪一面？",
           followupQuestionGroup: "继续追问",
-          followupRitualGroup: "补充仪式",
+          followupRitualGroup: "补充观察",
           followupPush: "如果我主动推进，会发生什么？",
           followupAvoid: "我现在最该避免什么？",
           followupBlocker: "这件事真正的阻力是什么？",
           followupReview: "三天后我该如何复盘？",
-          followupClarifyCard: "抽一张澄清牌",
+          followupClarifyCard: "补一个澄清角度",
           followupCustomPlaceholder: "自己输入追问",
           followupCustomSubmit: "生成补充回答",
           followupCustomSubmitSelected: "基于本次结果追问",
           followupWorking: "正在整理补充回答…",
           followupFailed: "这次追问没有得到清晰回应。当前结果已保留，可以稍后再试。",
           followupAnswerLabel: "补充回答",
+          followupCopy: "复制这条追问",
+          followupCopied: "追问已复制",
           emptyFallback: "暂无",
           emailPlaceholder: "邮箱",
           passwordPlaceholder: "密码",
@@ -907,12 +981,17 @@
           loading: "Structuring this reading...",
           again: "Back to question",
           copy: "Copy action",
+          actionSentenceLabel: "Today action",
           copySummary: "Copy summary",
           copyFull: "Copy full result",
+          resultTakeawayLabel: "Save and carry",
+          resultTakeawayHint: "Keep the next step first. Sharing and export stay under more actions.",
           moreActions: "More",
           shareImage: "Download image",
           exportPdf: "Export PDF",
           shareIncludeQuestion: "Include original question",
+          privateShareTitle: "Private link",
+          privateShareHint: "Creates a read-only result page. The original question is excluded by default, and this link can be revoked.",
           createShareLink: "Create private link",
           revokeShareLink: "Revoke link",
           shareLinkCreated: "Private link copied. Anyone with the link can view this read-only result.",
@@ -921,23 +1000,36 @@
           shareLinkFailed: "Private link is not available right now.",
           sharedResultTitle: "AskAura shared result",
           sharedResultMissing: "This shared link is unavailable or has been revoked.",
+          resonanceShareTitle: "Anonymous resonance",
+          resonanceShareHint: "Only the theme and action are added. Email, original question, and full result are not shown.",
           resonanceSubmit: "Add anonymously",
           resonanceOpen: "View similar themes",
           resonanceRevoke: "Withdraw",
           resonanceKicker: "Anonymous resonance",
           resonanceSubmitted: "Added anonymously.",
           resonanceRevoked: "Withdrawn.",
-          resonanceSignin: "Anonymous resonance is not available right now. Try again later.",
+          resonanceSignin: "Sync your account before adding or withdrawing your own resonance. Account details stay private.",
           resonanceFailed: "Resonance pool is not available right now.",
           resonanceEmpty: "No anonymous themes yet.",
+          resonancePanelIntro: "This only shows anonymized similar themes. Reactions add one anonymous count.",
           resonanceSame: "Same feeling",
           resonanceUseful: "Useful action",
-          companionKicker: "Long-term companion",
+          companionKicker: "Personal patterns",
+          companionIntro: "After 3 saved results, this panel starts organizing repeated symbols, themes, and actions.",
+          companionInsightEmpty: "Not enough saved signals for a summary yet. Save 3 results first.",
+          companionInsightTheme: "Recently you return most to: ",
+          companionInsightAction: "The repeated action pattern is: ",
           companionTrail: "Observation trail",
+          companionQuietFlags: "Personal signals",
           companionThemeMap: "Personal theme map",
           companionCollection: "Symbols and actions",
           companionEcho: "One-month echo",
-          companionEmpty: "Save a few results to see repeated signals here.",
+          companionEmpty: "Save more results to see repeated signals here.",
+          companionTrailEmpty: "After 3 saves, recent common signals will appear here.",
+          companionEchoEmpty: "If a theme repeats within a month, it will appear here.",
+          companionQuietFlagsEmpty: "Favorites, follow-ups, reviews, and completed actions become personal signals.",
+          companionThemeMapEmpty: "As you use different modes, this shows which lens you return to most.",
+          companionCollectionEmpty: "Repeated symbols and action words will form your common themes.",
           saveHistory: "Save to history",
           savedHistory: "Saved to history",
           newReadingTarot: "Draw again (new result)",
@@ -957,27 +1049,46 @@
           anchorMoment: "Moment",
           fallbackQuestion: "What do I need to see right now?",
           history: "History",
-          companion: "Companion",
-          account: "Sign in",
-          accountReady: "Mine",
-          historyKicker: "Recent symbols",
+          companion: "Patterns",
+          account: "Sync",
+          accountReady: "Synced",
+          historyKicker: "Recent records",
           historyEmpty: "No saved records yet.",
           historyFilterAll: "All",
           historyFavorite: "Favorite",
           historyFavorited: "Favorited",
           historyFollowupCount: "Follow-ups",
           historyClarification: "Clarification",
-          weeklySummaryButton: "Generate weekly review",
-          weeklySummaryHint: "Available after at least 3 records.",
-          weeklySummaryReady: "Ready to summarize recent records.",
+          historyTagFavorite: "Favorite",
+          historyTagReview: "Review due",
+          historyTagReviewed: "Reviewed",
+          historyTagDone: "Done",
+          historyTagFollowup: "Follow-up",
+          historyTagClarification: "Clarify",
+          weeklySummaryButton: "Find repeated weekly signals",
+          weeklySummaryHint: "At least 3 records are required. Missing ",
+          weeklySummaryReady: "Ready to organize repeated signals from recent records.",
           weeklySummaryWorking: "Finding repeated signals from this week...",
           weeklySummaryFailed: "Weekly review could not be generated. Try again later.",
+          weeklySummaryCopy: "Copy weekly signals",
+          weeklySummarySave: "Save to history",
+          weeklySummaryCopied: "Weekly signals copied",
+          weeklySummarySaved: "Saved to history",
           clearHistory: "Clear records",
           clearDone: "Cleared",
-          authKicker: "Sign in to sync",
-          authSignedOut: "You can use AskAura without signing in. Sign in to sync recent records.",
+          authKicker: "Sync and backup",
+          authSignedOut: "You can use AskAura without signing in. Sign in to sync history, private links, and resonance withdrawals.",
           authSignedIn: "Signed in: ",
           authSynced: "Synced",
+          accountLocalScope: "Saving: this device",
+          accountCloudScope: "Saving: this device and cloud sync",
+          accountRecordsCount: "Local records: ",
+          accountSyncIdle: "Sync: not connected",
+          accountSyncReady: "Sync: connected",
+          accountSyncFailed: "Sync: cloud unavailable, saved on this device",
+          syncBenefitHistory: "Keep history across devices",
+          syncBenefitPrivateLink: "Create and revoke private links",
+          syncBenefitResonance: "Manage anonymous resonance records",
           planFreeTitle: "Free",
           planProTitle: "Pro",
           planFreeCopy: "Core readings, history, and basic follow-ups stay available.",
@@ -1028,20 +1139,22 @@
           reviewSave: "Save review",
           followupLabel: "Continue exploring this result",
           followupOpen: "Open follow-up panel",
-          followupPanelTitle: "Based on this card, which side do you want to see?",
+          followupPanelTitle: "Based on this result, which side do you want to see?",
           followupQuestionGroup: "Continue asking",
-          followupRitualGroup: "Supplemental ritual",
+          followupRitualGroup: "Supplemental observation",
           followupPush: "What if I move first?",
           followupAvoid: "What should I avoid most?",
           followupBlocker: "What is the real blocker?",
           followupReview: "How should I review in three days?",
-          followupClarifyCard: "Draw a clarification card",
+          followupClarifyCard: "Add a clarification angle",
           followupCustomPlaceholder: "Type your own follow-up",
           followupCustomSubmit: "Generate follow-up",
           followupCustomSubmitSelected: "Ask from this result",
           followupWorking: "Organizing follow-up...",
           followupFailed: "This follow-up did not return clearly. The current result is preserved; try again later.",
           followupAnswerLabel: "Follow-up answer",
+          followupCopy: "Copy this follow-up",
+          followupCopied: "Follow-up copied",
           emptyFallback: "Not available",
           emailPlaceholder: "Email",
           passwordPlaceholder: "Password",
@@ -1156,12 +1269,17 @@
         weeklySummaryBtn: document.getElementById("weekly-summary-btn"),
         weeklySummaryStatus: document.getElementById("weekly-summary-status"),
         weeklySummaryResult: document.getElementById("weekly-summary-result"),
+        weeklySummaryActions: document.getElementById("weekly-summary-actions"),
+        weeklySummaryCopy: document.getElementById("weekly-summary-copy-btn"),
+        weeklySummarySave: document.getElementById("weekly-summary-save-btn"),
         historyList: document.getElementById("history-list"),
         historyClear: document.getElementById("history-clear-btn"),
         authForm: document.getElementById("auth-form"),
         authEmail: document.getElementById("auth-email"),
         authPassword: document.getElementById("auth-password"),
         authStatus: document.getElementById("auth-status"),
+        accountSyncStatus: document.getElementById("account-sync-status"),
+        accountSaveScope: document.getElementById("account-save-scope"),
         planStatus: document.getElementById("plan-status"),
         signup: document.getElementById("signup-btn"),
         passwordReset: document.getElementById("password-reset-btn"),
@@ -1185,6 +1303,8 @@
         resonanceRevoke: document.getElementById("resonance-revoke-btn"),
         resonanceList: document.getElementById("resonance-list"),
         companionTrail: document.getElementById("companion-trail"),
+        companionInsight: document.getElementById("companion-insight"),
+        companionQuietFlags: document.getElementById("companion-quiet-flags"),
         companionThemeMap: document.getElementById("companion-theme-map"),
         companionCollection: document.getElementById("companion-collection"),
         companionEcho: document.getElementById("companion-echo"),
@@ -1233,6 +1353,7 @@
         followupCustomInput: document.getElementById("followup-custom-input"),
         followupAnswer: document.getElementById("followup-answer"),
         followupAnswerText: document.getElementById("followup-answer-text"),
+        followupEntryList: document.getElementById("followup-entry-list"),
         answerKicker: document.getElementById("answer-kicker"),
         cardImage: document.getElementById("card-image"),
         lightbox: document.getElementById("card-lightbox"),
@@ -1269,6 +1390,7 @@
       let historyFilter = "all";
       let currentShareLink = null;
       let currentResonanceSubmission = null;
+      let lastWeeklySummaryText = "";
       let selectedSpreadType = "single";
       let selectedGuaCastMethod = "time";
       let activeRitualCancel = null;
@@ -1563,8 +1685,8 @@
       }
 
       function showTarotReading(parts) {
-        const coreQuestion = cleanText(parts.cardMessage || parts.tension || parts.coreQuestion, "");
-        const tension = cleanText(parts.stuckText || parts.coreQuestion || parts.tension, "");
+        const coreQuestion = cleanText(parts.cardMessage || parts.coreQuestion || parts.CORE_QUESTION, "");
+        const tension = cleanText(parts.stuckText || parts.tension || parts.TENSION, "");
         const judgment = cleanText(parts.judgment, "");
         els.tarotCoreQuestion.textContent = coreQuestion;
         els.tarotTension.textContent = tension;
@@ -1606,6 +1728,7 @@
         els.followupPanel.hidden = true;
         els.followupAnswer.hidden = true;
         els.followupAnswerText.textContent = "";
+        els.followupEntryList.innerHTML = "";
         selectedFollowupKind = "";
         updateFollowupSubmit();
       }
@@ -1645,7 +1768,7 @@
         els.actionWatch.textContent = advice.watchText;
         lastAction = cleanText(data.actionText, "") || advice.doText;
         els.action.textContent = lastAction;
-        els.action.hidden = data.sourceMode !== "daily";
+        els.action.hidden = !lastAction;
         els.actionBoard.hidden = false;
         els.actionBoardTitle.hidden = false;
         els.actionStatus.hidden = false;
@@ -2280,10 +2403,31 @@
       }
 
       function renderStoredFollowups(record) {
-        const text = formatStoredFollowups(record);
-        if (!text) return;
-        els.followupAnswerText.textContent = text;
-        els.followupAnswer.hidden = false;
+        const followups = Array.isArray(record?.followups) ? record.followups : [];
+        els.followupEntryList.innerHTML = "";
+        if (!followups.length) return;
+        els.followupAnswerText.textContent = "";
+        followups.forEach((item) => {
+          const question = cleanText(item.question, "");
+          const answer = cleanTaggedOutputText(item.answer, "", { joinWith: "\n" });
+          if (!question && !answer) return;
+          const entry = document.createElement("article");
+          entry.className = "followup-entry";
+          const meta = document.createElement("span");
+          meta.textContent = formatDate(item.createdAt);
+          const title = document.createElement("strong");
+          title.textContent = question;
+          const body = document.createElement("p");
+          body.textContent = answer;
+          const copy = document.createElement("button");
+          copy.type = "button";
+          copy.className = "secondary muted";
+          copy.dataset.followupCopy = item.id || "";
+          copy.textContent = t("followupCopy");
+          entry.append(meta, title, body, copy);
+          els.followupEntryList.appendChild(entry);
+        });
+        els.followupAnswer.hidden = els.followupEntryList.childElementCount === 0;
       }
 
       function clarificationLinkText(context) {
@@ -2361,7 +2505,10 @@
             renderHistoryList();
             if (result?.status === "synced") updateAuthUi(t("authSynced"));
           })
-          .catch((error) => console.warn("Sync skipped", error));
+          .catch((error) => {
+            console.warn("Sync skipped", error);
+            updateAuthUi(t("accountSyncFailed"));
+          });
       }
 
       function openUtilityPanel(panel) {
@@ -2419,6 +2566,16 @@
             action.textContent = historySummary(record);
             item.classList.toggle("is-daily", record.mode === "daily");
 
+            const tags = historyTags(record);
+            const tagRow = document.createElement("div");
+            tagRow.className = "history-tags";
+            tags.forEach((label) => {
+              const tag = document.createElement("span");
+              tag.textContent = label;
+              tagRow.appendChild(tag);
+            });
+            tagRow.hidden = tags.length === 0;
+
             const favorite = document.createElement("button");
             favorite.type = "button";
             favorite.className = "history-favorite";
@@ -2427,7 +2584,7 @@
             favorite.setAttribute("aria-pressed", record.favorite ? "true" : "false");
             favorite.textContent = record.favorite ? t("historyFavorited") : t("historyFavorite");
 
-            item.append(title, meta, action);
+            item.append(title, meta, action, tagRow);
             row.append(item, favorite);
             section.appendChild(row);
           });
@@ -2493,6 +2650,17 @@
         ].filter(Boolean).join(" · ");
       }
 
+      function historyTags(record) {
+        const followupCount = Array.isArray(record.followups) ? record.followups.length : 0;
+        return [
+          record.favorite ? t("historyTagFavorite") : "",
+          record.reviewNote ? t("historyTagReviewed") : isReviewDue(record) ? t("historyTagReview") : "",
+          record.actionStatus === "done" ? t("historyTagDone") : "",
+          followupCount ? `${t("historyTagFollowup")} ${followupCount}` : "",
+          record.clarificationOf ? t("historyTagClarification") : ""
+        ].filter(Boolean);
+      }
+
       function toggleHistoryFavorite(id) {
         const record = loadHistory(recordStore).find((entry) => entry.id === id);
         if (!record) return;
@@ -2536,7 +2704,10 @@
         if (isWeeklySummaryRunning) {
           els.weeklySummaryStatus.textContent = t("weeklySummaryWorking");
         } else {
-          els.weeklySummaryStatus.textContent = ready ? t("weeklySummaryReady") : t("weeklySummaryHint");
+          els.weeklySummaryStatus.textContent = ready ? t("weeklySummaryReady") : `${t("weeklySummaryHint")}${3 - usable.length}`;
+        }
+        if (els.weeklySummaryActions) {
+          els.weeklySummaryActions.hidden = !lastWeeklySummaryText;
         }
       }
 
@@ -2550,6 +2721,8 @@
         isWeeklySummaryRunning = true;
         els.weeklySummaryResult.hidden = false;
         els.weeklySummaryResult.textContent = "";
+        lastWeeklySummaryText = "";
+        els.weeklySummaryActions.hidden = true;
         updateWeeklySummaryUi();
         try {
           const full = await streamReading({
@@ -2566,13 +2739,45 @@
           els.weeklySummaryResult.textContent = cleanTaggedOutputText(full, t("weeklySummaryFailed"), {
             preferredOrder: ["THEME", "STUCK_POINT", "NEXT_ACTION"]
           });
+          lastWeeklySummaryText = els.weeklySummaryResult.textContent;
         } catch (error) {
           console.error(error);
           els.weeklySummaryResult.textContent = t("weeklySummaryFailed");
+          lastWeeklySummaryText = "";
         } finally {
           isWeeklySummaryRunning = false;
           updateWeeklySummaryUi();
         }
+      }
+
+      async function copyWeeklySummary() {
+        if (!lastWeeklySummaryText) return;
+        const result = await copyTextToClipboard(lastWeeklySummaryText);
+        setCopyFallback(lastWeeklySummaryText, result);
+        els.weeklySummaryStatus.textContent = result === "manual" ? t("copyManual") : t("weeklySummaryCopied");
+      }
+
+      function saveWeeklySummaryRecord() {
+        const text = cleanText(lastWeeklySummaryText, "");
+        if (!text) return;
+        const createdAt = new Date().toISOString();
+        const record = createRecord({
+          mode: "daily",
+          title: lang === "zh" ? "本周重复线索" : "Repeated weekly signals",
+          question: "",
+          answer: text,
+          action: text.split("\n").filter(Boolean).at(-1) || text,
+          reviewAt: reviewDateAfter(createdAt, 7),
+          report: {
+            summary: text,
+            actionText: text.split("\n").filter(Boolean).at(-1) || text,
+            sourceMode: "daily"
+          }
+        });
+        saveHistoryRecord(recordStore, record);
+        syncAfterSave(record);
+        renderHistoryList();
+        els.weeklySummaryStatus.textContent = t("weeklySummarySaved");
       }
 
       function formatDate(value) {
@@ -2604,8 +2809,16 @@
 
       function updateAuthUi(message = "") {
         const session = syncClient.getSession();
+        const recordCount = loadHistory(recordStore).length;
         els.accountBtn.textContent = session?.access_token ? t("accountReady") : t("account");
         els.authStatus.textContent = message || (session?.user?.email ? `${t("authSignedIn")}${session.user.email}` : t("authSignedOut"));
+        if (els.accountSyncStatus) {
+          const syncLabel = session?.access_token ? t("accountSyncReady") : t("accountSyncIdle");
+          els.accountSyncStatus.textContent = `${syncLabel} · ${t("accountRecordsCount")}${recordCount}`;
+        }
+        if (els.accountSaveScope) {
+          els.accountSaveScope.textContent = session?.access_token ? t("accountCloudScope") : t("accountLocalScope");
+        }
         els.signout.hidden = !session?.access_token;
         els.passwordUpdate.hidden = !session?.access_token;
         refreshPlanUi();
@@ -2651,7 +2864,7 @@
         } catch (error) {
           console.warn("Sync skipped", error);
           renderHistoryList();
-          updateAuthUi();
+          updateAuthUi(t("accountSyncFailed"));
           return { status: "sync-failed" };
         }
       }
@@ -2941,7 +3154,7 @@
             const meihuaAction = meihua.action;
             showDualReading(tarotParts, gua, meihuaAction);
             const report = {
-              summary: meihuaAction || tarotParts.judgment || lastAction,
+              summary: tarotParts.judgment || (lang === "zh" ? "牌象和卦象都在提醒你先降低噪音，再决定下一步。" : "Card and gua signals both suggest reducing noise before choosing the next step."),
               tarotText: tarotParts.tension || tarotParts.coreQuestion,
               guaText: [meihua.signal, meihua.trend].filter(Boolean).join("\n"),
               dualText: lang === "zh"
@@ -3362,7 +3575,7 @@
         }
       }
 
-      function renderCompanionList(container, items, renderItem) {
+      function renderCompanionList(container, items, renderItem, emptyKey = "companionEmpty") {
         container.innerHTML = "";
         const lines = Array.isArray(items)
           ? items.map((item) => cleanText(renderItem(item), "")).filter(Boolean)
@@ -3370,7 +3583,7 @@
         if (!lines.length) {
           const empty = document.createElement("p");
           empty.className = "history-empty";
-          empty.textContent = t("companionEmpty");
+          empty.textContent = t(emptyKey);
           container.appendChild(empty);
           return;
         }
@@ -3401,17 +3614,44 @@
         ]);
       }
 
+      function companionQuietFlagText(item = {}) {
+        const labels = {
+          favorites: lang === "zh" ? "收藏过的结果" : "Favorited results",
+          review_notes: lang === "zh" ? "写过复盘" : "Review notes",
+          followups: lang === "zh" ? "追问过的结果" : "Follow-ups",
+          done_actions: lang === "zh" ? "完成过的行动" : "Completed actions",
+          clarifications: lang === "zh" ? "澄清牌记录" : "Clarifications"
+        };
+        return companionCountText(labels[item.key] || item.label, item.count);
+      }
+
+      function companionInsightText(snapshot = {}) {
+        if (!snapshot.totalRecords || snapshot.totalRecords < 3) return t("companionInsightEmpty");
+        const topMode = Object.entries(snapshot.modeCounts || {}).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const topSymbol = snapshot.topSymbols?.[0]?.name;
+        const topAction = snapshot.actionWords?.[0]?.word;
+        const themeParts = [topMode ? modeLabelText(topMode) : "", topSymbol].filter(Boolean).join(lang === "zh" ? " / " : " / ");
+        const themeLine = themeParts ? `${t("companionInsightTheme")}${themeParts}` : "";
+        const actionLine = topAction ? `${t("companionInsightAction")}${topAction}` : "";
+        return [themeLine, actionLine].filter(Boolean).join(lang === "zh" ? "；" : "; ") || t("companionInsightEmpty");
+      }
+
       function openCompanionPanel() {
         const snapshot = deriveCompanionSnapshot(loadHistory(recordStore));
-        renderCompanionList(els.companionTrail, snapshot.observationTrail || [], companionTrailText);
-        renderCompanionList(els.companionThemeMap, Object.entries(snapshot.modeCounts || {}), ([modeName, count]) =>
-          companionCountText(modeLabelText(modeName), count)
+        els.companionInsight.textContent = companionInsightText(snapshot);
+        renderCompanionList(els.companionTrail, snapshot.observationTrail || [], companionTrailText, "companionTrailEmpty");
+        renderCompanionList(els.companionQuietFlags, snapshot.quietFlags || [], companionQuietFlagText, "companionQuietFlagsEmpty");
+        renderCompanionList(
+          els.companionThemeMap,
+          Object.entries(snapshot.modeCounts || {}),
+          ([modeName, count]) => companionCountText(modeLabelText(modeName), count),
+          "companionThemeMapEmpty"
         );
         renderCompanionList(els.companionCollection, [
           ...(snapshot.topSymbols || []).map((item) => ({ label: item.name, count: item.count })),
           ...(snapshot.actionWords || []).map((item) => ({ label: item.word, count: item.count })),
-        ], (item) => companionCountText(item.label, item.count));
-        renderCompanionList(els.companionEcho, snapshot.oneMonthEcho ? [snapshot.oneMonthEcho] : [], companionTrailText);
+        ], (item) => companionCountText(item.label, item.count), "companionCollectionEmpty");
+        renderCompanionList(els.companionEcho, snapshot.oneMonthEcho ? [snapshot.oneMonthEcho] : [], companionTrailText, "companionEchoEmpty");
         syncClient.saveCompanionProfile(snapshot, snapshot.quietFlags || [])
           .catch((error) => console.warn("Companion sync skipped", error));
         openUtilityPanel(els.companionPanel);
@@ -3446,37 +3686,98 @@
         const summary = wrapSvgText(data.summary, 24, 4);
         const action = wrapSvgText(data.action, 24, 3);
         const question = data.question ? wrapSvgText(data.question, 24, 2) : [];
-        const textLines = [
-          ...question.map((line) => ({ text: line, size: 24, fill: "#5b554b" })),
-          ...summary.map((line) => ({ text: line, size: 32, fill: "#23211c" })),
-          ...(data.action ? [{ text: lang === "zh" ? "今天可以做" : "Next action", size: 22, fill: "#9b3a32" }] : []),
-          ...action.map((line) => ({ text: line, size: 26, fill: "#23211c" }))
-        ];
-        const body = textLines.map((line, index) =>
-          `<text x="72" y="${244 + index * 46}" font-size="${line.size}" fill="${line.fill}">${escapeSvg(line.text)}</text>`
+        const questionBody = question.map((line, index) =>
+          `<text x="86" y="${216 + index * 34}" font-size="22" fill="#6a6358">${escapeSvg(line)}</text>`
+        ).join("");
+        const summaryBody = summary.map((line, index) =>
+          `<text x="86" y="${390 + index * 48}" font-size="34" fill="#23211c">${escapeSvg(line)}</text>`
+        ).join("");
+        const actionBody = action.map((line, index) =>
+          `<text x="86" y="${820 + index * 40}" font-size="27" fill="#23211c">${escapeSvg(line)}</text>`
         ).join("");
         return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
-          <rect width="900" height="1200" fill="#f0ede5"/>
-          <rect x="48" y="48" width="804" height="1104" rx="8" fill="none" stroke="#23211c" stroke-opacity=".22"/>
-          <text x="72" y="126" font-size="28" fill="#9b3a32" letter-spacing="0">AskAura</text>
-          <text x="72" y="182" font-size="42" fill="#23211c">${escapeSvg(data.symbol || data.title)}</text>
-          ${body}
-          <text x="72" y="1100" font-size="22" fill="#5b554b">askaura.vercel.app</text>
+          <defs>
+            <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f4f0e7"/>
+              <stop offset="0.55" stop-color="#eee7da"/>
+              <stop offset="1" stop-color="#e5dccb"/>
+            </linearGradient>
+            <radialGradient id="warm" cx="78%" cy="16%" r="74%">
+              <stop offset="0" stop-color="#cbb486" stop-opacity=".30"/>
+              <stop offset=".58" stop-color="#9b3a32" stop-opacity=".08"/>
+              <stop offset="1" stop-color="#23211c" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="900" height="1200" fill="url(#paper)"/>
+          <rect width="900" height="1200" fill="url(#warm)"/>
+          <rect x="44" y="44" width="812" height="1112" rx="12" fill="none" stroke="#23211c" stroke-opacity=".20"/>
+          <line x1="86" y1="150" x2="814" y2="150" stroke="#23211c" stroke-opacity=".16"/>
+          <text x="86" y="112" font-size="28" fill="#9b3a32">象问 AskAura</text>
+          <text x="814" y="112" text-anchor="end" font-size="18" fill="#6a6358">${escapeSvg(lang === "zh" ? "一件事 · 两种象" : "One question · Two lenses")}</text>
+          <text x="86" y="184" font-size="18" fill="#9b3a32">${escapeSvg(data.question ? (lang === "zh" ? "本次问题" : "Question") : (lang === "zh" ? "本次主题" : "Theme"))}</text>
+          ${questionBody || `<text x="86" y="224" font-size="38" fill="#23211c">${escapeSvg(data.symbol || data.title)}</text>`}
+          <text x="86" y="338" font-size="18" fill="#9b3a32">${escapeSvg(lang === "zh" ? "当前主线" : "Current thread")}</text>
+          ${summaryBody}
+          <rect x="70" y="742" width="760" height="190" rx="10" fill="#fffaf0" fill-opacity=".42" stroke="#9b3a32" stroke-opacity=".18"/>
+          <text x="86" y="790" font-size="18" fill="#9b3a32">${escapeSvg(lang === "zh" ? "今天可以做" : "Next action")}</text>
+          ${actionBody || `<text x="86" y="832" font-size="27" fill="#23211c">${escapeSvg(lang === "zh" ? "先保存这次结果，回到现实里做一个小动作。" : "Save this result, then take one small action.")}</text>`}
+          <line x1="86" y1="1054" x2="814" y2="1054" stroke="#23211c" stroke-opacity=".14"/>
+          <text x="86" y="1104" font-size="22" fill="#5b554b">askaura.vercel.app</text>
+          <text x="814" y="1104" text-anchor="end" font-size="22" fill="#5b554b">${escapeSvg(data.symbol || data.title)}</text>
         </svg>`;
       }
 
-      function downloadShareImage() {
-        const data = shareResultData({ includeQuestion: els.shareIncludeQuestion.checked });
-        const svg = shareCardSvg(data);
-        const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      function downloadBlob(blob, filename) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `askaura-share-${Date.now()}.svg`;
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
+      }
+
+      function svgToPngBlob(svg, width = 900, height = 1200) {
+        return new Promise((resolve, reject) => {
+          const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+          const url = URL.createObjectURL(svgBlob);
+          const image = new Image();
+          image.onload = () => {
+            try {
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(image, 0, 0, width, height);
+              canvas.toBlob((blob) => {
+                URL.revokeObjectURL(url);
+                blob ? resolve(blob) : reject(new Error("PNG export failed"));
+              }, "image/png");
+            } catch (error) {
+              URL.revokeObjectURL(url);
+              reject(error);
+            }
+          };
+          image.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Share image render failed"));
+          };
+          image.src = url;
+        });
+      }
+
+      async function downloadShareImage() {
+        const data = shareResultData({ includeQuestion: els.shareIncludeQuestion.checked });
+        const svg = shareCardSvg(data);
+        const filename = `askaura-share-${Date.now()}`;
+        try {
+          const png = await svgToPngBlob(svg);
+          downloadBlob(png, `${filename}.png`);
+        } catch (error) {
+          console.warn("PNG share image failed, falling back to SVG", error);
+          downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), `${filename}.svg`);
+        }
       }
 
       function exportResultPdf() {
@@ -3560,6 +3861,7 @@
           avoid: t("followupAvoid"),
           blocker: t("followupBlocker"),
           review: t("followupReview"),
+          clarifyCard: t("followupClarifyCard"),
           fallback: t("followupCustomPlaceholder")
         });
       }
@@ -3595,6 +3897,7 @@
           });
           els.followupAnswerText.textContent = cleanTaggedOutputText(answer, t("followupFailed"));
           saveFollowupToCurrentRecord(question, els.followupAnswerText.textContent);
+          renderStoredFollowups(lastRecord);
           selectedFollowupKind = "";
           els.followupCustomInput.value = "";
           els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
@@ -3618,29 +3921,8 @@
       }
 
       function drawClarificationCard() {
-        if (isRunning) return;
-        pendingClarificationContext = {
-          sourceResultId: lastRecord?.id || "",
-          ...createClarificationContext({
-            lastRecord,
-            lastQuestion,
-            fallbackQuestion: t("fallbackQuestion"),
-            previousCard: lastRecord?.imageAlt || els.cardImage.alt || lastRecord?.title,
-            resultSummary: followupResultSummary()
-          })
-        };
-        selectedFollowupKind = "";
-        els.followupPanel.querySelectorAll("[data-followup-question].is-selected").forEach((item) => item.classList.remove("is-selected"));
-        updateFollowupSubmit();
-        mode = "tarot";
-        els.input.hidden = false;
-        setMode("tarot");
-        els.input.value = clarificationPromptText({
-          lastQuestion,
-          fallbackQuestion: t("fallbackQuestion"),
-          language: lang
-        });
-        setTimeout(() => els.form.requestSubmit(), 80);
+        if (isRunning || isFollowupRunning) return;
+        showFollowupAnswer("clarify-card");
       }
 
       function initFieldCanvas() {
@@ -3763,6 +4045,8 @@
         renderHistoryList();
       });
       els.weeklySummaryBtn.addEventListener("click", generateWeeklySummary);
+      els.weeklySummaryCopy.addEventListener("click", copyWeeklySummary);
+      els.weeklySummarySave.addEventListener("click", saveWeeklySummaryRecord);
       els.accountBtn.addEventListener("click", () => {
         updateAuthUi();
         openUtilityPanel(els.authPanel);
@@ -3829,6 +4113,15 @@
         if (!selectedFollowupKind && !text) return;
         showFollowupAnswer(selectedFollowupKind || "custom", text);
       });
+      els.followupEntryList.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-followup-copy]");
+        if (!button || !lastRecord) return;
+        const followup = (lastRecord.followups || []).find((item) => item.id === button.dataset.followupCopy);
+        if (!followup) return;
+        const text = [followup.question, cleanTaggedOutputText(followup.answer, "", { joinWith: "\n" })].filter(Boolean).join("\n");
+        const result = await copyTextToClipboard(text);
+        button.textContent = result === "manual" ? t("copyManual") : t("followupCopied");
+      });
       els.historyClear.addEventListener("click", () => {
         clearAllRecords().catch((error) => {
           console.error(error);
@@ -3893,8 +4186,8 @@
             ? t("copyManual")
             : t("copyFailed");
       });
-      els.shareImage.addEventListener("click", () => {
-        downloadShareImage();
+      els.shareImage.addEventListener("click", async () => {
+        await downloadShareImage();
         els.shareImage.textContent = t("imageSaved");
       });
       els.exportPdf.addEventListener("click", () => {

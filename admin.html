@@ -14,8 +14,8 @@
     <section class="auth-gate" id="auth-gate">
       <form class="auth-card" id="auth-form">
         <p class="eyebrow">AskAura Admin</p>
-        <h1 id="auth-title">管理员登录</h1>
-        <p class="auth-copy" id="auth-copy">输入管理员账号密码后进入配置后台。</p>
+        <h1 id="auth-title">运营配置登录</h1>
+        <p class="auth-copy" id="auth-copy">输入服务端管理员账号密码后进入 AskAura 配置台。</p>
         <label>
           管理员账号
           <input id="auth-user" autocomplete="username" />
@@ -24,7 +24,7 @@
           管理员密码
           <input id="auth-pass" type="password" autocomplete="current-password" />
         </label>
-        <button class="auth-submit" type="submit" id="auth-submit">进入后台</button>
+        <button class="auth-submit" type="submit" id="auth-submit">进入配置台</button>
         <p class="auth-error" id="auth-error"></p>
       </form>
     </section>
@@ -34,8 +34,8 @@
         <a class="back-home" href="./index.html">← 返回 AskAura</a>
         <div>
           <p class="eyebrow">AskAura Admin</p>
-          <h1>配置后台</h1>
-          <p class="rail-copy">这里改的是本浏览器配置。保存后回到首页刷新即可看到效果。</p>
+          <h1>配置台</h1>
+          <p class="rail-copy">这里管理 AskAura 的公开文案、模型路由和运营开关。保存后回到首页刷新即可看到效果。</p>
         </div>
         <div>
           <button class="logout-btn" type="button" id="logout-btn">退出登录</button>
@@ -54,12 +54,13 @@
               <input id="import-input" type="file" accept="application/json" />
             </label>
             <button class="danger" type="button" id="reset-btn">恢复默认</button>
+            <div class="toolbar-status" id="toolbar-status">远端配置未加载</div>
           </div>
 
           <div class="grid">
             <section class="panel">
               <span class="panel-num">01</span>
-              <h2>首页</h2>
+              <h2>首页文案</h2>
               <label>
                 中文主文案
                 <textarea name="zh.heroCopy" rows="3"></textarea>
@@ -83,11 +84,11 @@
               <h2>模式名称</h2>
               <div class="three-cols">
                 <label>
-                  塔罗
+                  牌象
                   <input name="zh.modeTarot" />
                 </label>
                 <label>
-                  梅花
+                  卦象
                   <input name="zh.modeMeihua" />
                 </label>
                 <label>
@@ -97,11 +98,11 @@
               </div>
               <div class="three-cols">
                 <label>
-                  Tarot
+                  Cards
                   <input name="en.modeTarot" />
                 </label>
                 <label>
-                  Meihua
+                  Gua
                   <input name="en.modeMeihua" />
                 </label>
                 <label>
@@ -124,11 +125,11 @@
               </label>
               <div class="three-cols">
                 <label>
-                  塔罗提示
+                  牌象提示
                   <textarea name="zh.modeHintTarot" rows="2"></textarea>
                 </label>
                 <label>
-                  梅花提示
+                  卦象提示
                   <textarea name="zh.modeHintMeihua" rows="2"></textarea>
                 </label>
                 <label>
@@ -140,7 +141,7 @@
 
             <section class="panel wide">
               <span class="panel-num">04</span>
-              <h2>LLM 设置</h2>
+              <h2>模型设置</h2>
               <div class="three-cols">
                 <label>
                   Provider
@@ -173,15 +174,15 @@
                   <input name="llm.temperature" type="number" min="0" max="1.5" step="0.1" />
                 </label>
                 <label>
-                  说明
+                  生效说明
                   <input value="保存后服务端即时生效" disabled />
                 </label>
               </div>
-              <p class="note">API Key 和 Base URL 会保存到 Supabase 服务端配置表，前端读取时会自动脱敏。</p>
+              <p class="note">API Key 和 Base URL 保存到 Supabase 服务端配置表。后台再次读取时会自动脱敏。</p>
               <div class="secret-box">
-                <strong>已接入服务端配置</strong>
-                <p>上方字段可以直接修改并保存。API Key 返回后台时会显示为星号；如果不想更换 key，保持星号不动即可。</p>
-                <code>管理员登录与保存由 admin-config Edge Function 校验。</code>
+                <strong>服务端配置</strong>
+                <p>如果不想更换 API Key，保持星号不动即可。管理员登录与保存由 admin-config Edge Function 校验。</p>
+                <code>admin-config Edge Function</code>
               </div>
             </section>
 
@@ -242,12 +243,12 @@
                   <input value="Frontend model values are ignored by reading." disabled />
                 </label>
               </div>
-              <p class="note">Model choice is owned by the Edge Function route. Public frontend requests only send tier and entry hints.</p>
+              <p class="note">模型选择由 Edge Function 路由控制。公开前端请求只发送 tier 和 entry 提示。</p>
             </section>
 
             <section class="panel wide">
               <span class="panel-num">06</span>
-              <h2>Ops Quality</h2>
+              <h2>Ops Quality / 运营质量</h2>
               <div class="three-cols">
                 <label>
                   Prompt Version
@@ -282,12 +283,12 @@
                   <input value="Quality events store metadata only." disabled />
                 </label>
               </div>
-              <p class="note">Use these switches to stop quality logging or safety scanning without deleting user data. Experiments are reserved but not active.</p>
+              <p class="note">这些开关用于暂停质量日志或安全扫描，不会删除用户记录。实验字段暂时只保留，不主动启用。</p>
             </section>
 
             <section class="panel wide">
               <span class="panel-num">07</span>
-              <h2>Paid Guardrails</h2>
+              <h2>付费保护开关</h2>
               <div class="three-cols">
                 <label>
                   Paid UI
@@ -322,7 +323,7 @@
                   <input name="paid.proMonthlyExports" type="number" min="0" max="500" step="1" />
                 </label>
               </div>
-              <p class="note">Paid features stay disabled until checkout and refund handling are selected. Pro routing requires this gate and a server-side entitlement.</p>
+              <p class="note">付费入口保持关闭，直到支付、退款和沙盒验收都确定以后再启用。</p>
             </section>
 
             <section class="panel wide">
@@ -338,7 +339,7 @@
                   <input name="zh.copy" />
                 </label>
                 <label>
-                  中文再来一次
+                  中文返回按钮
                   <input name="zh.again" />
                 </label>
               </div>
@@ -401,33 +402,33 @@
         },
         translations: {
           zh: {
-            heroCopy: "把心里的噪声，压成今晚能做的一件事。",
+            heroCopy: "把心里的噪音，压成今天能做的一件事。",
             discText: "照见",
-            modeTarot: "塔罗",
-            modeMeihua: "梅花",
+            modeTarot: "牌象",
+            modeMeihua: "卦象",
             modeDaily: "当下",
             questionPlaceholder: "我最近总是睡不着，不知道真正烦的是什么。",
-            modeHintTarot: "将随机抽取一张大阿尔卡那牌。",
-            modeHintMeihua: "将随机起一卦，取它的当下之象。",
+            modeHintTarot: "适合关系、情绪与选择题。",
+            modeHintMeihua: "观察趋势、时机与推进方式。",
             modeHintDaily: "无需输入问题，直接打开今日锚点。",
-            loading: "正在等一句清楚的话……",
-            copy: "复制这句话",
-            again: "再来一次",
+            loading: "正在整理本次线索…",
+            copy: "复制行动句",
+            again: "回到问题",
             fallbackQuestion: "我现在需要看清什么？"
           },
           en: {
             heroCopy: "Turn the noise in your mind into one thing you can do tonight.",
             discText: "Mirror",
-            modeTarot: "Tarot",
-            modeMeihua: "Meihua",
+            modeTarot: "Cards",
+            modeMeihua: "Gua",
             modeDaily: "Now",
             questionPlaceholder: "I have not been sleeping well, and I do not know what is really bothering me.",
-            modeHintTarot: "One Major Arcana card will be drawn.",
-            modeHintMeihua: "One trigram will be cast for this moment.",
+            modeHintTarot: "Good for relationships, emotions, and choices.",
+            modeHintMeihua: "Observe timing, momentum, and the way forward.",
             modeHintDaily: "No question needed. Open today's anchor.",
-            loading: "Waiting for one clear sentence...",
-            copy: "Copy this line",
-            again: "Again",
+            loading: "Structuring this reading...",
+            copy: "Copy action",
+            again: "Back to question",
             fallbackQuestion: "What do I need to see right now?"
           }
         }
@@ -435,6 +436,7 @@
 
       const form = document.getElementById("config-form");
       const statusEl = document.getElementById("status");
+      const toolbarStatus = document.getElementById("toolbar-status");
       const authGate = document.getElementById("auth-gate");
       const authForm = document.getElementById("auth-form");
       const authTitle = document.getElementById("auth-title");
@@ -513,13 +515,15 @@
       async function save(config) {
         const data = await adminRequest("save", { config });
         fillForm(merge(clone(defaults), data.config || config));
-        statusEl.textContent = "已保存 " + new Date().toLocaleTimeString();
+        const savedAt = new Date().toLocaleTimeString();
+        statusEl.textContent = "已保存 " + savedAt;
+        toolbarStatus.textContent = "已保存到远端配置 " + savedAt;
       }
 
       function renderAuthMode() {
-        authTitle.textContent = "管理员登录";
-        authCopy.textContent = "输入服务端管理员账号密码后进入配置后台。";
-        authSubmit.textContent = "进入后台";
+        authTitle.textContent = "运营配置登录";
+        authCopy.textContent = "输入服务端管理员账号密码后进入 AskAura 配置台。";
+        authSubmit.textContent = "进入配置台";
         authPass.autocomplete = "current-password";
       }
 
@@ -543,6 +547,7 @@
           unlockAdmin(data.token);
           fillForm(merge(clone(defaults), data.config || {}));
           statusEl.textContent = "已登录";
+          toolbarStatus.textContent = "远端配置已加载，修改后需要点击保存配置";
         } catch (error) {
           authError.textContent = error.message || "账号或密码不正确。";
         }
@@ -574,13 +579,22 @@
       document.getElementById("import-input").addEventListener("change", async (event) => {
         const file = event.target.files[0];
         if (!file) return;
-        const imported = JSON.parse(await file.text());
-        const config = merge(clone(defaults), imported);
-        fillForm(config);
-        await save(config);
+        try {
+          const imported = JSON.parse(await file.text());
+          const config = merge(clone(defaults), imported);
+          fillForm(config);
+          statusEl.textContent = "已导入，尚未保存";
+          toolbarStatus.textContent = "导入内容已填入表单，确认后点击保存配置";
+        } catch (error) {
+          statusEl.textContent = "导入失败";
+          toolbarStatus.textContent = error.message || "JSON 格式不正确";
+        } finally {
+          event.target.value = "";
+        }
       });
 
       document.getElementById("reset-btn").addEventListener("click", async () => {
+        if (!confirm("恢复默认会覆盖当前远端配置。确定继续？")) return;
         fillForm(defaults);
         await save(defaults);
         statusEl.textContent = "已恢复默认";
@@ -600,6 +614,7 @@
             unlockAdmin();
             fillForm(merge(clone(defaults), data.config || {}));
             statusEl.textContent = "已登录";
+            toolbarStatus.textContent = "远端配置已加载，修改后需要点击保存配置";
           })
           .catch(() => sessionStorage.removeItem(ADMIN_SESSION_KEY));
       }

@@ -103,7 +103,7 @@ export function reportFromRecord(record, { language = "zh" } = {}) {
   const meihua = meihuaReportFromText(record?.answer || "");
   if (record?.mode === "meihua" && (meihua.signal || meihua.trend || meihua.action)) {
     return {
-      summary: meihua.signal || meihua.trend || meihua.action,
+      summary: meihua.signal || meihua.trend,
       tarotText: meihua.signal,
       guaText: meihua.trend,
       dualText: "",
@@ -112,7 +112,9 @@ export function reportFromRecord(record, { language = "zh" } = {}) {
     };
   }
   const reading = record?.reading || parseTaggedTokens(record?.answer || "");
-  const tarotText = cleanTaggedOutputText(reading.tension || reading.TENSION || reading.coreQuestion || reading.CORE_QUESTION, "");
+  const coreText = cleanTaggedOutputText(reading.coreQuestion || reading.CORE_QUESTION, "");
+  const tensionText = cleanTaggedOutputText(reading.tension || reading.TENSION, "");
+  const tarotText = [coreText, tensionText].filter(Boolean).join("\n");
   const summary = cleanResultText(
     reading.judgment || reading.JUDGMENT || record?.action || record?.answer,
     ""

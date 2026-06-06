@@ -3,7 +3,7 @@ export const DAILY_ANCHOR_KEY = "askaura.dailyAnchors.v1";
 export const LEGACY_HISTORY_KEY = "rill.history.v1";
 export const LEGACY_DAILY_ANCHOR_KEY = "rill.dailyAnchors.v1";
 
-export const HISTORY_LIMIT = 21;
+export const HISTORY_LIMIT = 60;
 
 export function normalizeHistory(records, { limit = HISTORY_LIMIT } = {}) {
   if (!Array.isArray(records)) return [];

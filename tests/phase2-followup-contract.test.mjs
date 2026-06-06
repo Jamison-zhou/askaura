@@ -11,6 +11,7 @@ const reading = readFileSync(new URL("../supabase/functions/reading/index.ts", i
 const validator = readFileSync(new URL("../supabase/functions/_shared/token-validator.ts", import.meta.url), "utf8");
 const prompt = readFileSync(new URL("../supabase/functions/_shared/prompts/followup.ts", import.meta.url), "utf8");
 const router = readFileSync(new URL("../supabase/functions/_shared/model-router.ts", import.meta.url), "utf8");
+const followupModule = readFileSync(new URL("../assets/app/followup.js", import.meta.url), "utf8");
 
 assert.match(types, /mode:\s*"followup"/, "followup request mode is typed");
 assert.match(types, /originalQuestion:\s*string/, "followup carries original question");
@@ -30,10 +31,8 @@ assert.match(html, /followupQuestion:\s*question/, "front-end sends the selected
 assert.match(html, /els\.followupAnswerText\.textContent = cleanTaggedOutputText\(text, ""\);/, "followup streaming strips leaked protocol tags");
 assert.match(html, /els\.followupAnswerText\.textContent = cleanTaggedOutputText\(answer, t\("followupFailed"\)\);/, "followup final display strips leaked protocol tags");
 assert.match(html, /catch \(error\) \{[\s\S]*els\.followupAnswerText\.textContent = t\("followupFailed"\);/, "front-end keeps result visible and shows inline followup failure");
-assert.match(html, /function drawClarificationCard\(\)[\s\S]*pendingClarificationContext = \{[\s\S]*sourceResultId: lastRecord\?\.id/, "clarification card captures previous result context");
-assert.match(html, /sessionHistory:\s*clarificationHistoryText\(clarificationContext\)/, "clarification card passes previous context to the reading request");
-assert.match(html, /renderClarificationLink\(clarificationContext\)/, "clarification result shows the previous-result relationship");
-assert.match(html, /clarificationOf: clarificationContext/, "clarification result is saved with its source relationship");
+assert.match(followupModule, /"clarify-card": labels\.clarifyCard/, "clarification follow-up has a localized inline question");
+assert.match(html, /clarifyCard: t\("followupClarifyCard"\)/, "front-end passes clarification label to follow-up selection");
 assert.match(html, /function renderStoredFollowups/, "history view can restore stored followups");
 assert.match(html, /renderClarificationLink\(record\.clarificationOf\)/, "history view can restore clarification links");
 assert.match(html, /id="question-examples"/, "front-end renders good question examples near the input");
@@ -50,7 +49,11 @@ const followupSubmit = html.match(/els\.followupCustomForm\.addEventListener\("s
 assert.ok(followupSubmit, "followup submit listener exists");
 assert.doesNotMatch(followupSubmit[1], /requestSubmit/, "ordinary followup submit does not trigger the ritual form");
 assert.doesNotMatch(followupSubmit[1], /playRitual/, "ordinary followup submit does not start the ritual");
-assert.match(html, /els\.followupPanel\.addEventListener\("click"[\s\S]*if \(kind === "clarify-card"\) \{[\s\S]*drawClarificationCard\(\);[\s\S]*return;[\s\S]*showFollowupAnswer\(kind\);/, "preset followup buttons submit immediately while clarify-card keeps ritual flow");
+assert.match(html, /els\.followupPanel\.addEventListener\("click"[\s\S]*if \(kind === "clarify-card"\) \{[\s\S]*drawClarificationCard\(\);[\s\S]*return;[\s\S]*showFollowupAnswer\(kind\);/, "preset followup buttons submit immediately while clarify-card stays inside the follow-up flow");
+const drawClarification = html.match(/function drawClarificationCard\(\) \{([\s\S]*?)\n\s*}\n\n      function initFieldCanvas/);
+assert.ok(drawClarification, "clarification helper exists");
+assert.doesNotMatch(drawClarification[1], /requestSubmit|playRitual|setMode\("tarot"\)/, "clarification follow-up does not restart the main reading flow");
+assert.match(drawClarification[1], /showFollowupAnswer\("clarify-card"\)/, "clarification follow-up renders inline on the result page");
 assert.match(html, /submit\.disabled = isFollowupRunning \|\| !hasCustomText;/, "custom followup input stays explicit submit");
 
 assert.match(prompt, /Do not draw a new card/, "followup prompt forbids a new draw");

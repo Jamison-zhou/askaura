@@ -20,8 +20,9 @@ assert.doesNotMatch(shareModule, /user\.email|access_token|refresh_token|service
 assert.match(html, /fullShareLines\(data\)/, "full copy uses a sanitized line builder");
 assert.match(html, /reviewNote \? `\$\{lang === "zh" \? "复盘" : "Review"\}: \$\{data\.reviewNote\}`/, "PDF/full export can include review note");
 
-assert.match(html, /new Blob\(\[svg\], \{ type: "image\/svg\+xml;charset=utf-8" \}\)/, "share image is generated locally");
-assert.match(html, /link\.download = `askaura-share-\$\{Date\.now\(\)\}\.svg`/, "share image downloads as a local file");
+assert.match(html, /canvas\.toBlob\([\s\S]*"image\/png"/, "share image is rendered locally as PNG");
+assert.match(html, /downloadBlob\(png, `\$\{filename\}\.png`\)/, "share image downloads as a PNG file");
+assert.match(html, /falling back to SVG/, "share image keeps a local fallback if PNG export fails");
 assert.match(html, /page\.document\.write\(`<!doctype html>/, "PDF export opens a print document");
 assert.match(html, /<script>print\(\);<\\\/script>/, "PDF export invokes browser print");
 
