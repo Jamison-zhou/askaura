@@ -68,6 +68,10 @@ assert.match(adminConfig, /ops\.promptVersion/, "admin config sanitizes prompt v
 assert.match(adminConfig, /qualityLoggingEnabled/, "admin config sanitizes quality logging switch");
 assert.match(adminConfig, /contentSafetyScanEnabled/, "admin config sanitizes safety scan switch");
 assert.match(adminConfig, /rollbackNote/, "admin config sanitizes rollback note");
+assert.match(adminConfig, /body\.action === "quality-summary"/, "admin config exposes quality summary action");
+assert.match(adminConfig, /askaura_quality_events\?/, "quality summary reads quality event metadata");
+assert.match(adminConfig, /missing_tokens,safety_flags,latency_ms,model,entry,created_at/, "quality summary selects metadata only");
+assert.doesNotMatch(adminConfig, /\bquestion\b|\banswer\b|full_text|followup_question/i, "quality summary does not expose private text fields");
 
 const adminHtml = read("admin.html");
 const indexHtml = read("index.html");
@@ -76,6 +80,8 @@ assert.match(adminHtml, /name="ops\.promptVersion"/, "admin page exposes prompt 
 assert.match(adminHtml, /name="ops\.qualityLoggingEnabled"/, "admin page exposes quality logging switch");
 assert.match(adminHtml, /name="ops\.contentSafetyScanEnabled"/, "admin page exposes safety scan switch");
 assert.match(adminHtml, /name="ops\.rollbackNote"/, "admin page exposes rollback note");
+assert.match(adminHtml, /id="quality-refresh-btn"/, "admin page exposes quality summary refresh");
+assert.match(adminHtml, /adminRequest\("quality-summary"\)/, "admin page calls quality summary action");
 
 const reading = read("supabase/functions/reading/index.ts");
 assert.match(reading, /recordQualityEvent/, "reading records quality metadata");

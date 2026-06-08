@@ -154,6 +154,71 @@ async function saveConfig(env: DenoEnv, nextConfig: RuntimeConfig): Promise<void
   }
 }
 
+type QualityRow = {
+  status?: string;
+  token_ok?: boolean;
+  missing_tokens?: string[];
+  safety_flags?: string[];
+  latency_ms?: number;
+  model?: string;
+  entry?: string;
+  created_at?: string;
+};
+
+async function loadQualitySummary(env: DenoEnv) {
+  const url = env.require("SUPABASE_URL").replace(/\/+$/, "");
+  const serviceKey = env.require("SUPABASE_SERVICE_ROLE_KEY");
+  const params = new URLSearchParams({
+    select: "status,token_ok,missing_tokens,safety_flags,latency_ms,model,entry,created_at",
+    order: "created_at.desc",
+    limit: "100",
+  });
+  const resp = await fetch(`${url}/rest/v1/askaura_quality_events?${params}`, {
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+    },
+  });
+  if (!resp.ok) throw new Error(await resp.text());
+  const rows = await resp.json().catch(() => []) as QualityRow[];
+  const missingTokens: Record<string, number> = {};
+  const safetyFlags: Record<string, number> = {};
+  const entries: Record<string, number> = {};
+  const models: Record<string, number> = {};
+  let warnings = 0;
+  let errors = 0;
+  let tokenIssues = 0;
+  let latencyTotal = 0;
+
+  for (const row of rows) {
+    if (row.status === "warning") warnings += 1;
+    if (row.status === "error") errors += 1;
+    if (row.token_ok === false) tokenIssues += 1;
+    latencyTotal += typeof row.latency_ms === "number" ? row.latency_ms : 0;
+    if (row.entry) entries[row.entry] = (entries[row.entry] || 0) + 1;
+    if (row.model) models[row.model] = (models[row.model] || 0) + 1;
+    for (const token of Array.isArray(row.missing_tokens) ? row.missing_tokens : []) {
+      missingTokens[token] = (missingTokens[token] || 0) + 1;
+    }
+    for (const flag of Array.isArray(row.safety_flags) ? row.safety_flags : []) {
+      safetyFlags[flag] = (safetyFlags[flag] || 0) + 1;
+    }
+  }
+
+  return {
+    sampleSize: rows.length,
+    latestAt: rows[0]?.created_at || "",
+    warnings,
+    errors,
+    tokenIssues,
+    averageLatencyMs: rows.length ? Math.round(latencyTotal / rows.length) : 0,
+    entries,
+    models,
+    missingTokens,
+    safetyFlags,
+  };
+}
+
 Deno.serve(async (request: Request) => {
   const preflight = handlePreflight(request);
   if (preflight) return preflight;
@@ -189,6 +254,10 @@ Deno.serve(async (request: Request) => {
 
   if (body.action === "get") {
     return jsonResponse({ config: publicRuntimeConfig(await loadRuntimeConfig(env)) });
+  }
+
+  if (body.action === "quality-summary") {
+    return jsonResponse({ summary: await loadQualitySummary(env) });
   }
 
   if (body.action === "save") {

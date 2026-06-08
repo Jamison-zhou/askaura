@@ -189,7 +189,7 @@ button:disabled {
   z-index: 2;
   height: 100dvh;
   min-height: 0;
-  width: min(100%, var(--shell-max));
+  width: 100%;
   margin: 0;
   padding:
     clamp(16px, 2.6dvh, 26px)
@@ -4064,8 +4064,8 @@ textarea:disabled {
   grid-column: 1;
   grid-row: 2;
   align-self: start;
-  justify-self: center;
-  width: min(100%, 1080px);
+  justify-self: stretch;
+  width: 100%;
   gap: clamp(12px, 2dvh, 18px);
   transform: none;
 }
@@ -4089,7 +4089,7 @@ textarea:disabled {
 }
 
 .compose-panel {
-  width: min(100%, 1080px);
+  width: 100%;
   min-height: 0;
   border-color: rgba(240, 237, 229, 0.10);
   background:

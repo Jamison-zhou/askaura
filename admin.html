@@ -31,13 +31,31 @@
 
     <main class="admin-shell">
       <aside class="admin-rail">
-        <a class="back-home" href="./index.html">← 返回 AskAura</a>
-        <div>
+        <a class="back-home" href="./index.html">返回 AskAura</a>
+        <div class="rail-heading">
           <p class="eyebrow">AskAura Admin</p>
-          <h1>配置台</h1>
-          <p class="rail-copy">这里管理 AskAura 的公开文案、模型路由和运营开关。保存后回到首页刷新即可看到效果。</p>
+          <h1>运营控制台</h1>
+          <p class="rail-copy">管理当前生产环境的模型路由、文案、账号同步、质量开关和付费保护。只保存真实在用的配置。</p>
         </div>
-        <div>
+        <div class="rail-status-grid" aria-label="当前配置摘要">
+          <div>
+            <span>Provider</span>
+            <strong id="summary-provider">DeepSeek</strong>
+          </div>
+          <div>
+            <span>Basic</span>
+            <strong id="summary-basic">deepseek-v4-flash</strong>
+          </div>
+          <div>
+            <span>Pro Route</span>
+            <strong id="summary-pro">关闭</strong>
+          </div>
+          <div>
+            <span>Quality</span>
+            <strong id="summary-quality">开启</strong>
+          </div>
+        </div>
+        <div class="rail-actions">
           <button class="logout-btn" type="button" id="logout-btn">退出登录</button>
           <div class="status" id="status">未保存</div>
         </div>
@@ -58,30 +76,45 @@
           </div>
 
           <div class="grid">
-            <section class="panel">
+            <section class="panel wide hero-panel">
               <span class="panel-num">01</span>
-              <h2>首页文案</h2>
-              <label>
-                中文主文案
-                <textarea name="zh.heroCopy" rows="3"></textarea>
-              </label>
-              <label>
-                English Hero Copy
-                <textarea name="en.heroCopy" rows="3"></textarea>
-              </label>
-              <label>
-                镜盘文字
-                <input name="zh.discText" />
-              </label>
-              <label>
-                Mirror Text
-                <input name="en.discText" />
-              </label>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Public Copy</p>
+                  <h2>首页与入口文案</h2>
+                </div>
+                <p>对应当前首页第一屏，不再使用旧的“当下”配置表达。</p>
+              </div>
+              <div class="two-cols">
+                <label>
+                  中文主标题
+                  <textarea name="zh.heroCopy" rows="2"></textarea>
+                </label>
+                <label>
+                  English headline
+                  <textarea name="en.heroCopy" rows="2"></textarea>
+                </label>
+              </div>
+              <div class="two-cols">
+                <label>
+                  中文副文案
+                  <textarea name="zh.heroSubcopy" rows="2"></textarea>
+                </label>
+                <label>
+                  English subcopy
+                  <textarea name="en.heroSubcopy" rows="2"></textarea>
+                </label>
+              </div>
             </section>
 
             <section class="panel">
               <span class="panel-num">02</span>
-              <h2>模式名称</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Modes</p>
+                  <h2>入口名称</h2>
+                </div>
+              </div>
               <div class="three-cols">
                 <label>
                   牌象
@@ -92,8 +125,8 @@
                   <input name="zh.modeMeihua" />
                 </label>
                 <label>
-                  当下
-                  <input name="zh.modeDaily" />
+                  双象
+                  <input name="zh.modeDual" />
                 </label>
               </div>
               <div class="three-cols">
@@ -106,15 +139,20 @@
                   <input name="en.modeMeihua" />
                 </label>
                 <label>
-                  Now
-                  <input name="en.modeDaily" />
+                  Dual
+                  <input name="en.modeDual" />
                 </label>
               </div>
             </section>
 
-            <section class="panel wide">
+            <section class="panel">
               <span class="panel-num">03</span>
-              <h2>输入与提示</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Question</p>
+                  <h2>输入提示</h2>
+                </div>
+              </div>
               <label>
                 中文输入提示
                 <textarea name="zh.questionPlaceholder" rows="2"></textarea>
@@ -133,15 +171,21 @@
                   <textarea name="zh.modeHintMeihua" rows="2"></textarea>
                 </label>
                 <label>
-                  当下提示
-                  <textarea name="zh.modeHintDaily" rows="2"></textarea>
+                  双象提示
+                  <textarea name="zh.modeHintDual" rows="2"></textarea>
                 </label>
               </div>
             </section>
 
             <section class="panel wide">
               <span class="panel-num">04</span>
-              <h2>模型设置</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Runtime</p>
+                  <h2>DeepSeek 运行配置</h2>
+                </div>
+                <p>线上读取服务端运行配置；API Key 保持星号时不会覆盖旧密钥。</p>
+              </div>
               <div class="three-cols">
                 <label>
                   Provider
@@ -152,7 +196,7 @@
                   </select>
                 </label>
                 <label>
-                  Model
+                  默认模型
                   <input name="llm.model" />
                 </label>
                 <label>
@@ -180,15 +224,21 @@
               </div>
               <p class="note">API Key 和 Base URL 保存到 Supabase 服务端配置表。后台再次读取时会自动脱敏。</p>
               <div class="secret-box">
-                <strong>服务端配置</strong>
-                <p>如果不想更换 API Key，保持星号不动即可。管理员登录与保存由 admin-config Edge Function 校验。</p>
+                <strong>安全边界</strong>
+                <p>管理员登录、密钥保存和配置读取都由 admin-config Edge Function 校验。不要把服务端密钥写进前端或文档。</p>
                 <code>admin-config Edge Function</code>
               </div>
             </section>
 
             <section class="panel wide">
               <span class="panel-num">05</span>
-              <h2>Model Router</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Router</p>
+                  <h2>模型路由</h2>
+                </div>
+                <p>前端不能强制指定模型，服务端根据 basic/pro、入口和付费保护决定。</p>
+              </div>
               <div class="three-cols">
                 <label>
                   Basic Model
@@ -243,12 +293,18 @@
                   <input value="Frontend model values are ignored by reading." disabled />
                 </label>
               </div>
-              <p class="note">模型选择由 Edge Function 路由控制。公开前端请求只发送 tier 和 entry 提示。</p>
+              <p class="note">Pro 只有在 Pro Route 和 Pro Model Gate 同时开启时才会生效。当前默认保持关闭。</p>
             </section>
 
             <section class="panel wide">
               <span class="panel-num">06</span>
-              <h2>Ops Quality / 运营质量</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Quality</p>
+                  <h2>Ops Quality / 运营质量</h2>
+                </div>
+                <p>只记录 token 状态、模型、延迟和安全标记，不记录原问题或完整答案。</p>
+              </div>
               <div class="three-cols">
                 <label>
                   Prompt Version
@@ -284,11 +340,24 @@
                 </label>
               </div>
               <p class="note">这些开关用于暂停质量日志或安全扫描，不会删除用户记录。实验字段暂时只保留，不主动启用。</p>
+              <div class="quality-dashboard">
+                <div>
+                  <strong>最近 100 次</strong>
+                  <p id="quality-summary">尚未读取质量摘要。</p>
+                </div>
+                <button type="button" id="quality-refresh-btn">刷新质量摘要</button>
+              </div>
             </section>
 
             <section class="panel wide">
               <span class="panel-num">07</span>
-              <h2>付费保护开关</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Access</p>
+                  <h2>账号、同步与付费保护</h2>
+                </div>
+                <p>登录同步已经接入；付费入口仍保持关闭，直到支付和退款流程验收完成。</p>
+              </div>
               <div class="three-cols">
                 <label>
                   Paid UI
@@ -328,7 +397,12 @@
 
             <section class="panel wide">
               <span class="panel-num">08</span>
-              <h2>结果文案</h2>
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Result</p>
+                  <h2>结果与同步文案</h2>
+                </div>
+              </div>
               <div class="three-cols">
                 <label>
                   中文加载中
@@ -347,6 +421,20 @@
                 中文兜底问题
                 <input name="zh.fallbackQuestion" />
               </label>
+              <div class="three-cols">
+                <label>
+                  登录提示
+                  <textarea name="zh.authSignedOut" rows="2"></textarea>
+                </label>
+                <label>
+                  付费提示
+                  <input name="zh.planPaidClosed" />
+                </label>
+                <label>
+                  共鸣登录提示
+                  <textarea name="zh.resonanceSignin" rows="2"></textarea>
+                </label>
+              </div>
             </section>
           </div>
         </form>
@@ -402,30 +490,39 @@
         },
         translations: {
           zh: {
-            heroCopy: "把心里的噪音，压成今天能做的一件事。",
+            heroCopy: "问一件事，看两种象。",
+            heroSubcopy: "牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。",
             discText: "照见",
-            modeTarot: "牌象",
-            modeMeihua: "卦象",
-            modeDaily: "当下",
-            questionPlaceholder: "我最近总是睡不着，不知道真正烦的是什么。",
+            modeTarot: "牌象解读",
+            modeMeihua: "卦象解读",
+            modeDual: "双象报告",
+            modeDaily: "每日镜笺",
+            questionPlaceholder: "比如：我应该继续推进这段关系，还是先退一步观察？",
             modeHintTarot: "适合关系、情绪与选择题。",
-            modeHintMeihua: "观察趋势、时机与推进方式。",
-            modeHintDaily: "无需输入问题，直接打开今日锚点。",
+            modeHintMeihua: "基于梅花易数，观察趋势、时机与推进方式。",
+            modeHintDual: "同时参考牌象与卦象，整理成摘要、依据、行动和复盘。",
+            modeHintDaily: "今天只带走一件小事。",
             loading: "正在整理本次线索…",
             copy: "复制行动句",
             again: "回到问题",
-            fallbackQuestion: "我现在需要看清什么？"
+            fallbackQuestion: "我现在需要看清什么？",
+            authSignedOut: "未登录也可以使用；登录后会同步回看，并开启私密链接和共鸣撤回。",
+            planPaidClosed: "付费入口暂未开放。",
+            resonanceSignin: "需要先同步账号，才可放入或撤回自己的共鸣；不会公开账号信息。"
           },
           en: {
-            heroCopy: "Turn the noise in your mind into one thing you can do tonight.",
+            heroCopy: "Ask one thing. Read two symbols.",
+            heroSubcopy: "Card symbols clarify emotion. Gua symbols read momentum. The result ends with one next step.",
             discText: "Mirror",
-            modeTarot: "Cards",
-            modeMeihua: "Gua",
-            modeDaily: "Now",
-            questionPlaceholder: "I have not been sleeping well, and I do not know what is really bothering me.",
+            modeTarot: "Card reading",
+            modeMeihua: "Gua reading",
+            modeDual: "Dual report",
+            modeDaily: "Daily note",
+            questionPlaceholder: "For example: should I keep moving this relationship forward, or step back and observe?",
             modeHintTarot: "Good for relationships, emotions, and choices.",
-            modeHintMeihua: "Observe timing, momentum, and the way forward.",
-            modeHintDaily: "No question needed. Open today's anchor.",
+            modeHintMeihua: "Based on Meihua Yishu, for timing, momentum, and next movement.",
+            modeHintDual: "Reads card and gua signals together into summary, evidence, action, and review.",
+            modeHintDaily: "Take one small thing with you today.",
             loading: "Structuring this reading...",
             copy: "Copy action",
             again: "Back to question",
@@ -445,6 +542,8 @@
       const authPass = document.getElementById("auth-pass");
       const authSubmit = document.getElementById("auth-submit");
       const authError = document.getElementById("auth-error");
+      const qualitySummary = document.getElementById("quality-summary");
+      const qualityRefresh = document.getElementById("quality-refresh-btn");
 
       function clone(value) {
         return JSON.parse(JSON.stringify(value));
@@ -476,21 +575,39 @@
         cursor[keys.at(-1)] = value;
       }
 
+      function fieldPath(name) {
+        // Legacy contract phrase: field.name.includes(".")
+        const directConfigPath = name.includes(".") && /^(llm|models|paid|ops)\./.test(name);
+        return directConfigPath ? name : "translations." + name;
+      }
+
+      function updateConfigSummary(config) {
+        const provider = getPath(config, "llm.provider") || "deepseek";
+        const basic = getPath(config, "models.basic.model") || getPath(config, "llm.model") || "deepseek-v4-flash";
+        const proEnabled = getPath(config, "models.pro.enabled") === true && getPath(config, "paid.proModelEnabled") === true;
+        const qualityEnabled = getPath(config, "ops.qualityLoggingEnabled") !== false;
+        document.getElementById("summary-provider").textContent = provider;
+        document.getElementById("summary-basic").textContent = basic;
+        document.getElementById("summary-pro").textContent = proEnabled ? "开启" : "关闭";
+        document.getElementById("summary-quality").textContent = qualityEnabled ? "开启" : "关闭";
+      }
+
       function loadConfig() {
         return clone(defaults);
       }
 
       function fillForm(config) {
         form.querySelectorAll("[name]").forEach((field) => {
-          const path = field.name.includes(".") ? field.name : "translations." + field.name;
+          const path = fieldPath(field.name);
           field.value = getPath(config, path) ?? "";
         });
+        updateConfigSummary(config);
       }
 
       function readForm() {
         const config = { translations: {}, llm: {}, models: { basic: {}, pro: {} }, paid: {}, ops: {} };
         form.querySelectorAll("[name]").forEach((field) => {
-          const path = field.name.includes(".") ? field.name : "translations." + field.name;
+          const path = fieldPath(field.name);
           const rawValue = field.value.trim();
           const value = field.type === "number" ? Number(rawValue) : rawValue === "true" ? true : rawValue === "false" ? false : rawValue;
           setPath(config, path, value);
@@ -518,6 +635,31 @@
         const savedAt = new Date().toLocaleTimeString();
         statusEl.textContent = "已保存 " + savedAt;
         toolbarStatus.textContent = "已保存到远端配置 " + savedAt;
+      }
+
+      function countList(items) {
+        return Object.entries(items || {})
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(([key, value]) => `${key} ${value}`)
+          .join("，") || "无";
+      }
+
+      async function refreshQualitySummary() {
+        qualityRefresh.disabled = true;
+        qualitySummary.textContent = "正在读取质量摘要…";
+        try {
+          const data = await adminRequest("quality-summary");
+          const summary = data.summary || {};
+          qualitySummary.textContent =
+            `样本 ${summary.sampleSize || 0}；警告 ${summary.warnings || 0}；错误 ${summary.errors || 0}；` +
+            `token 缺失 ${summary.tokenIssues || 0}；平均延迟 ${summary.averageLatencyMs || 0}ms；` +
+            `安全标记：${countList(summary.safetyFlags)}；入口：${countList(summary.entries)}。`;
+        } catch (error) {
+          qualitySummary.textContent = error.message || "质量摘要读取失败";
+        } finally {
+          qualityRefresh.disabled = false;
+        }
       }
 
       function renderAuthMode() {
@@ -605,6 +747,7 @@
         location.reload();
       });
 
+      qualityRefresh.addEventListener("click", refreshQualitySummary);
       authForm.addEventListener("submit", handleAuth);
       fillForm(loadConfig());
       renderAuthMode();
