@@ -49,6 +49,7 @@ assert.match(readingPrompt, /must not decide A or B for the user/, "choice sprea
 assert.match(html, /id="gua-cast-selector"/, "meihua mode exposes cast method selector");
 assert.equal((html.match(/data-gua-cast=/g) || []).length, 4, "front-end exposes four gua cast methods");
 assert.match(html, /guaFromCast\(selectedGuaCastMethod, guaSeed\)/, "meihua flow uses deterministic cast method and seed");
+assert.match(html, /\/\^\[01\]\{3\}\$\/\.test\(rawBinary\)[\s\S]*rawBinary \+ rawBinary/, "gua renderer expands 3-line gua data instead of falling back to qian");
 assert.match(html, /const meihua = renderMeihuaReading\(full\);[\s\S]*summary: meihua\.trend \|\| meihua\.signal \|\| meihua\.action[\s\S]*tarotText: meihua\.signal[\s\S]*guaText: meihua\.trend/, "meihua mode maps trend and signal into separate report slots");
 assert.match(html, /const showTopAction = false;[\s\S]*els\.action\.textContent = showTopAction \? lastAction : "";[\s\S]*els\.action\.hidden = !showTopAction \|\| !lastAction;/, "the top action sentence stays hidden because the action board owns that content");
 assert.match(html, /const hasDetailedReport = !els\.tarotReadingGrid\.hidden \|\| !els\.reportStack\.hidden;[\s\S]*const showSummary = !duplicateSummary && !hasDetailedReport;[\s\S]*els\.resultSummary\.hidden = !showSummary;/, "top summary is hidden whenever a detailed report is already present");

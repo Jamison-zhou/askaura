@@ -2144,7 +2144,12 @@
 
       function renderGua(binary) {
         els.guaSymbol.innerHTML = "";
-        const safeBinary = /^[01]{6}$/.test(String(binary || "")) ? String(binary) : "111111";
+        const rawBinary = String(binary || "");
+        const safeBinary = /^[01]{6}$/.test(rawBinary)
+          ? rawBinary
+          : /^[01]{3}$/.test(rawBinary)
+            ? rawBinary + rawBinary
+            : "111111";
         [...safeBinary].reverse().forEach((line) => {
           const row = document.createElement("div");
           row.className = "gua-line " + (line === "1" ? "yang" : "yin");

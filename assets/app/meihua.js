@@ -43,7 +43,8 @@ export function guaFromTime(date = new Date()) {
     + date.getMonth() + 1
     + date.getDate()
     + date.getHours()
-    + date.getMinutes();
+    + date.getMinutes()
+    + date.getSeconds();
   return attachCast(guaList[seed % guaList.length], GUA_CAST_METHODS.time, date.toISOString());
 }
 
