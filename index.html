@@ -1768,9 +1768,6 @@
           els.tarotTension.textContent,
           els.tarotJudgment.textContent
         ].some((text) => compactText(text) === summaryKey);
-        els.resultSummary.textContent = duplicateSummary ? "" : summary;
-        els.resultSummary.hidden = duplicateSummary;
-        els.resultSummaryLabel.hidden = duplicateSummary;
         els.reportTarot.textContent = tarotText;
         els.reportGua.textContent = guaText;
         els.reportDual.textContent = dualText;
@@ -1781,6 +1778,11 @@
         const shouldShowReportStack = data.sourceMode === "meihua" || data.sourceMode === "dual";
         const hasReportSection = Boolean(tarotText || guaText || dualText);
         els.reportStack.hidden = !(shouldShowReportStack && hasReportSection);
+        const hasDetailedReport = !els.tarotReadingGrid.hidden || !els.reportStack.hidden;
+        const showSummary = !duplicateSummary && !hasDetailedReport;
+        els.resultSummary.textContent = showSummary ? summary : "";
+        els.resultSummary.hidden = !showSummary;
+        els.resultSummaryLabel.hidden = !showSummary;
 
         const advice = actionAdvice(data.actionText);
         els.actionDo.textContent = advice.doText;
