@@ -103,7 +103,7 @@ export function reportFromRecord(record, { language = "zh" } = {}) {
   const meihua = meihuaReportFromText(record?.answer || "");
   if (record?.mode === "meihua" && (meihua.signal || meihua.trend || meihua.action)) {
     return {
-      summary: meihua.signal || meihua.trend,
+      summary: meihua.trend || meihua.signal || meihua.action,
       tarotText: meihua.signal,
       guaText: meihua.trend,
       dualText: "",

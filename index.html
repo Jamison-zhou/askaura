@@ -212,11 +212,11 @@
           <section class="result-main-panel">
           <article class="answer-copy">
             <h2 class="answer-title" data-i18n="answerTitle">解读结果</h2>
-            <div class="core-conclusion">
+            <div class="core-conclusion" id="core-conclusion">
               <span class="result-summary-label" data-i18n="coreConclusionLabel">当前主线</span>
               <p class="result-summary" id="result-summary"></p>
-              <span class="action-sentence-label" data-i18n="actionSentenceLabel">今日行动</span>
-              <p class="action-sentence" id="action-sentence"></p>
+              <span class="action-sentence-label" data-i18n="actionSentenceLabel" hidden>今日行动</span>
+              <p class="action-sentence" id="action-sentence" hidden></p>
             </div>
             <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
               <section>
@@ -1329,7 +1329,10 @@
         tarotCoreQuestion: document.getElementById("tarot-core-question"),
         tarotTension: document.getElementById("tarot-tension"),
         tarotJudgment: document.getElementById("tarot-judgment"),
+        coreConclusion: document.getElementById("core-conclusion"),
         resultSummary: document.getElementById("result-summary"),
+        resultSummaryLabel: document.querySelector(".result-summary-label"),
+        actionSentenceLabel: document.querySelector(".action-sentence-label"),
         reportStack: document.getElementById("report-stack"),
         reportTarotSection: document.getElementById("report-tarot-section"),
         reportGuaSection: document.getElementById("report-gua-section"),
@@ -1699,8 +1702,13 @@
 
       function hideReport() {
         els.answerPanel.classList.remove("is-dual-report");
+        els.coreConclusion.hidden = false;
         els.resultSummary.textContent = "";
-        els.action.hidden = false;
+        els.resultSummary.hidden = false;
+        els.resultSummaryLabel.hidden = false;
+        els.action.textContent = "";
+        els.action.hidden = true;
+        els.actionSentenceLabel.hidden = true;
         els.reportStack.hidden = true;
         els.reportStack.classList.remove("is-revealed");
         els.reportTarot.textContent = "";
@@ -1750,7 +1758,19 @@
           data.summary || tarotText || guaText || dualText,
           lang === "zh" ? "这次结果更像是在提醒你：先看清手里已有的信号，再决定是否推进。" : "This reading points to a pause: see the available signals clearly before moving forward."
         );
-        els.resultSummary.textContent = summary;
+        const compactText = (value) => cleanText(value, "").replace(/\s+/g, "");
+        const summaryKey = compactText(summary);
+        const duplicateSummary = Boolean(summaryKey) && [
+          tarotText,
+          guaText,
+          dualText,
+          els.tarotCoreQuestion.textContent,
+          els.tarotTension.textContent,
+          els.tarotJudgment.textContent
+        ].some((text) => compactText(text) === summaryKey);
+        els.resultSummary.textContent = duplicateSummary ? "" : summary;
+        els.resultSummary.hidden = duplicateSummary;
+        els.resultSummaryLabel.hidden = duplicateSummary;
         els.reportTarot.textContent = tarotText;
         els.reportGua.textContent = guaText;
         els.reportDual.textContent = dualText;
@@ -1767,8 +1787,11 @@
         els.actionDont.textContent = advice.dontText;
         els.actionWatch.textContent = advice.watchText;
         lastAction = cleanText(data.actionText, "") || advice.doText;
-        els.action.textContent = lastAction;
-        els.action.hidden = !lastAction;
+        const showTopAction = false;
+        els.action.textContent = showTopAction ? lastAction : "";
+        els.action.hidden = !showTopAction || !lastAction;
+        els.actionSentenceLabel.hidden = !showTopAction || !lastAction;
+        els.coreConclusion.hidden = els.resultSummary.hidden && els.action.hidden;
         els.actionBoard.hidden = false;
         els.actionBoardTitle.hidden = false;
         els.actionStatus.hidden = false;
@@ -2243,7 +2266,7 @@
         els.room.dataset.step = "idle";
         syncRailNav();
         els.loading.hidden = true;
-        els.action.hidden = false;
+        els.action.hidden = true;
         els.action.textContent = "";
         els.action.classList.remove("is-typing");
         els.anchorGrid.hidden = true;
@@ -3012,7 +3035,7 @@
           showResult();
           els.answerPanel.classList.toggle("is-daily-note", mode === "daily");
           els.loading.hidden = false;
-          els.action.hidden = false;
+          els.action.hidden = true;
           els.action.textContent = "";
           els.action.classList.remove("is-typing");
           els.anchorGrid.hidden = true;
@@ -3098,7 +3121,7 @@
             }, renderAction);
             const meihua = renderMeihuaReading(full);
             const report = {
-              summary: meihua.signal || meihua.trend || meihua.action,
+              summary: meihua.trend || meihua.signal || meihua.action,
               tarotText: meihua.signal,
               guaText: meihua.trend,
               actionText: meihua.action,
@@ -3240,9 +3263,6 @@
         const sentence = cleanTaggedOutputText(tokens.ACTION, "");
         if (!sentence) return "";
         lastAction = sentence;
-        els.action.hidden = false;
-        els.action.textContent = sentence;
-        els.action.classList.add("is-typing");
         return sentence;
       }
 

@@ -49,7 +49,11 @@ assert.match(readingPrompt, /must not decide A or B for the user/, "choice sprea
 assert.match(html, /id="gua-cast-selector"/, "meihua mode exposes cast method selector");
 assert.equal((html.match(/data-gua-cast=/g) || []).length, 4, "front-end exposes four gua cast methods");
 assert.match(html, /guaFromCast\(selectedGuaCastMethod, guaSeed\)/, "meihua flow uses deterministic cast method and seed");
-assert.match(html, /const meihua = renderMeihuaReading\(full\);[\s\S]*summary: meihua\.signal \|\| meihua\.trend \|\| meihua\.action[\s\S]*tarotText: meihua\.signal[\s\S]*guaText: meihua\.trend/, "meihua mode maps signal and trend into the report stack");
+assert.match(html, /const meihua = renderMeihuaReading\(full\);[\s\S]*summary: meihua\.trend \|\| meihua\.signal \|\| meihua\.action[\s\S]*tarotText: meihua\.signal[\s\S]*guaText: meihua\.trend/, "meihua mode maps trend and signal into separate report slots");
+assert.match(html, /const showTopAction = false;[\s\S]*els\.action\.textContent = showTopAction \? lastAction : "";[\s\S]*els\.action\.hidden = !showTopAction \|\| !lastAction;/, "the top action sentence stays hidden because the action board owns that content");
+const renderActionBlock = html.match(/function renderAction\(rawText\) \{([\s\S]*?)\n\s*\}/)?.[1] || "";
+assert.match(renderActionBlock, /lastAction = sentence;[\s\S]*return sentence;/, "streaming action text is retained for saving without rendering a duplicate top action");
+assert.doesNotMatch(renderActionBlock, /els\.action\.textContent = sentence/, "streaming action text is not written into the top action slot");
 assert.match(html, /const meihua = renderMeihuaReading\(meihuaFull\);[\s\S]*guaText: \[meihua\.signal, meihua\.trend\]\.filter\(Boolean\)\.join\("\\n"\)/, "dual mode reuses richer meihua report tokens");
 assert.match(meihuaPrompt, /\[GUA_SIGNAL\]/, "meihua prompt requires signal token");
 assert.match(meihuaPrompt, /\[GUA_TREND\]/, "meihua prompt requires trend token");

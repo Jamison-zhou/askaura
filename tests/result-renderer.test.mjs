@@ -68,7 +68,7 @@ const meihuaRecord = {
 };
 assert.equal(actionFromRecord(meihuaRecord), "Wait one day before replying.");
 assert.deepEqual(reportFromRecord(meihuaRecord, { language: "en" }), {
-  summary: "The signal is hesitation.",
+  summary: "Better to move slower.",
   tarotText: "The signal is hesitation.",
   guaText: "Better to move slower.",
   dualText: "",
