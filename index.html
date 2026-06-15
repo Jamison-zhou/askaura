@@ -536,6 +536,7 @@
         buildActionAdvice,
         cleanTaggedOutputText,
         describeGua,
+        hasContextualActionAdvice,
         meihuaReportFromText,
         parseTaggedTokens,
         reportFromRecord as normalizeReportFromRecord
@@ -1732,6 +1733,8 @@
         els.actionDo.textContent = "";
         els.actionDont.textContent = "";
         els.actionWatch.textContent = "";
+        els.actionDont.parentElement.hidden = false;
+        els.actionWatch.parentElement.hidden = false;
         els.followupChips.hidden = true;
         els.followupPanel.hidden = true;
         els.followupAnswer.hidden = true;
@@ -1741,8 +1744,8 @@
         updateFollowupSubmit();
       }
 
-      function actionAdvice(actionText) {
-        return buildActionAdvice(actionText, { language: lang });
+      function actionAdvice(actionText, extras = {}) {
+        return buildActionAdvice(actionText, { language: lang, ...extras });
       }
 
       function guaDescription(gua) {
@@ -1784,10 +1787,20 @@
         els.resultSummary.hidden = !showSummary;
         els.resultSummaryLabel.hidden = !showSummary;
 
-        const advice = actionAdvice(data.actionText);
+        const generatedDontText = cleanText(data.dontText, "");
+        const generatedWatchText = cleanText(data.watchText, "");
+        const questionText = cleanText(data.questionText || lastQuestion, "");
+        const hasContextualFallback = hasContextualActionAdvice(questionText);
+        const advice = actionAdvice(data.actionText, {
+          dontText: generatedDontText,
+          watchText: generatedWatchText,
+          questionText
+        });
         els.actionDo.textContent = advice.doText;
-        els.actionDont.textContent = advice.dontText;
-        els.actionWatch.textContent = advice.watchText;
+        els.actionDont.textContent = generatedDontText || hasContextualFallback ? advice.dontText : "";
+        els.actionWatch.textContent = generatedWatchText || hasContextualFallback ? advice.watchText : "";
+        els.actionDont.parentElement.hidden = !(generatedDontText || hasContextualFallback);
+        els.actionWatch.parentElement.hidden = !(generatedWatchText || hasContextualFallback);
         lastAction = cleanText(data.actionText, "") || advice.doText;
         const showTopAction = false;
         els.action.textContent = showTopAction ? lastAction : "";
@@ -1809,8 +1822,9 @@
           dualText,
           actionText: lastAction,
           doText: advice.doText,
-          dontText: advice.dontText,
-          watchText: advice.watchText
+          dontText: generatedDontText || hasContextualFallback ? advice.dontText : "",
+          watchText: generatedWatchText || hasContextualFallback ? advice.watchText : "",
+          questionText
         };
 
         requestAnimationFrame(() => {
@@ -3091,6 +3105,9 @@
               summary: readingParts.judgment || lastAction,
               tarotText: readingParts.tension || readingParts.coreQuestion,
               actionText: lastAction,
+              dontText: readingParts.avoid,
+              watchText: readingParts.watch,
+              questionText: question,
               sourceMode: "tarot"
             };
             renderStructuredReport(report);
@@ -3132,6 +3149,9 @@
               tarotText: meihua.signal,
               guaText: meihua.trend,
               actionText: meihua.action,
+              dontText: meihua.avoid,
+              watchText: meihua.watch,
+              questionText: question,
               sourceMode: "meihua"
             };
             renderStructuredReport(report);
@@ -3187,10 +3207,11 @@
               summary: tarotParts.judgment || (lang === "zh" ? "牌象和卦象都在提醒你先降低噪音，再决定下一步。" : "Card and gua signals both suggest reducing noise before choosing the next step."),
               tarotText: tarotParts.tension || tarotParts.coreQuestion,
               guaText: [meihua.signal, meihua.trend].filter(Boolean).join("\n"),
-              dualText: lang === "zh"
-                ? "牌象先提醒你看见情绪张力，卦象再提醒你观察推进节奏。两者合在一起，重点不是立刻求证，而是降低噪音后再行动。"
-                : "The card points to emotional tension, while the gua points to timing. Together they suggest reducing noise before acting.",
+              dualText: [tarotParts.judgment, meihua.trend].filter(Boolean).join("\n"),
               actionText: lastAction,
+              dontText: tarotParts.avoid || meihua.avoid,
+              watchText: tarotParts.watch || meihua.watch,
+              questionText: question,
               sourceMode: "dual"
             };
             renderStructuredReport(report);
@@ -3284,7 +3305,9 @@
         const parts = {
           coreQuestion: cleanText(tokens.CORE_QUESTION, ""),
           tension: cleanText(tokens.TENSION, ""),
-          judgment: cleanText(tokens.JUDGMENT, "")
+          judgment: cleanText(tokens.JUDGMENT, ""),
+          avoid: cleanTaggedOutputText(tokens.AVOID, ""),
+          watch: cleanTaggedOutputText(tokens.WATCH, "")
         };
         showTarotReading({
           cardMessage: parts.tension,

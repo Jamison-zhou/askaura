@@ -19,9 +19,13 @@ const readingPrompt = readFileSync(new URL("../supabase/functions/_shared/prompt
 assert.match(validator, /CORE_QUESTION/, "core question token is required for tarot");
 assert.match(validator, /TENSION/, "tension token is required for tarot");
 assert.match(validator, /JUDGMENT/, "judgment token is required for tarot");
+assert.match(validator, /AVOID/, "avoid token is required for tarot");
+assert.match(validator, /WATCH/, "watch token is required for tarot");
 assert.match(readingPrompt, /\[CORE_QUESTION\]/, "reading prompt asks for core question");
 assert.match(readingPrompt, /\[TENSION\]/, "reading prompt asks for tension");
 assert.match(readingPrompt, /\[JUDGMENT\]/, "reading prompt asks for judgment");
+assert.match(readingPrompt, /\[AVOID\]/, "reading prompt asks for avoid guidance");
+assert.match(readingPrompt, /\[WATCH\]/, "reading prompt asks for watch guidance");
 
 const tarotCards = ritualEngine.match(/\["[^"]+",\s*"[^"]+",\s*"\d\d-[^"]+\.jpg"\]/g) || [];
 assert.equal(tarotCards.length, 22, "ritual engine tarot deck includes 22 major arcana cards");
@@ -49,6 +53,8 @@ assert.match(html, /id="tarot-core-question"/, "front-end renders core question"
 assert.match(html, /id="tarot-tension"/, "front-end renders tension");
 assert.match(html, /id="tarot-judgment"/, "front-end renders judgment");
 assert.match(html, /renderTarotReading/, "front-end renders structured tarot response");
+assert.match(html, /avoid:\s*cleanTaggedOutputText\(tokens\.AVOID/, "front-end parses AI avoid guidance");
+assert.match(html, /watch:\s*cleanTaggedOutputText\(tokens\.WATCH/, "front-end parses AI watch guidance");
 assert.match(html, /const hasReportSection = Boolean\(tarotText \|\| guaText \|\| dualText\);/, "empty report sections are explicitly detected");
 assert.match(html, /els\.reportStack\.hidden = !\(shouldShowReportStack && hasReportSection\);/, "report stack stays hidden when every report section is empty");
 

@@ -1,0 +1,28 @@
+---
+description: Cursor 内文件引用必须用工作区相对路径，避免无法打开
+alwaysApply: true
+---
+
+# Cursor 文件路径引用
+
+在本工作区（`askaura`）内，凡供用户在 Cursor 中点击或打开的文件，**禁止**使用带盘符的绝对路径。
+
+## 必须
+
+- 代码引用块：仅用工作区相对路径，例如 `DESIGN.md`、`assets/app/storage.js`
+- 告知用户文件位置：写 `DESIGN.md`（项目根目录），不写 `D:\CursorAgentChats\askaura\DESIGN.md`
+- 新建/修改文件：始终写到当前工作区相对路径
+
+## 禁止（会导致「无法打开」）
+
+- `D:\CursorAgentChats\askaura\...`
+- `\CursorAgentChats\askaura\...`
+- 任何 `C:\Users\...` 形式的本仓库内文件绝对路径
+
+## 例外
+
+- 工作区外的路径（如 `C:\Users\17751\.agents\skills\...`）可写绝对路径，但注明需手动打开，不要当作可点击的工作区文件链接。
+
+## 用户打开文件
+
+优先提示：`Ctrl+P` 输入文件名（如 `DESIGN.md`）。

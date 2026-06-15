@@ -60,7 +60,9 @@ assert.match(html, /const meihua = renderMeihuaReading\(meihuaFull\);[\s\S]*guaT
 assert.match(meihuaPrompt, /\[GUA_SIGNAL\]/, "meihua prompt requires signal token");
 assert.match(meihuaPrompt, /\[GUA_TREND\]/, "meihua prompt requires trend token");
 assert.match(meihuaPrompt, /\[ACTION\]/, "meihua prompt keeps action token");
-assert.match(tokenValidator, /"meihua-reading": \["GUA_SIGNAL", "GUA_TREND", "ACTION"\]/, "token validator requires richer meihua output");
+assert.match(meihuaPrompt, /\[AVOID\]/, "meihua prompt asks for avoid guidance");
+assert.match(meihuaPrompt, /\[WATCH\]/, "meihua prompt asks for watch guidance");
+assert.match(tokenValidator, /"meihua-reading": \["GUA_SIGNAL", "GUA_TREND", "ACTION", "AVOID", "WATCH"\]/, "token validator requires richer meihua output");
 assert.match(css, /\.spread-selector,[\s\S]*\.gua-cast-selector/, "spread and gua controls share compact styling");
 assert.match(css, /\.symbol-spread-list \{[\s\S]*display: grid;/, "spread cards have a compact result-panel layout");
 assert.match(css, /\.gua-cast-selector input \{[\s\S]*?background: var\(--control-bg\);[\s\S]*?color: rgba\(240, 237, 229, 0\.78\);/, "gua seed input uses the dark compact control style");

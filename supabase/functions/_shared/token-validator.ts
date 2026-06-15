@@ -4,7 +4,7 @@
 import type { ReadingMode } from "./types.ts";
 
 const REQUIRED_TOKENS: Record<ReadingMode, string[]> = {
-  reading: ["CORE_QUESTION", "TENSION", "JUDGMENT", "ACTION"],
+  reading: ["CORE_QUESTION", "TENSION", "JUDGMENT", "ACTION", "AVOID", "WATCH"],
   advice: ["ACTION"],
   anchor: [
     "ANCHOR_CORE",
@@ -13,7 +13,7 @@ const REQUIRED_TOKENS: Record<ReadingMode, string[]> = {
     "ANCHOR_MOMENT",
     "ANCHOR_TAKEAWAY",
   ],
-  "meihua-reading": ["GUA_SIGNAL", "GUA_TREND", "ACTION"],
+  "meihua-reading": ["GUA_SIGNAL", "GUA_TREND", "ACTION", "AVOID", "WATCH"],
   clarify: ["CLARIFIED_QUESTION", "CLARIFY_NOTE"],
   followup: [],
   "weekly-summary": ["THEME", "STUCK_POINT", "NEXT_ACTION"],

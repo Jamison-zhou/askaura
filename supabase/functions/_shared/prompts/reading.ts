@@ -64,6 +64,10 @@ export function buildReadingPrompt(req: ReadingRequest): string {
 - 不预测未来，不替用户做决定，不使用宿命化语言。
 - 每一段都要回应用户的问题，不写泛泛安慰。
 - 可以结合牌面，但不要写成教材式牌义。
+- 不要把用户问题里的具体对象改写成另一个领域；例如问午餐就必须继续写午餐或餐食，问睡眠就必须继续写睡眠。
+- 如果用户问的是吃饭、睡眠、工作、学习等具体日常问题，不要引入用户没提到的人际关系、承诺、对方或表态。
+- 如果用户问“今晚吃什么/午餐吃什么/点什么”这类轻量选择，直接给餐食选择框架，不要升格成情绪、关系或人生判断。
+- [ACTION]、[AVOID]、[WATCH] 必须尽量复用用户问题里的具体名词。
 - “这次结果提醒你”只给方向，不下定论。
 - “一件小行动”必须是今天或这周能做的具体动作。
 - 全文保持短，像一张短笺。
@@ -82,6 +86,10 @@ ${spreadSpecific}
 
 [ACTION]
 （一件具体可执行的小行动，不超过 40 个中文字）
+[AVOID]
+（今天先不要做的一件事，必须回应用户问题，不超过 40 个中文字）
+[WATCH]
+（接下来观察的一个具体信号，不超过 40 个中文字）
 
 Dynamic context:
 牌阵：${spreadName}
@@ -97,6 +105,10 @@ Boundaries:
 - Do not predict the future, decide for the user, or use fatalistic language.
 - Every section must respond to the question.
 - Use the card or spread, but do not write textbook card meanings.
+- Do not rewrite the user's concrete object into another domain; if they ask about lunch, keep writing about lunch or food; if they ask about sleep, keep writing about sleep.
+- If the user asks about concrete daily topics like food, sleep, work, or study, do not introduce relationships, promises, the other person, or demands for a response unless the user mentioned them.
+- If the user asks "what should I eat tonight/lunch/takeout", give a practical food-choice frame instead of escalating it into emotion, relationships, or a life decision.
+- [ACTION], [AVOID], and [WATCH] should reuse concrete nouns from the user's question where possible.
 - "This result reminds you" gives direction only, not a final decision.
 - "Action" must be something the user can do today or this week.
 - Keep the whole answer compact.
@@ -115,6 +127,10 @@ Strict format, each token on its own line:
 
 [ACTION]
 (One concrete actionable sentence, under 120 chars)
+[AVOID]
+(One thing not to do today, specific to the user's question, under 120 chars)
+[WATCH]
+(One concrete signal to watch next, under 120 chars)
 
 Dynamic context:
 Spread: ${spreadName}

@@ -83,6 +83,8 @@ function payloadFromRecord(row: Record<string, unknown>, includeQuestion: boolea
     || parseToken(answer, "THEME")
     || cleanText(row.answer, 700);
   const action = cleanText(row.action, 420) || parseToken(answer, "ACTION") || parseToken(answer, "NEXT_ACTION");
+  const avoid = parseToken(answer, "AVOID");
+  const watch = parseToken(answer, "WATCH");
   return {
     title: cleanText(row.title, 120),
     mode: cleanText(row.mode, 32),
@@ -90,8 +92,8 @@ function payloadFromRecord(row: Record<string, unknown>, includeQuestion: boolea
     summary,
     action,
     doText: action,
-    dontText: "",
-    watchText: "",
+    dontText: avoid,
+    watchText: watch,
     question: includeQuestion ? cleanText(row.question, 420) : "",
     reviewNote: cleanText(row.review_note, 420),
     createdAt: cleanText(row.created_at, 80),
