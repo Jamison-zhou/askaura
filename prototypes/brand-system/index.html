@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>象问 AskAura · 品牌应用原型</title>
+    <link rel="stylesheet" href="./brand-system.css" />
+  </head>
+  <body>
+    <div class="brand-lab" data-scene="identity" data-device="desktop" data-theme="night">
+      <header class="lab-header">
+        <a class="lab-home" href="../../index.html" aria-label="返回 AskAura 首页">
+          <span class="lab-home__mark symbol-mount" data-logo-symbol></span>
+          <span>
+            <strong>象问</strong>
+            <small>BRAND SYSTEM / 01</small>
+          </span>
+        </a>
+
+        <div class="lab-controls" aria-label="原型控制">
+          <div class="control-group device-control-group" aria-label="预览设备">
+            <button type="button" data-device-control="desktop" aria-pressed="true">桌面</button>
+            <button type="button" data-device-control="mobile" aria-pressed="false">移动</button>
+          </div>
+          <div class="control-group" aria-label="色彩版本">
+            <button type="button" data-theme-control="night" aria-pressed="true">深夜</button>
+            <button type="button" data-theme-control="light" aria-pressed="false">浅色</button>
+            <button type="button" data-theme-control="mono" aria-pressed="false">单色</button>
+          </div>
+          <button class="replay-button" type="button" data-replay>重播动效</button>
+        </div>
+      </header>
+
+      <main class="lab-main">
+        <nav class="scene-nav" aria-label="品牌应用场景">
+          <button type="button" data-scene-control="identity" aria-pressed="true">
+            <span>01</span><strong>主标志</strong><small>Primary</small>
+          </button>
+          <button type="button" data-scene-control="navigation" aria-pressed="false">
+            <span>02</span><strong>导航</strong><small>Navigation</small>
+          </button>
+          <button type="button" data-scene-control="loading" aria-pressed="false">
+            <span>03</span><strong>加载</strong><small>Motion</small>
+          </button>
+          <button type="button" data-scene-control="card" aria-pressed="false">
+            <span>04</span><strong>卡背</strong><small>Card Back</small>
+          </button>
+          <button type="button" data-scene-control="scale" aria-pressed="false">
+            <span>05</span><strong>尺寸</strong><small>Scale Test</small>
+          </button>
+        </nav>
+
+        <section class="stage-shell" aria-live="polite">
+          <div class="stage-device">
+            <section class="scene scene-identity" data-scene-panel="identity" aria-label="主标志预览">
+              <div class="scene-grid" aria-hidden="true"></div>
+              <div class="primary-lockup lockup">
+                <span class="lockup__symbol symbol-mount" data-logo-symbol></span>
+                <span class="lockup__rule" aria-hidden="true"></span>
+                <span class="wordmark">
+                  <strong>象问</strong>
+                  <small>AskAura</small>
+                </span>
+              </div>
+              <p class="brand-line">问一件事，看两种象。</p>
+              <div class="scene-index"><span>ASKAURA</span><span>DUAL OBSERVATION</span><span>V1.0</span></div>
+            </section>
+
+            <section class="scene scene-navigation" data-scene-panel="navigation" aria-label="导航栏应用预览" hidden>
+              <div class="observation-surface" aria-hidden="true"></div>
+              <header class="product-nav">
+                <a class="compact-lockup" href="#" aria-label="象问 AskAura">
+                  <span class="compact-lockup__symbol symbol-mount" data-logo-symbol></span>
+                  <span class="compact-lockup__rule" aria-hidden="true"></span>
+                  <span class="compact-wordmark"><strong>象问</strong><small>AskAura</small></span>
+                </a>
+                <nav aria-label="示例主导航">
+                  <a href="#">回看</a>
+                  <a href="#">脉络</a>
+                  <a href="#">同步</a>
+                  <span></span>
+                  <a class="is-current" href="#">中文</a>
+                  <b>/</b>
+                  <a href="#">En</a>
+                </nav>
+              </header>
+              <div class="navigation-copy">
+                <h1>问一件事，<br />看两种象。</h1>
+                <p>把一时说不清的感受，整理成两个观察角度与今天可以做的一步。</p>
+              </div>
+              <div class="observation-status"><i></i><span>观察通道已连接</span><small>AA / 0716</small></div>
+            </section>
+
+            <section class="scene scene-loading" data-scene-panel="loading" aria-label="加载动画预览" hidden>
+              <div class="loading-field">
+                <div class="loading-symbol symbol-mount is-animated" data-logo-symbol></div>
+                <div class="loading-copy">
+                  <strong>正在建立两种观察</strong>
+                  <span><i></i></span>
+                  <small>DUAL OBSERVATION / CONNECTING</small>
+                </div>
+              </div>
+            </section>
+
+            <section class="scene scene-card" data-scene-panel="card" aria-label="卡背应用预览" hidden>
+              <div class="card-stage">
+                <article class="observation-card observation-card--back">
+                  <span class="card-corner card-corner--tl"></span>
+                  <span class="card-corner card-corner--tr"></span>
+                  <span class="card-corner card-corner--bl"></span>
+                  <span class="card-corner card-corner--br"></span>
+                  <div class="card-axis" aria-hidden="true"></div>
+                  <span class="card-symbol symbol-mount" data-logo-symbol></span>
+                  <div class="card-wordmark"><strong>象问</strong><small>AskAura</small></div>
+                  <p>DUAL OBSERVATION / 01</p>
+                </article>
+                <article class="observation-card observation-card--seal" aria-label="章节封面示例">
+                  <span>CHAPTER 03</span>
+                  <div class="seal-line"><i></i></div>
+                  <h2>观察</h2>
+                  <p>先看清正在发生什么。</p>
+                  <small>AskAura · 象问</small>
+                </article>
+              </div>
+            </section>
+
+            <section class="scene scene-scale" data-scene-panel="scale" aria-label="标志尺寸测试" hidden>
+              <div class="scale-intro">
+                <span>OPTICAL SIZE</span>
+                <h2>同一套几何，<br />适配五种使用距离。</h2>
+              </div>
+              <div class="scale-row">
+                <figure data-size="160"><div class="symbol-mount" data-logo-symbol></div><figcaption><strong>160</strong><span>封面 / 启动</span></figcaption></figure>
+                <figure data-size="96"><div class="symbol-mount" data-logo-symbol></div><figcaption><strong>96</strong><span>章节 / 卡背</span></figcaption></figure>
+                <figure data-size="64"><div class="symbol-mount" data-logo-symbol></div><figcaption><strong>64</strong><span>导航 / 品牌</span></figcaption></figure>
+                <figure data-size="32"><div class="symbol-mount" data-logo-symbol></div><figcaption><strong>32</strong><span>小图标</span></figcaption></figure>
+                <figure data-size="20"><div class="symbol-mount" data-logo-symbol></div><figcaption><strong>20</strong><span>极限检查</span></figcaption></figure>
+              </div>
+              <p class="scale-note">32px 以下仅使用独立标志，不与中英文字标并置。</p>
+            </section>
+          </div>
+        </section>
+
+        <aside class="spec-rail" aria-label="当前设计规范">
+          <div class="spec-heading"><span>SPECIFICATION</span><strong data-scene-title>主标志</strong></div>
+          <dl>
+            <div><dt>母版</dt><dd>D / 双界折线</dd></div>
+            <div><dt>安全区</dt><dd>2 × 节点边长</dd></div>
+            <div><dt>最小尺寸</dt><dd>20 px</dd></div>
+          </dl>
+          <div class="palette" aria-label="品牌色">
+            <button type="button" data-copy-color="#050A10" style="--swatch:#050A10"><i></i><span>#050A10</span></button>
+            <button type="button" data-copy-color="#E9E3D7" style="--swatch:#E9E3D7"><i></i><span>#E9E3D7</span></button>
+            <button type="button" data-copy-color="#9A8669" style="--swatch:#9A8669"><i></i><span>#9A8669</span></button>
+            <button type="button" data-copy-color="#C85A50" style="--swatch:#C85A50"><i></i><span>#C85A50</span></button>
+          </div>
+          <p class="spec-note" data-scene-note>标准组合用于首页、结果页和品牌封面。图形与字标保持清晰层级。</p>
+          <div class="rail-footer"><span>问一件事</span><span>看两种象</span></div>
+        </aside>
+      </main>
+
+      <footer class="lab-footer">
+        <span>AskAura / 象问</span>
+        <span>Independent brand application prototype</span>
+        <span data-status>品牌色 · 桌面</span>
+      </footer>
+    </div>
+
+    <div class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./brand-system.js"></script>
+  </body>
+</html>

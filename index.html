@@ -1,9 +1,22 @@
 ﻿<!doctype html>
-<html lang="zh">
+<html lang="zh" data-theme="night" data-app-ready="false">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>象问 AskAura</title>
+    <link rel="icon" href="./assets/brand/askaura-symbol.svg" type="image/svg+xml" />
+    <script>
+      if (location.protocol === "file:") {
+        const localAppUrl = new URL("http://127.0.0.1:5174/index.html");
+        localAppUrl.search = location.search;
+        localAppUrl.hash = location.hash;
+        location.replace(localAppUrl.href);
+      }
+      try {
+        const savedTheme = localStorage.getItem("askaura.theme.v1");
+        if (["night", "light", "mono"].includes(savedTheme)) document.documentElement.dataset.theme = savedTheme;
+      } catch {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,12 +32,17 @@
       />
     </noscript>
     <link rel="stylesheet" href="./styles.css?v=20260605-low-light-redesign-2" />
+    <link rel="stylesheet" href="./theme-observation.css?v=20260716-cardback-v2" />
     <script>
       window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
       window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
     </script>
   </head>
   <body>
+    <div class="app-boot-state" id="app-boot-state" role="status" aria-live="polite">
+      <img src="./assets/brand/askaura-symbol.svg" alt="" width="52" height="46" />
+      <span>正在准备观察界面</span>
+    </div>
     <div class="mirror-cursor" aria-hidden="true">
       <span class="cursor-ring"></span>
       <span class="cursor-dot"></span>
@@ -37,8 +55,11 @@
 
       <aside class="side-rail">
         <button class="brand" type="button" id="reset-btn" aria-label="回到首页">
-          <strong>象问</strong>
-          <span>AskAura</span>
+          <img class="brand-symbol" src="./assets/brand/askaura-symbol.svg" alt="" width="52" height="46" />
+          <span class="brand-copy">
+            <strong>象问</strong>
+            <span>AskAura</span>
+          </span>
         </button>
 
         <nav class="mode-nav" aria-label="三象入口" aria-hidden="true">
@@ -62,12 +83,23 @@
           <button type="button" id="account-btn" data-i18n="account">登录</button>
         </div>
 
+        <div class="theme-switcher" role="group" aria-label="主题颜色">
+          <button type="button" data-theme-setting="night" data-i18n="themeNight" aria-pressed="true">深夜</button>
+          <button type="button" data-theme-setting="light" data-i18n="themeLight" aria-pressed="false">浅色</button>
+          <button type="button" data-theme-setting="mono" data-i18n="themeMono" aria-pressed="false">单色</button>
+        </div>
+
         <details class="mobile-rail-menu">
           <summary data-i18n="mobileMenu">菜单</summary>
           <div>
             <button type="button" data-mobile-panel="history" data-i18n="history">回看</button>
             <button type="button" data-mobile-panel="companion" data-i18n="companion">同行</button>
             <button type="button" data-mobile-panel="account" data-i18n="account">登录</button>
+            <span class="mobile-theme-switcher" role="group" aria-label="主题颜色">
+              <button type="button" data-theme-setting="night" data-i18n="themeNight" aria-pressed="true">深夜</button>
+              <button type="button" data-theme-setting="light" data-i18n="themeLight" aria-pressed="false">浅色</button>
+              <button type="button" data-theme-setting="mono" data-i18n="themeMono" aria-pressed="false">单色</button>
+            </span>
           </div>
         </details>
 
@@ -103,83 +135,103 @@
 
       <div class="hero-content">
         <section class="copy-block idle-copy">
+          <p class="hero-overline" aria-hidden="true">ASKAURA / DUAL OBSERVATION</p>
           <h1 data-i18n="heroCopy">问一件事，看两种象。</h1>
           <p class="hero-subcopy" data-i18n="heroSubcopy">牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。</p>
+          <div class="hero-protocol" aria-hidden="true">
+            <span>01 / ASK</span>
+            <span>02 / OBSERVE</span>
+            <span>03 / ACT</span>
+          </div>
         </section>
 
         <section class="work-panel compose-panel" aria-label="问题">
           <button class="panel-close" type="button" data-next="idle" aria-label="收起问题">×</button>
-          <span class="panel-index">New reading</span>
+          <span class="panel-index">OBSERVATION / 001</span>
           <p class="panel-kicker" id="question-label" data-i18n="questionLabel">你现在最想看清哪件事？</p>
-          <div class="mode-card-grid" id="mode-card-grid" role="group" aria-label="选择观察方式">
-            <button type="button" class="mode-card is-selected" data-mode-card="tarot" aria-pressed="true">
-              <span class="mode-card-dot" aria-hidden="true"></span>
-              <strong data-i18n="modeTarotResult">牌象解读</strong>
-              <span data-i18n="modeCardTarotCopy">抽取牌象，照见当下处境与情绪线索。</span>
-            </button>
-            <button type="button" class="mode-card" data-mode-card="meihua" aria-pressed="false">
-              <span class="mode-card-dot" aria-hidden="true"></span>
-              <strong data-i18n="modeMeihua">卦象解读</strong>
-              <span data-i18n="modeCardMeihuaCopy">通过卦象结构，观察趋势与推进方式。</span>
-            </button>
-            <button type="button" class="mode-card" data-mode-card="dual" aria-pressed="false">
-              <span class="mode-card-dot" aria-hidden="true"></span>
-              <strong data-i18n="modeDual">双象报告</strong>
-              <span data-i18n="modeCardDualCopy">合并牌象与卦象，整理成一份完整观察。</span>
-            </button>
-          </div>
-          <p class="mode-primer" id="mode-primer" data-i18n="modePrimerTarot">牌象先帮你聚焦问题里的情绪、关系和未说出口的信号。</p>
           <form id="question-form">
+            <div class="question-primary">
+              <textarea
+                id="question-input"
+                rows="4"
+                maxlength="140"
+                data-i18n-placeholder="questionPlaceholder"
+                placeholder="我最近总是睡不着，不知道真正烦的是什么。"
+              ></textarea>
+              <div class="question-assist" id="question-assist" hidden>
+                <span class="question-assist-label" data-i18n="questionAssistLabel">可以先把问题收窄一点</span>
+                <p id="question-assist-note"></p>
+                <button type="button" class="secondary muted" id="question-assist-accept" data-i18n="questionAssistAccept">用这个问题继续</button>
+                <button type="button" class="secondary muted" id="question-assist-original" data-i18n="questionAssistOriginal">按原问题继续</button>
+              </div>
+            </div>
+
+            <div class="question-mode">
+              <div class="mode-card-grid" id="mode-card-grid" role="group" aria-label="选择观察方式">
+                <button type="button" class="mode-card is-selected" data-mode-card="tarot" aria-pressed="true">
+                  <span class="mode-card-dot" aria-hidden="true"></span>
+                  <strong data-i18n="modeTarotResult">牌象解读</strong>
+                  <span data-i18n="modeCardTarotCopy">抽取牌象，照见当下处境与情绪线索。</span>
+                </button>
+                <button type="button" class="mode-card" data-mode-card="meihua" aria-pressed="false">
+                  <span class="mode-card-dot" aria-hidden="true"></span>
+                  <strong data-i18n="modeMeihua">卦象解读</strong>
+                  <span data-i18n="modeCardMeihuaCopy">通过卦象结构，观察趋势与推进方式。</span>
+                </button>
+                <button type="button" class="mode-card" data-mode-card="dual" aria-pressed="false">
+                  <span class="mode-card-dot" aria-hidden="true"></span>
+                  <strong data-i18n="modeDual">双象报告</strong>
+                  <span data-i18n="modeCardDualCopy">合并牌象与卦象，整理成一份完整观察。</span>
+                </button>
+              </div>
+              <p class="mode-primer" id="mode-primer" data-i18n="modePrimerTarot">牌象先帮你聚焦问题里的情绪、关系和未说出口的信号。</p>
+            </div>
+
+            <details class="question-secondary">
+              <summary data-i18n="moreSettings">更多设置</summary>
+              <div class="question-secondary-body">
+              <div class="question-examples" id="question-examples">
+                <button type="button" data-question-example data-i18n="questionExample1">我真正想确认的，是对方态度，还是自己的边界？</button>
+                <button type="button" data-question-example data-i18n="questionExample2">这件事卡住，是缺少信息，还是我急着要答案？</button>
+                <button type="button" data-question-example data-i18n="questionExample3">如果这周只做一步，哪一步最不消耗？</button>
+                <button type="button" data-question-example data-i18n="questionExample4">我现在该观察什么，而不是立刻推进什么？</button>
+              </div>
+              <div class="spread-selector" id="spread-selector">
+                <span data-i18n="spreadSelectorLabel">牌阵</span>
+                <button type="button" class="is-selected" data-spread-type="single" data-i18n="spreadSingle">单牌</button>
+                <button type="button" data-spread-type="three_current_resistance_next" data-i18n="spreadThree">现状 / 阻力 / 下一步</button>
+                <button type="button" data-spread-type="relationship_tension" data-i18n="spreadRelationship">关系张力</button>
+                <button type="button" data-spread-type="choice_a_b_reminder" data-i18n="spreadChoice">选择 A / B</button>
+              </div>
+              <div class="gua-cast-selector" id="gua-cast-selector" hidden>
+                <span data-i18n="guaCastLabel">起卦方式</span>
+                <button type="button" class="is-selected" data-gua-cast="time" data-i18n="guaCastTime">当前时间</button>
+                <button type="button" data-gua-cast="character" data-i18n="guaCastCharacter">一个汉字</button>
+                <button type="button" data-gua-cast="number" data-i18n="guaCastNumber">一个数字</button>
+                <button type="button" data-gua-cast="casual_number" data-i18n="guaCastCasual">随手数字</button>
+                <input id="gua-seed-input" maxlength="12" data-i18n-placeholder="guaSeedPlaceholder" placeholder="输入一个字或数字" hidden />
+              </div>
+              <div class="gua-compose-mark" id="gua-compose-mark" hidden aria-hidden="true">
+                <span></span>
+                <span class="split"><i></i><i></i></span>
+                <span></span>
+                <span></span>
+                <span class="split"><i></i><i></i></span>
+                <span></span>
+              </div>
+              <p class="hint" id="mode-hint" data-i18n="modeHintTarot">适合关系、情绪与选择题。</p>
+              </div>
+            </details>
+
             <div class="signal-row" id="signal-row" aria-hidden="true">
               <span data-i18n="signalTarot">牌象感知</span>
               <span data-i18n="signalGua">卦象生成</span>
               <span data-i18n="signalAi">AI 解读</span>
             </div>
-            <textarea
-              id="question-input"
-              rows="4"
-              maxlength="140"
-              data-i18n-placeholder="questionPlaceholder"
-              placeholder="我最近总是睡不着，不知道真正烦的是什么。"
-            ></textarea>
-            <div class="question-examples" id="question-examples">
-              <button type="button" data-question-example data-i18n="questionExample1">我真正想确认的，是对方态度，还是自己的边界？</button>
-              <button type="button" data-question-example data-i18n="questionExample2">这件事卡住，是缺少信息，还是我急着要答案？</button>
-              <button type="button" data-question-example data-i18n="questionExample3">如果这周只做一步，哪一步最不消耗？</button>
-              <button type="button" data-question-example data-i18n="questionExample4">我现在该观察什么，而不是立刻推进什么？</button>
+            <div class="compose-actions">
+              <button class="primary" type="submit" id="cast-btn" data-i18n="cast">生成解读</button>
+              <p class="privacy-note" data-i18n="privacyNote">你的问题与结果仅对你可见，象问为你保留。</p>
             </div>
-            <div class="question-assist" id="question-assist" hidden>
-              <span class="question-assist-label" data-i18n="questionAssistLabel">可以先把问题收窄一点</span>
-              <p id="question-assist-note"></p>
-              <button type="button" class="secondary muted" id="question-assist-accept" data-i18n="questionAssistAccept">用这个问题继续</button>
-              <button type="button" class="secondary muted" id="question-assist-original" data-i18n="questionAssistOriginal">按原问题继续</button>
-            </div>
-            <div class="spread-selector" id="spread-selector">
-              <span data-i18n="spreadSelectorLabel">牌阵</span>
-              <button type="button" class="is-selected" data-spread-type="single" data-i18n="spreadSingle">单牌</button>
-              <button type="button" data-spread-type="three_current_resistance_next" data-i18n="spreadThree">现状 / 阻力 / 下一步</button>
-              <button type="button" data-spread-type="relationship_tension" data-i18n="spreadRelationship">关系张力</button>
-              <button type="button" data-spread-type="choice_a_b_reminder" data-i18n="spreadChoice">选择 A / B</button>
-            </div>
-            <div class="gua-cast-selector" id="gua-cast-selector" hidden>
-              <span data-i18n="guaCastLabel">起卦方式</span>
-              <button type="button" class="is-selected" data-gua-cast="time" data-i18n="guaCastTime">当前时间</button>
-              <button type="button" data-gua-cast="character" data-i18n="guaCastCharacter">一个汉字</button>
-              <button type="button" data-gua-cast="number" data-i18n="guaCastNumber">一个数字</button>
-              <button type="button" data-gua-cast="casual_number" data-i18n="guaCastCasual">随手数字</button>
-              <input id="gua-seed-input" maxlength="12" data-i18n-placeholder="guaSeedPlaceholder" placeholder="输入一个字或数字" hidden />
-            </div>
-            <div class="gua-compose-mark" id="gua-compose-mark" hidden aria-hidden="true">
-              <span></span>
-              <span class="split"><i></i><i></i></span>
-              <span></span>
-              <span></span>
-              <span class="split"><i></i><i></i></span>
-              <span></span>
-            </div>
-            <p class="hint" id="mode-hint" data-i18n="modeHintTarot">适合关系、情绪与选择题。</p>
-            <button class="primary" type="submit" id="cast-btn" data-i18n="cast">生成解读</button>
-            <p class="privacy-note" data-i18n="privacyNote">你的问题与结果仅对你可见，象问为你保留。</p>
           </form>
         </section>
       </div>
@@ -218,6 +270,21 @@
               <span class="action-sentence-label" data-i18n="actionSentenceLabel" hidden>今日行动</span>
               <p class="action-sentence" id="action-sentence" hidden></p>
             </div>
+            <h3 class="result-section-title action-board-heading" id="action-board-title" data-i18n="nextStepHeading" hidden>下一步怎么做</h3>
+            <div class="action-board" id="action-board" hidden>
+              <section>
+                <span data-i18n="actionDoLabel">今天可以做</span>
+                <p id="action-do"></p>
+              </section>
+              <section>
+                <span data-i18n="actionDontLabel">今天不要做</span>
+                <p id="action-dont"></p>
+              </section>
+              <section>
+                <span data-i18n="actionWatchLabel">接下来观察什么</span>
+                <p id="action-watch"></p>
+              </section>
+            </div>
             <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
               <section>
                 <span data-i18n="tarotCoreLabel">牌面告诉你</span>
@@ -244,21 +311,6 @@
               <section id="report-dual-section">
                 <span data-i18n="reportDualLabel">双象共同指向</span>
                 <p id="report-dual"></p>
-              </section>
-            </div>
-            <h3 class="result-section-title action-board-heading" id="action-board-title" data-i18n="nextStepHeading" hidden>下一步怎么做</h3>
-            <div class="action-board" id="action-board" hidden>
-              <section>
-                <span data-i18n="actionDoLabel">今天可以做</span>
-                <p id="action-do"></p>
-              </section>
-              <section>
-                <span data-i18n="actionDontLabel">今天不要做</span>
-                <p id="action-dont"></p>
-              </section>
-              <section>
-                <span data-i18n="actionWatchLabel">接下来观察什么</span>
-                <p id="action-watch"></p>
               </section>
             </div>
             <div class="action-status" id="action-status" hidden>
@@ -393,6 +445,23 @@
       <div class="ritual-preview-actions" id="ritual-preview-actions" hidden>
         <button class="secondary" type="button" id="ritual-confirm-btn" data-i18n="ritualConfirm">确认这张牌</button>
         <button class="secondary muted" type="button" id="ritual-reselect-btn" data-i18n="ritualReselect">重新选择</button>
+      </div>
+    </div>
+
+    <div class="brand-loading" id="brand-loading" hidden aria-live="polite" aria-label="正在生成解读">
+      <div class="brand-loading-field">
+        <svg class="brand-loading-symbol" viewBox="0 0 256 224" aria-hidden="true">
+          <path class="plane plane-left" d="M28 18 82 47v49L28 67Z" />
+          <path class="plane plane-left" d="M28 83 72 107v58l-44-24Z" />
+          <path class="plane plane-right" d="m187 105 41-22v123l-41-23Z" />
+          <path class="signal-route" d="m70 92 56 29 64 42" />
+          <rect class="signal-node" x="117" y="112" width="18" height="18" rx="2" transform="rotate(12 126 121)" />
+        </svg>
+        <div class="brand-loading-copy">
+          <strong id="brand-loading-text">正在建立两种观察</strong>
+          <span aria-hidden="true"><i></i></span>
+          <small>DUAL OBSERVATION / CONNECTING</small>
+        </div>
       </div>
     </div>
 
@@ -585,6 +654,9 @@
           modeMeihuaRail: "卦象",
           modeDualRail: "双象",
           mobileMenu: "菜单",
+          themeNight: "深夜",
+          themeLight: "浅色",
+          themeMono: "单色",
           modeMeihua: "卦象解读",
           modeDual: "双象报告",
           modeDaily: "每日镜笺",
@@ -618,6 +690,7 @@
           questionExample3: "如果这周只做一步，哪一步最不消耗？",
           questionExample4: "我现在该观察什么，而不是立刻推进什么？",
           spreadSelectorLabel: "牌阵",
+          moreSettings: "更多设置",
           spreadSingle: "单牌",
           spreadThree: "现状 / 阻力 / 下一步",
           spreadRelationship: "关系张力",
@@ -880,6 +953,9 @@
           modeMeihuaRail: "Gua",
           modeDualRail: "Dual",
           mobileMenu: "Menu",
+          themeNight: "Night",
+          themeLight: "Light",
+          themeMono: "Mono",
           modeMeihua: "Gua reading",
           modeDual: "Dual report",
           modeDaily: "Daily note",
@@ -913,6 +989,7 @@
           questionExample3: "If I take only one step this week, which step costs me least?",
           questionExample4: "What should I observe now instead of pushing immediately?",
           spreadSelectorLabel: "Spread",
+          moreSettings: "More settings",
           spreadSingle: "Single",
           spreadThree: "Current / Resistance / Next",
           spreadRelationship: "Relationship tension",
@@ -1257,6 +1334,7 @@
         modeCards: Array.from(document.querySelectorAll("[data-mode-card]")),
         mobileRailMenu: document.querySelector(".mobile-rail-menu"),
         langBtns: Array.from(document.querySelectorAll(".lang-btn")),
+        themeBtns: Array.from(document.querySelectorAll("[data-theme-setting]")),
         nextBtns: Array.from(document.querySelectorAll("[data-next]")),
         historyBtn: document.getElementById("history-btn"),
         companionBtn: document.getElementById("companion-btn"),
@@ -1312,6 +1390,8 @@
         shareLinkStatus: document.getElementById("share-link-status"),
         copyFallbackText: document.getElementById("copy-fallback-text"),
         loading: document.getElementById("loading-line"),
+        brandLoading: document.getElementById("brand-loading"),
+        brandLoadingText: document.getElementById("brand-loading-text"),
         ritualStage: document.getElementById("ritual-stage"),
         ritualDeck: document.getElementById("ritual-deck"),
         ritualStatus: document.getElementById("ritual-status"),
@@ -1400,8 +1480,24 @@
       let activeRitualCancel = null;
       let placeholderIndex = 0;
       let currentRitualStatusKey = "ritualIdle";
+      let brandLoadingStartedAt = 0;
+      const THEME_STORAGE_KEY = "askaura.theme.v1";
       function t(key) {
         return translations[lang][key] || translations.zh[key] || key;
+      }
+
+      function applyTheme(nextTheme, persist = true) {
+        const theme = ["night", "light", "mono"].includes(nextTheme) ? nextTheme : "night";
+        document.documentElement.dataset.theme = theme;
+        els.themeBtns.forEach((button) => {
+          const selected = button.dataset.themeSetting === theme;
+          button.classList.toggle("is-selected", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+        if (!persist) return;
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch {}
       }
 
       function cleanText(value, fallback = t("emptyFallback")) {
@@ -1938,8 +2034,11 @@
           cardButton.style.setProperty("--cut-y", layout.cutY);
           cardButton.style.setProperty("--spread-z", layout.spreadZ);
           cardButton.style.setProperty("--delay", layout.delay);
-          cardButton.innerHTML = '<span class="ritual-card-3d"><span class="ritual-card-back"></span><span class="ritual-card-face"></span></span>';
-          cardButton.querySelector(".ritual-card-face").style.backgroundImage = `url("./assets/cards/${card[2]}")`;
+          cardButton.innerHTML = `
+            <span class="ritual-card-3d" aria-hidden="true">
+              <span class="ritual-card-back"></span>
+              <span class="ritual-card-face"></span>
+            </span>`;
           els.ritualDeck.appendChild(cardButton);
         });
         els.ritualCards = Array.from(els.ritualDeck.querySelectorAll(".ritual-card"));
@@ -1967,6 +2066,29 @@
         currentRitualStatusKey = key;
         if (els.ritualStatus) els.ritualStatus.textContent = t(key);
         if (els.ritualHeading) els.ritualHeading.textContent = t(key);
+      }
+
+      function showBrandLoading(nextMode = mode) {
+        if (!els.brandLoading) return;
+        brandLoadingStartedAt = performance.now();
+        if (els.brandLoadingText) els.brandLoadingText.textContent = t(modeConfig(nextMode).generating);
+        els.brandLoading.hidden = false;
+        els.brandLoading.classList.remove("is-playing");
+        void els.brandLoading.offsetWidth;
+        requestAnimationFrame(() => els.brandLoading.classList.add("is-playing"));
+      }
+
+      async function waitForBrandLoading(minimumMs = 1500) {
+        if (!els.brandLoading || els.brandLoading.hidden || !brandLoadingStartedAt) return;
+        const remaining = minimumMs - (performance.now() - brandLoadingStartedAt);
+        if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
+      }
+
+      function hideBrandLoading() {
+        if (!els.brandLoading) return;
+        els.brandLoading.hidden = true;
+        els.brandLoading.classList.remove("is-playing");
+        brandLoadingStartedAt = 0;
       }
 
       function setNavigationLocked(locked) {
@@ -2022,6 +2144,11 @@
           };
           const choose = (event) => {
             selectedCard = event.currentTarget;
+            const selected = tarotDeck[Number(selectedCard.dataset.cardIndex)];
+            const selectedFace = selectedCard.querySelector(".ritual-card-face");
+            if (selected && selectedFace && !selectedFace.style.backgroundImage) {
+              selectedFace.style.backgroundImage = `url("./assets/cards/${selected[2]}")`;
+            }
             els.ritualCards.forEach((card) => {
               card.removeEventListener("click", choose);
               card.disabled = true;
@@ -2284,6 +2411,7 @@
       function resetExperience() {
         closeCardLightbox();
         hideRitual();
+        hideBrandLoading();
         els.room.dataset.step = "idle";
         syncRailNav();
         els.loading.hidden = true;
@@ -3052,6 +3180,7 @@
         lastQuestion = question;
         try {
           const ritualResult = await playRitual(mode);
+          showBrandLoading(mode);
           hideRitual();
           showResult();
           els.answerPanel.classList.toggle("is-daily-note", mode === "daily");
@@ -3264,6 +3393,8 @@
           });
           console.error(error);
         } finally {
+          await waitForBrandLoading();
+          hideBrandLoading();
           els.loading.hidden = true;
           els.cast.disabled = false;
           els.cast.classList.remove("is-loading");
@@ -4134,6 +4265,7 @@
       els.modeBtns.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
       els.modeCards.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.modeCard)));
       els.langBtns.forEach((btn) => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
+      els.themeBtns.forEach((btn) => btn.addEventListener("click", () => applyTheme(btn.dataset.themeSetting)));
       els.questionExamples.addEventListener("click", (event) => {
         const button = event.target.closest("[data-question-example]");
         if (!button) return;
@@ -4345,6 +4477,7 @@
 
       function boot() {
         buildRitualDeck();
+        applyTheme(document.documentElement.dataset.theme || "night", false);
         applyLanguage("zh");
         setMode("tarot");
         renderHistoryList();
@@ -4367,6 +4500,7 @@
       }
 
       boot();
+      document.documentElement.dataset.appReady = "true";
     </script>
   </body>
 </html>

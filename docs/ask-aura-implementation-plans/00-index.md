@@ -41,6 +41,7 @@ Use this policy when deciding what is still open:
 | Phase 9A ops quality | Complete | Privacy-safe quality metadata, quality events, Admin Ops controls, and rollback controls are done. |
 | Phase 9B/9C ops expansion | Future planning | Prompt CMS, copy CMS, A/B tests, and richer dashboards need a fresh spec before implementation. |
 | Engineering refactor route | Complete | Reading Client, Result Renderer, Followup, History Store, Ritual Engine, and Meihua Engine slices are done. |
+| System Convergence V1 | Planning complete | Product baseline and implementation plan were confirmed on 2026-07-17. Build internally by verified stages, then cut over once as a complete system. |
 | Later roadmap | Future planning | Community, paid packaging, and advanced product ideas are not active implementation tasks until separately scoped. |
 | Pre-release smoke checklist | Active document | Use this as the release-readiness checklist before preview or production validation. |
 
@@ -66,6 +67,30 @@ These documents are completion records unless this index is updated to reopen th
 16. [Refactor Slice: Meihua Engine](./18-refactor-meihua-engine.md)
 
 ## Active Or Blocked Work
+
+### System Convergence V1
+
+**Status:** Planning complete; implementation not started.
+
+**Product specification:** [AskAura System Convergence V1 Product Spec](../askaura-system-convergence-v1-spec.md)
+
+**Implementation plan:** [AskAura System Convergence V1 Implementation Plan](../superpowers/plans/2026-07-17-askaura-system-convergence-v1.md)
+
+**Confirmed product direction:**
+
+- Long-term action and journey are the product core; symbolic ritual is the game-like entry.
+- The complete release includes adaptive home, question-first observation, confirmed insight/action, optional echo, journey workspace, privacy controls, three observation modes, mobile completion, and a lean operations console.
+- Internal construction is staged and independently verified, but users receive one coordinated cutover rather than a sequence of partial redesigns.
+- Existing records remain available as legacy archives and are not automatically converted into user themes or profile claims.
+- The established double-boundary, path, night-water, low-saturation red-node and card-back brand world is locked for this phase.
+
+**Hard boundaries:**
+
+- Do not restore Daily as a public mode.
+- Do not add streaks, coins, levels, complex unlock rewards, or forced reminders.
+- Do not move core observation, action, or echo behind payment.
+- Do not expose raw questions, full answers, action text, or echo notes in product analytics.
+- Do not enable System Convergence V1 by default until migration, rollback, full local tests, authenticated preview smoke, and desktop/mobile browser acceptance pass.
 
 ### Pre-Release Smoke Checklist
 
