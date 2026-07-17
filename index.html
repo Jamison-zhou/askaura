@@ -622,9 +622,11 @@
       } from "./assets/app/followup.js";
       import { buildCompactShareLines as formatCompactShareLines } from "./assets/app/share-text.js";
       import { getAskAuraConfig } from "./assets/app/config.js";
+      import { systemConvergenceEnabled } from "./assets/app/feature-flags.js";
       import { createSyncClient } from "./assets/app/sync.js";
       import { nextToneForMode } from "./assets/app/ui-state.js";
 
+      document.documentElement.dataset.systemVersion = systemConvergenceEnabled() ? "v1" : "legacy";
       const publicConfig = getAskAuraConfig(window);
       const API_URL = publicConfig.supabaseUrl + "/functions/v1/reading";
       const CONFIG_API_URL = publicConfig.supabaseUrl + "/functions/v1/admin-config";
