@@ -40,7 +40,8 @@ assert.match(html, /questionAssistOriginal/, "front-end has original-question co
 
 assert.match(html, /id="ritual-deck"/, "front-end has a ritual deck container");
 assert.match(html, /function buildRitualDeck/, "front-end builds ritual cards from deck data");
-assert.match(html, /tarotDeck\.forEach/, "front-end renders every tarot deck card into the ritual");
+assert.match(html, /ritualVisibleIndexes\(tarotDeck\.length, 15\)/, "front-end limits the visible ritual deck for responsive performance");
+assert.match(html, /visibleIndexes\.forEach/, "front-end renders the selected ritual deck subset");
 assert.match(html, /is-cutting/, "front-end has a cut-card phase");
 assert.match(html, /is-spread/, "front-end has a spread phase");
 assert.match(html, /function waitForCardChoice\(positionLabel = "", excludedIndexes = \[\]\)/, "front-end waits for the user to choose a card with optional spread position");

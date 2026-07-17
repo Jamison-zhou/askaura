@@ -147,7 +147,7 @@
 
         <section id="adaptive-home" class="adaptive-home" aria-label="观察首页" hidden></section>
 
-        <section class="work-panel compose-panel" aria-label="问题">
+        <section class="work-panel compose-panel observation-entry" aria-label="问题">
           <button class="panel-close" type="button" data-next="idle" aria-label="收起问题">×</button>
           <span class="panel-index">OBSERVATION / 001</span>
           <p class="panel-kicker" id="question-label" data-i18n="questionLabel">你现在最想看清哪件事？</p>
@@ -240,7 +240,7 @@
             </div>
             <div class="compose-actions">
               <button class="primary" type="submit" id="cast-btn" data-i18n="cast">生成解读</button>
-              <p class="privacy-note" data-i18n="privacyNote">你的问题与结果仅对你可见，象问为你保留。</p>
+              <p class="privacy-note" data-i18n="privacyNote">默认保存在本机；生成时会发送给 AI 服务处理。</p>
             </div>
           </form>
         </section>
@@ -549,6 +549,9 @@
       <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭登录"></button>
       <section class="utility-sheet auth-sheet" aria-label="登录">
         <button class="utility-close" type="button" data-close-utility aria-label="关闭登录">×</button>
+        <div id="settings-view" class="settings-view"></div>
+        <details class="account-access">
+          <summary>登录与云端同步</summary>
         <p class="panel-kicker" data-i18n="authKicker">同步与备份</p>
         <p class="auth-status" id="auth-status"></p>
         <div class="sync-benefits">
@@ -576,6 +579,7 @@
             <button class="secondary muted" type="button" id="signout-btn" data-i18n="signOut">退出</button>
           </div>
         </form>
+        </details>
       </section>
     </div>
 

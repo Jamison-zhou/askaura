@@ -10,8 +10,12 @@ const indexHtml = appSource;
 const modelRouterTs = readFileSync(new URL("../supabase/functions/_shared/model-router.ts", import.meta.url), "utf8");
 const providerTs = readFileSync(new URL("../supabase/functions/_shared/providers/openai-compatible.ts", import.meta.url), "utf8");
 
-assert.match(adminHtml, /name="models\.basic\.model"/, "admin model router exposes basic model field");
-assert.match(adminHtml, /name="models\.pro\.reasoningEffort"/, "admin model router exposes pro reasoning field");
+assert.doesNotMatch(adminHtml, /name="(?:llm\.provider|llm\.model|models\.basic\.model|models\.pro\.model)"/, "admin does not expose editable provider or model routing fields");
+assert.match(adminHtml, /data-route-status="provider"/, "admin reports the fixed provider as read-only status");
+assert.match(adminHtml, /data-route-status="basicModel"/, "admin reports the basic route as read-only status");
+assert.match(adminHtml, /data-route-status="proModel"/, "admin reports the pro route as read-only status");
+assert.match(adminHtml, /name="models\.basic\.maxTokens"/, "admin still exposes the safe basic token budget");
+assert.match(adminHtml, /name="models\.pro\.reasoningEffort"/, "admin still exposes the pro reasoning policy");
 assert.match(adminHtml, /models:\s*\{\s*basic:\s*\{\s*\},\s*pro:\s*\{\s*\}\s*\}/, "admin form reads model tiers into the config object");
 assert.match(adminHtml, /field\.name\.includes\("\."\)/, "admin form treats dotted names as direct config paths");
 

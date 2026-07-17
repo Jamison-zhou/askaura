@@ -18,6 +18,7 @@ const ENTITLEMENT_TABLE = "askaura_entitlements";
 const USAGE_TABLE = "askaura_usage_events";
 const SHARE_LINK_FUNCTION = "/functions/v1/share-link";
 const RESONANCE_FUNCTION = "/functions/v1/resonance-pool";
+const ACCOUNT_DATA_FUNCTION = "/functions/v1/account-data";
 
 export function createSyncClient({
   supabaseUrl = globalThis.ASKAURA_SUPABASE_URL,
@@ -175,6 +176,42 @@ export function createSyncClient({
     });
 
     return { status: "synced" };
+  }
+
+  function exportData(settings = {}) {
+    return {
+      version: "askaura-export-v1",
+      exportedAt: new Date().toISOString(),
+      records: loadHistory(store),
+      dailyAnchors: [],
+      settings: {
+        theme: settings.theme || "night",
+        language: settings.language || "zh",
+        analyticsDisabled: Boolean(settings.analyticsDisabled),
+      },
+    };
+  }
+
+  async function deleteRecord(recordId) {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+    await requestRest(`/${HISTORY_TABLE}?id=eq.${encodeURIComponent(recordId)}`, {
+      method: "DELETE",
+      session,
+    });
+    return { status: "deleted" };
+  }
+
+  async function deleteAccount() {
+    const session = await ensureSession();
+    if (!session?.access_token) return { status: "signed-out" };
+    await requestFunction(ACCOUNT_DATA_FUNCTION, {
+      method: "POST",
+      session,
+      body: { action: "delete-account" },
+    });
+    signOut();
+    return { status: "deleted" };
   }
 
   async function loadCompanionProfile() {
@@ -420,6 +457,9 @@ export function createSyncClient({
     clearCloudRecords,
     completeSessionFromUrl,
     createShareLink,
+    deleteAccount,
+    deleteRecord,
+    exportData,
     getSession,
     loadCompanionProfile,
     loadDailyAnchor,

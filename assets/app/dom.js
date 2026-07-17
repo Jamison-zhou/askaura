@@ -39,6 +39,7 @@ export function getAppElements(root = document) {
   accountBtn: root.getElementById("account-btn"),
   historyPanel: root.getElementById("history-panel"),
   authPanel: root.getElementById("auth-panel"),
+  settingsView: root.getElementById("settings-view"),
   resonancePanel: root.getElementById("resonance-panel"),
   companionPanel: root.getElementById("companion-panel"),
   journeyView: root.getElementById("journey-view"),

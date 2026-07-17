@@ -1,6 +1,7 @@
       import {
         clearDailyAnchors,
         clearHistory,
+        clearLocalRecords,
         cleanupExpiredTemporaryRecords,
         createStorage,
         loadDailyAnchor,
@@ -16,12 +17,14 @@
         primaryCardFromRecordCards as selectPrimaryCardFromRecordCards,
         recordCardFromSelection as buildRecordCardFromSelection,
         ritualCardLayout,
+        ritualVisibleIndexes,
         ritualSpreadTypeForMode,
         spreadDisplayName as ritualSpreadDisplayName,
         spreadPositions as ritualSpreadPositions
       } from "./ritual-engine.js";
       import { deriveCompanionSnapshot } from "./companion.js";
       import { createReadingClient } from "./reading-client.js";
+      import { createProductEventClient } from "./product-events.js";
       import { buildDualReadingRequest, prepareObservation } from "./controllers/observation-controller.js";
       import {
         addJourneyEcho,
@@ -59,6 +62,7 @@
       import { renderObservationRecommendation } from "./views/observation-view.js";
       import { renderResultWorkflow, setSuccessfulResultActions } from "./views/result-view.js";
       import { renderJourneyView } from "./views/journey-view.js";
+      import { renderSettingsView } from "./views/settings-view.js";
       import { createSyncClient } from "./sync.js";
       import { nextToneForMode } from "./ui-state.js";
       import { getAppElements } from "./dom.js";
@@ -82,6 +86,10 @@
         apiUrl: API_URL,
         authToken: API_AUTH,
         getLlmOptions
+      });
+      const productEvents = createProductEventClient({
+        supabaseUrl: publicConfig.supabaseUrl,
+        anonKey: publicConfig.anonKey
       });
 
       function mergeConfig(target, source) {
@@ -171,6 +179,8 @@
       let currentRitualStatusKey = "ritualIdle";
       let brandLoadingStartedAt = 0;
       const THEME_STORAGE_KEY = "askaura.theme.v1";
+      const LANGUAGE_STORAGE_KEY = "askaura.language.v1";
+      const ANALYTICS_DISABLED_KEY = "askaura.analytics.disabled.v1";
       function t(key) {
         return translations[lang][key] || translations.zh[key] || key;
       }
@@ -212,13 +222,11 @@
         if (button.dataset.homeAction === "start") openObservationEntry();
         if (button.dataset.homeAction === "resume") openObservationEntry(record);
         if (button.dataset.homeAction === "echo") {
-          if (record && showStoredRecord(record)) return;
-          renderHistoryList();
-          openUtilityPanel(els.historyPanel);
+          renderJourney(record?.id || "");
+          openUtilityPanel(els.companionPanel);
         }
         if (button.dataset.homeAction === "journey") {
-          renderHistoryList();
-          openUtilityPanel(els.historyPanel);
+          openCompanionPanel();
         }
       }
 
@@ -405,7 +413,8 @@
       }
 
       function applyLanguage(nextLang) {
-        lang = nextLang;
+        lang = nextLang === "en" ? "en" : "zh";
+        try { localStorage.setItem(LANGUAGE_STORAGE_KEY, lang); } catch {}
         refreshLocalizedUi();
       }
 
@@ -753,13 +762,15 @@
       function buildRitualDeck() {
         if (!els.ritualDeck) return;
         els.ritualDeck.innerHTML = "";
-        tarotDeck.forEach((card, index) => {
+        const visibleIndexes = ritualVisibleIndexes(tarotDeck.length, 15);
+        visibleIndexes.forEach((deckIndex, visibleIndex) => {
+          const card = tarotDeck[deckIndex];
           const cardButton = document.createElement("button");
-          const layout = ritualCardLayout(index, tarotDeck.length);
+          const layout = ritualCardLayout(visibleIndex, visibleIndexes.length);
           cardButton.className = "ritual-card";
           cardButton.type = "button";
           cardButton.disabled = true;
-          cardButton.dataset.cardIndex = String(index);
+          cardButton.dataset.cardIndex = String(deckIndex);
           cardButton.style.setProperty("--card-index", layout.cardIndex);
           cardButton.style.setProperty("--card-mid", layout.cardMid);
           cardButton.style.setProperty("--card-x", layout.cardX);
@@ -824,7 +835,8 @@
 
       async function waitForBrandLoading(minimumMs = 1500) {
         if (!els.brandLoading || els.brandLoading.hidden || !brandLoadingStartedAt) return;
-        const remaining = minimumMs - (performance.now() - brandLoadingStartedAt);
+        const returningMinimum = isSystemV1 && loadHistory(recordStore).length ? Math.min(minimumMs, 600) : minimumMs;
+        const remaining = returningMinimum - (performance.now() - brandLoadingStartedAt);
         if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
       }
 
@@ -1089,6 +1101,7 @@
       function hideQuestionAssist() {
         if (!els.questionAssist) return;
         els.questionAssist.hidden = true;
+        els.questionAssist.classList.remove("support-state", "professional-boundary-state");
         els.questionAssistAccept.hidden = false;
         els.questionAssistOriginal.hidden = false;
         els.questionAssistAccept.onclick = null;
@@ -1153,6 +1166,8 @@
 
       function showSafetyNotice(safetyRoute) {
         els.questionAssist.hidden = false;
+        els.questionAssist.classList.toggle("support-state", safetyRoute.route === "support");
+        els.questionAssist.classList.toggle("professional-boundary-state", safetyRoute.route !== "support");
         els.questionAssistNote.textContent = t(safetyRoute.route === "support" ? "safetySupport" : "safetyProfessional");
         els.questionAssistAccept.hidden = true;
         els.questionAssistOriginal.hidden = true;
@@ -1272,12 +1287,14 @@
         if (!action || !lastRecord) return;
         try {
           if (action === "confirm-insight") {
-            persistJourneyRecord(confirmResultInsight(lastRecord, els.insightInput.value));
+            const record = persistJourneyRecord(confirmResultInsight(lastRecord, els.insightInput.value));
+            productEvents.emit("insight_confirmed", { mode: record.mode, lifecycleState: record.lifecycleState });
           } else if (action === "accept-action") {
-            persistJourneyRecord(confirmResultAction(lastRecord, {
+            const record = persistJourneyRecord(confirmResultAction(lastRecord, {
               action: els.actionInput.value,
               actionTheme: els.actionThemeInput.value
             }));
+            productEvents.emit("action_confirmed", { mode: record.mode, lifecycleState: record.lifecycleState });
           } else if (action === "edit-action") {
             els.actionInput.focus();
             els.actionInput.select();
@@ -1877,6 +1894,12 @@
       }
 
       async function clearAllRecords() {
+        if (isSystemV1) {
+          clearLocalRecords(recordStore);
+          renderHistoryList();
+          updateAuthUi(t("clearDone"));
+          return;
+        }
         clearHistory(recordStore);
         clearDailyAnchors(recordStore);
         renderHistoryList();
@@ -1884,6 +1907,83 @@
           await syncClient.clearCloudRecords();
         }
         updateAuthUi(t("clearDone"));
+      }
+
+      function analyticsDisabled() {
+        try { return localStorage.getItem(ANALYTICS_DISABLED_KEY) === "true"; } catch { return false; }
+      }
+
+      function renderSettings() {
+        if (!els.settingsView) return;
+        renderSettingsView(els.settingsView, {
+          signedIn: Boolean(syncClient.getSession()?.access_token),
+          analyticsDisabled: analyticsDisabled(),
+          theme: document.documentElement.dataset.theme || "night",
+          language: lang
+        });
+      }
+
+      function settingsStatus(message) {
+        const status = els.settingsView?.querySelector("[data-settings-status]");
+        if (status) status.textContent = message;
+      }
+
+      function downloadAccountExport() {
+        const payload = syncClient.exportData({
+          theme: document.documentElement.dataset.theme,
+          language: lang,
+          analyticsDisabled: analyticsDisabled()
+        });
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `askaura-export-${todayKey()}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        settingsStatus("数据已导出。文件不包含登录令牌。 ");
+      }
+
+      async function handleSettingsInteraction(event) {
+        const theme = event.target.closest("[data-settings-theme]")?.dataset.settingsTheme;
+        if (theme) {
+          applyTheme(theme);
+          renderSettings();
+          return;
+        }
+        const language = event.target.closest("[data-settings-language]")?.dataset.settingsLanguage;
+        if (language) {
+          applyLanguage(language);
+          renderSettings();
+          return;
+        }
+        if (event.target.matches("[data-settings-analytics]")) {
+          try { localStorage.setItem(ANALYTICS_DISABLED_KEY, String(!event.target.checked)); } catch {}
+          settingsStatus(event.target.checked ? "匿名产品统计已开启。" : "匿名产品统计已关闭。");
+          return;
+        }
+        const action = event.target.closest("[data-settings-action]")?.dataset.settingsAction;
+        if (!action) return;
+        if (action === "export") {
+          downloadAccountExport();
+        } else if (action === "purge-local") {
+          if (!confirm("只清空这台设备上的象问记录？")) return;
+          clearLocalRecords(recordStore);
+          renderHistoryList();
+          renderAdaptiveHome();
+          renderSettings();
+          settingsStatus("本机记录已清空，云端记录未改变。");
+        } else if (action === "purge-cloud") {
+          if (!confirm("清空当前账号的云端记录？本机记录不会被删除。")) return;
+          const result = await syncClient.clearCloudRecords();
+          settingsStatus(result.status === "synced" ? "云端记录已清空，本机记录未改变。" : "请先登录。");
+        } else if (action === "delete-account") {
+          if (!confirm("删除当前账号及云端数据？这项操作无法撤销。")) return;
+          const result = await syncClient.deleteAccount();
+          settingsStatus(result.status === "deleted" ? "账号已删除。本机记录仍在当前设备。" : "请先登录。");
+          updateAuthUi();
+          renderSettings();
+        }
       }
 
       async function submitAuth(action) {
@@ -2019,6 +2119,8 @@
         setSignalPhase(0);
         els.cast.textContent = t(modeConfig().generating);
         lastQuestion = question;
+        const observationStartedAt = performance.now();
+        productEvents.emit("observation_started", { mode, lifecycleState: "temporary" });
         let generationFailed = false;
         try {
           const ritualResult = await playRitual(mode);
@@ -2252,6 +2354,12 @@
           els.shareImage.disabled = generationFailed;
           els.exportPdf.disabled = generationFailed;
           if (isSystemV1) setSuccessfulResultActions(els, !generationFailed && Boolean(lastRecord));
+          productEvents.emit(generationFailed ? "flow_failed" : "observation_completed", {
+            mode,
+            lifecycleState: lastRecord?.lifecycleState || "",
+            durationMs: performance.now() - observationStartedAt,
+            errorCode: generationFailed ? "generation_failed" : ""
+          });
           els.room.removeAttribute("aria-busy");
           isRunning = false;
           pendingClarificationContext = null;
@@ -2512,6 +2620,15 @@
       function updateResonanceUi(message = "") {
         if (!els.resonanceRevoke || !els.shareLinkStatus) return;
         els.resonanceRevoke.hidden = !currentResonanceSubmission?.id;
+        const eligible = Boolean(
+          lastRecord
+          && lastRecord.lifecycleState !== "temporary"
+          && lastRecord.actionTheme
+          && lastRecord.action
+          && lastRecord.echoStatus
+        );
+        els.resonanceSubmit.disabled = !eligible;
+        els.resonanceSubmit.title = eligible ? "" : "完成一次回声后，才能匿名放入共鸣池。";
         if (message) els.shareLinkStatus.textContent = message;
       }
 
@@ -2530,7 +2647,7 @@
           console.error(error);
           updateResonanceUi(t("resonanceFailed"));
         } finally {
-          els.resonanceSubmit.disabled = false;
+          updateResonanceUi();
         }
       }
 
@@ -2666,6 +2783,7 @@
       function openCompanionPanel() {
         if (isSystemV1) {
           renderJourneyView(els.journeyView, loadHistory(recordStore), { language: lang, echoRecordId: "" });
+          productEvents.emit("journey_reopened", { lifecycleState: "active" });
           openUtilityPanel(els.companionPanel);
           return;
         }
@@ -2702,6 +2820,7 @@
           const updated = addJourneyEcho(record, echoStatus);
           saveHistoryRecord(recordStore, updated);
           syncAfterSave(updated);
+          productEvents.emit("echo_recorded", { mode: updated.mode, lifecycleState: updated.lifecycleState });
           renderJourney();
           renderAdaptiveHome();
           return;
@@ -3213,7 +3332,17 @@
       els.weeklySummarySave.addEventListener("click", saveWeeklySummaryRecord);
       els.accountBtn.addEventListener("click", () => {
         updateAuthUi();
+        renderSettings();
         openUtilityPanel(els.authPanel);
+      });
+      els.settingsView?.addEventListener("click", (event) => {
+        handleSettingsInteraction(event).catch((error) => {
+          console.error(error);
+          settingsStatus("操作没有完成，请稍后再试。");
+        });
+      });
+      els.settingsView?.addEventListener("change", (event) => {
+        handleSettingsInteraction(event).catch((error) => console.error(error));
       });
       els.mobileRailMenu?.addEventListener("click", (event) => {
         const button = event.target.closest("[data-mobile-panel]");
@@ -3382,7 +3511,9 @@
       function boot() {
         buildRitualDeck();
         applyTheme(document.documentElement.dataset.theme || "night", false);
-        applyLanguage("zh");
+        let savedLanguage = "zh";
+        try { savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || "zh"; } catch {}
+        applyLanguage(savedLanguage);
         setMode("tarot");
         renderAdaptiveHome();
         renderHistoryList();

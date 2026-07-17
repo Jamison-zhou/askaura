@@ -28,6 +28,10 @@ const DEFAULT_LABELS = {
 
 export function renderHome(container, state, labels = {}) {
   if (!container) return;
+  const homeClass = state?.kind === "new-user" ? "home-new" : state?.kind === "resume" ? "home-resume" : state?.kind === "echo-due" ? "home-echo" : "home-returning";
+  container.classList.remove("home-new", "home-resume", "home-echo", "home-returning");
+  container.classList.add(homeClass);
+  container.dataset.homeState = state?.kind || "new-user";
   const copy = { ...DEFAULT_LABELS[state?.kind || "new-user"], ...(labels[state?.kind] || {}) };
   const recordId = escapeAttribute(state?.record?.id || "");
   const question = escapeHtml(state?.record?.question || "");

@@ -38,6 +38,7 @@ export interface RuntimeConfig {
     qualityLoggingEnabled?: boolean;
     contentSafetyScanEnabled?: boolean;
     experimentKey?: string;
+    systemConvergenceV1Enabled?: boolean;
     rollbackNote?: string;
   };
   translations?: Record<string, unknown>;
@@ -79,6 +80,7 @@ const DEFAULT_CONFIG: RuntimeConfig = {
     qualityLoggingEnabled: true,
     contentSafetyScanEnabled: true,
     experimentKey: "",
+    systemConvergenceV1Enabled: false,
     rollbackNote: "",
   },
   translations: {},

@@ -13,5 +13,8 @@ for (const column of [
   "source_version",
 ]) assert.match(sql, new RegExp(column), `migration contains ${column}`);
 assert.match(sql, /askaura_records_journey_idx/, "journey lookup has an index");
-assert.doesNotMatch(sql, /askaura_product_events/, "journey migration does not create a second analytics system");
+assert.match(sql, /create table if not exists public\.askaura_product_events/, "migration creates the privacy-safe product event store");
+assert.match(sql, /event_name text not null check/, "product events use an event-name allowlist");
+assert.match(sql, /alter table public\.askaura_product_events enable row level security/, "product events enforce row-level security");
+assert.doesNotMatch(sql, /for insert[\s\S]*askaura_product_events/i, "browser clients cannot insert product events directly");
 console.log("system convergence migration contract passed");

@@ -97,3 +97,9 @@ export function saveDailyAnchor(store = createStorage(), dateKey = todayKey(), r
 export function clearDailyAnchors(store = createStorage()) {
   store.set(DAILY_ANCHOR_KEY, {});
 }
+
+export function clearLocalRecords(store = createStorage()) {
+  clearHistory(store);
+  clearDailyAnchors(store);
+  return { status: "cleared-local" };
+}
