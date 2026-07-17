@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { appSource } from "./helpers/app-source.mjs";
 
 const migration = readFileSync(new URL("../supabase/migrations/202606030010_askaura_resonance_pool.sql", import.meta.url), "utf8");
 const fn = readFileSync(new URL("../supabase/functions/resonance-pool/index.ts", import.meta.url), "utf8");
 const sync = readFileSync(new URL("../assets/app/sync.js", import.meta.url), "utf8");
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appSource;
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const config = readFileSync(new URL("../supabase/config.toml", import.meta.url), "utf8");
 

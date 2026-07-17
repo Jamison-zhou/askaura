@@ -1,12 +1,63 @@
 # AskAura System Convergence V1 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Current execution rule:** Use the streamlined batch workflow below. The detailed task list remains a requirements and acceptance index; do not dispatch one implementer plus two reviewers for every task.
 
 **Goal:** Rebuild AskAura around the complete observation → confirmed insight → action → optional echo → journey loop while preserving the established brand world and shipping the new system as one coordinated release.
 
 **Architecture:** Keep the static HTML/CSS/ES-module stack, but move lifecycle, recommendation, safety, journey derivation, analytics, and view rendering into focused modules. Add an additive Supabase migration and a local-record compatibility layer so existing records remain readable as legacy archives. Build every subsystem behind `askaura.systemConvergenceV1`, verify each slice independently, then enable the flag only after the full browser and data-migration acceptance pass.
 
 **Tech Stack:** Static HTML/CSS, native ES modules, Supabase Auth/REST/Edge Functions, SQL migrations with RLS, Node 24 `.mjs` tests, browser-harness acceptance checks.
+
+---
+
+## Current Execution Workflow (Streamlined)
+
+This is the active delivery workflow for System Convergence V1:
+
+```text
+isolated baseline (complete)
+  -> runtime and release gate (complete)
+  -> extract the inline application from index.html
+  -> implement four cohesive product batches with focused tests
+  -> one holistic code and specification review
+  -> one full Node 24 regression
+  -> one final browser acceptance pass
+  -> delivery
+```
+
+### Workflow rules
+
+- Keep the existing isolated worktree and baseline commit; do not recreate either.
+- The primary agent implements continuously. Do not create a fresh coding agent for each small task.
+- Run focused tests while developing a batch; run the complete suite only at the final regression gate.
+- Use one combined specification and code-quality review after the implementation batches. Add a specialist review only for high-risk database, authentication, account deletion, or safety-routing work.
+- Commit by cohesive batch, not by individual checkbox or copy/style change.
+- Browser automation covers behavior and responsive failures once at the end. Manual review covers visual quality and interaction rhythm; do not repeat every browser scenario twice.
+
+### Engineering Work 0: Modularize `index.html` before feature expansion
+
+1. Mechanically move the existing inline application module into `assets/app/main.js` without changing behavior.
+2. Keep `index.html` responsible only for document structure, stylesheet links, the small first-paint theme bootstrap, and the external module entry.
+3. Add focused shared modules for DOM lookup, application state and language data only when extracted code requires them.
+4. As each product batch is implemented, move the touched behavior into business-domain modules:
+   - `observation/` for question, recommendation and generation orchestration;
+   - `ritual/` for card and gua interaction UI;
+   - `result/` for layered results, insight and action confirmation;
+   - `journey/` for history, echo and lifecycle management;
+   - `account/` for authentication, sync, settings and data controls;
+   - `sharing/` for export, private links and resonance;
+   - `effects/` for canvas and pointer effects.
+5. Do not introduce a framework, bundler, event bus, abstract base classes or a parallel legacy UI.
+6. Target outcomes: `index.html` is roughly markup-sized (about 600 lines), `main.js` becomes composition-only by the end of the product batches, and future features can be registered without adding another large inline script.
+
+### Product batches after modularization
+
+1. **Data and lifecycle:** journey schema, lifecycle transitions, legacy normalization and safety routing.
+2. **Adaptive entry and generation:** adaptive home, question-first recommendation, ritual orchestration and one-request dual reading.
+3. **Result and journey loop:** layered results, confirmed insight/action, echo and journey workspace.
+4. **Settings and secondary capabilities:** accurate privacy controls, account/sync boundaries, sharing/resonance placement, lean operations fixes and visual/performance cleanup.
+
+The detailed tasks below define acceptance details for these batches. They are not the execution unit.
 
 ---
 
@@ -25,6 +76,10 @@
 
 ### UI controllers and views
 
+- Create `assets/app/main.js`: external application entry and final composition root.
+- Create `assets/app/dom.js`: centralized DOM lookup with no business behavior.
+- Create `assets/app/app-state.js`: explicit mutable application state shared through injected dependencies.
+- Create `assets/app/i18n.js`: Chinese and experimental English dictionaries and language helpers.
 - Create `assets/app/views/home-view.js`: new, resume, echo-due and active-journey home states.
 - Create `assets/app/views/observation-view.js`: question-first entry, recommendation and advanced settings.
 - Create `assets/app/views/result-view.js`: layered result, insight selection and action confirmation.

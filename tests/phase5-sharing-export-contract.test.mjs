@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { appSource } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appSource;
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const plan = readFileSync(new URL("../docs/ask-aura-implementation-plans/06-phase-5-sharing-export.md", import.meta.url), "utf8");
 const shareModule = html.slice(html.indexOf("function shareSymbolLabel"), html.indexOf("function followupQuestionText"));

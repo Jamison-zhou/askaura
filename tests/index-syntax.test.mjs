@@ -1,11 +1,10 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { appDom, appHtml, appI18n, appModule } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
-
-assert.ok(match, "index module script exists");
-new vm.SourceTextModule(match[1]);
+assert.match(appHtml, /<script type="module" src="\.\/assets\/app\/main\.js"><\/script>/, "external app module exists");
+new vm.SourceTextModule(appModule);
+new vm.SourceTextModule(appDom);
+new vm.SourceTextModule(appI18n);
 
 console.log("index module syntax passed");

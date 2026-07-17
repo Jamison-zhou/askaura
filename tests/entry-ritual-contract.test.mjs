@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { appHtml, appModule } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appHtml;
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
-const scriptMatch = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 
-assert.ok(scriptMatch, "index module script exists");
+assert.match(html, /<script type="module" src="\.\/assets\/app\/main\.js"><\/script>/, "external app module exists");
 assert.ok(!html.includes("AskAura / Symbolic interpretation"), "home screen does not keep a low-value top eyebrow");
 
-const script = scriptMatch[1];
+const script = appModule;
 
 assert.match(css, /:root \{[\s\S]*--light-cool:/, "low-light redesign tokens exist");
 assert.match(html, /styles\.css\?v=20260605-low-light-redesign-2/, "low-light redesign busts the stylesheet cache");

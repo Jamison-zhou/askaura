@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { appSource } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appSource;
 const types = readFileSync(new URL("../supabase/functions/_shared/types.ts", import.meta.url), "utf8");
 const validator = readFileSync(new URL("../supabase/functions/_shared/token-validator.ts", import.meta.url), "utf8");
 const reading = readFileSync(new URL("../supabase/functions/reading/index.ts", import.meta.url), "utf8");

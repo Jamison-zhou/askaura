@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { appHtml, appModule, appSource } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const scriptMatch = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+const html = appSource;
 
-assert.ok(scriptMatch, "index module script exists");
+assert.match(appHtml, /<script type="module" src="\.\/assets\/app\/main\.js"><\/script>/, "external app module exists");
 assert.match(html, /class="result-layout"/, "result page uses the result layout wrapper");
 assert.match(html, /class="result-symbol-panel"/, "result page has a symbol panel wrapper");
 assert.match(html, /class="result-main-panel"/, "result page has a main result panel wrapper");
@@ -84,7 +84,7 @@ const context = {
   "companionTrailText",
   "copySuccessText",
 ].forEach((name) => {
-  const source = extractFunctionSource(scriptMatch[1], name);
+  const source = extractFunctionSource(appModule, name);
   vm.runInNewContext(`${source}; this.${name} = ${name};`, context);
 });
 

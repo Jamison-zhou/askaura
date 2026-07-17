@@ -3,9 +3,10 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { appSource } from "./helpers/app-source.mjs";
 
 const adminHtml = readFileSync(new URL("../admin.html", import.meta.url), "utf8");
-const indexHtml = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const indexHtml = appSource;
 const modelRouterTs = readFileSync(new URL("../supabase/functions/_shared/model-router.ts", import.meta.url), "utf8");
 const providerTs = readFileSync(new URL("../supabase/functions/_shared/providers/openai-compatible.ts", import.meta.url), "utf8");
 

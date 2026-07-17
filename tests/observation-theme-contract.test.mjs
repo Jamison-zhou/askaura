@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { appSource } from "./helpers/app-source.mjs";
 
-const indexHtml = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const indexHtml = appSource;
 const adminHtml = readFileSync(new URL("../admin.html", import.meta.url), "utf8");
 const themeUrl = new URL("../theme-observation.css", import.meta.url);
 
