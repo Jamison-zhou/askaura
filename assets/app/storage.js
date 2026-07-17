@@ -8,6 +8,7 @@ import {
   normalizeHistory,
   normalizeHistoryRecord
 } from "./history-store.js";
+import { isTemporaryExpired } from "./observation-lifecycle.js";
 
 export { HISTORY_LIMIT };
 
@@ -67,6 +68,13 @@ export function mergeHistory(store = createStorage(), records = []) {
 
 export function clearHistory(store = createStorage()) {
   store.set(HISTORY_KEY, []);
+}
+
+export function cleanupExpiredTemporaryRecords(store = createStorage(), now = new Date()) {
+  const records = loadHistory(store);
+  const retained = records.filter((record) => !isTemporaryExpired(record, now));
+  if (retained.length !== records.length) store.set(HISTORY_KEY, retained);
+  return retained;
 }
 
 export function loadDailyAnchor(store = createStorage(), dateKey = todayKey()) {

@@ -39,6 +39,7 @@ import { loadRuntimeConfig } from "../_shared/runtime-config.ts";
 import { resolveModelRoute } from "../_shared/model-router.ts";
 import { recordUsageEvent, resolveEntitlement } from "../_shared/entitlements.ts";
 import { recordQualityEvent, scanContentSafety } from "../_shared/quality.ts";
+import { routeQuestionSafety } from "../_shared/safety-router.ts";
 
 function isReadingRequest(b: unknown): b is AnyReadingRequest {
   if (!b || typeof b !== "object") return false;
@@ -119,6 +120,19 @@ Deno.serve(async (req: Request) => {
     );
   }
   const reqBody = body;
+
+  const questionForSafety = reqBody.mode === "weekly-summary" || reqBody.mode === "anchor"
+    ? ""
+    : reqBody.mode === "followup"
+    ? reqBody.followupQuestion
+    : reqBody.question;
+  const safetyRoute = routeQuestionSafety(questionForSafety);
+  if (safetyRoute.route === "support") {
+    return jsonResponse({ error: "immediate_support", reason: safetyRoute.reason }, 422);
+  }
+  if (safetyRoute.route === "professional-boundary") {
+    return jsonResponse({ error: "professional_boundary", reason: safetyRoute.reason }, 422);
+  }
 
   const env = new DenoEnv();
   const requestStartedAt = Date.now();
