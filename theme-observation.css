@@ -344,6 +344,133 @@ a:focus-visible {
   margin-top: clamp(10px, 2dvh, 26px);
 }
 
+.adaptive-home {
+  min-height: 420px;
+  padding: clamp(30px, 4vw, 56px);
+  align-self: center;
+  display: grid;
+  align-content: center;
+  gap: 34px;
+  border: 1px solid rgba(233, 227, 215, 0.14);
+  border-radius: 12px;
+  background: linear-gradient(125deg, rgba(233, 227, 215, 0.048), transparent 28%), rgba(5, 10, 16, 0.88);
+  box-shadow: inset 0 1px 0 rgba(233, 227, 215, 0.035);
+}
+
+.adaptive-home-copy {
+  display: grid;
+  gap: 16px;
+}
+
+.adaptive-home-eyebrow,
+.mode-recommendation > span,
+.question-mode-label {
+  color: var(--obs-focus);
+  font-family: var(--obs-font-data);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+.adaptive-home h2 {
+  max-width: 12em;
+  margin: 0;
+  color: var(--obs-ink);
+  font-size: clamp(34px, 3vw, 52px);
+  font-weight: 400;
+  line-height: 1.18;
+}
+
+.adaptive-home p,
+.adaptive-home blockquote {
+  max-width: 38em;
+  margin: 0;
+  color: rgba(233, 227, 215, 0.64);
+  line-height: 1.8;
+}
+
+.adaptive-home blockquote {
+  padding-left: 16px;
+  border-left: 1px solid var(--obs-focus);
+  color: rgba(233, 227, 215, 0.82);
+}
+
+.adaptive-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.adaptive-home-actions .primary {
+  min-width: min(100%, 280px);
+}
+
+.mode-recommendation {
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  align-items: center;
+  gap: 5px 14px;
+  border: 1px solid rgba(154, 134, 105, 0.2);
+  border-radius: 7px;
+  background: rgba(154, 134, 105, 0.055);
+}
+
+.mode-recommendation strong {
+  color: var(--obs-ink);
+  font-weight: 500;
+}
+
+.mode-recommendation p {
+  grid-column: 1 / 3;
+  margin: 0;
+  color: rgba(233, 227, 215, 0.56);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.mode-recommendation button {
+  grid-column: 3;
+  grid-row: 1 / 3;
+}
+
+.question-mode {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 780px) {
+  .adaptive-home {
+    min-height: 0;
+    padding: 24px 20px;
+  }
+
+  .adaptive-home-actions,
+  .adaptive-home-actions button {
+    width: 100%;
+  }
+
+  .mode-recommendation {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-recommendation p,
+  .mode-recommendation button {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
+:root[data-theme="light"] .adaptive-home {
+  border-color: rgba(18, 23, 29, 0.16);
+  background: rgba(235, 229, 216, 0.9);
+}
+
+:root[data-theme="light"] .adaptive-home p,
+:root[data-theme="light"] .adaptive-home blockquote,
+:root[data-theme="light"] .mode-recommendation p {
+  color: rgba(18, 23, 29, 0.66);
+}
+
 .compose-panel form {
   padding: 14px clamp(24px, 2.8vw, 38px) clamp(26px, 3vw, 38px);
   gap: 16px;

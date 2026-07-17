@@ -1,5 +1,14 @@
 export const translations = {
   zh: {
+    modeRecommendationLabel: "推荐观察方式",
+    modeRecommendationDefault: "先从情绪、关系和当下处境开始整理。",
+    modeRecommendationTarot: "这个问题更适合先看清感受、关系和当下处境。",
+    modeRecommendationMeihua: "这个问题更适合观察时机、趋势和推进节奏。",
+    modeRecommendationDual: "这个问题同时涉及感受与时机，可以用两个角度交叉观察；不代表更准确。",
+    modeRecommendationAccept: "采用推荐",
+    modeOverrideLabel: "也可以自己切换",
+    safetySupport: "你现在的安全比继续生成更重要。请立刻联系身边可信任的人、当地紧急服务或危机支持热线，并先离开可能造成伤害的物品或场景。",
+    safetyProfessional: "这个问题涉及需要专业判断的领域。象问不能替代医生、律师或持牌财务顾问；你可以改成询问自己能核实哪些信息、准备哪些问题。",
     heroCopy: "问一件事，看两种象。",
     heroSubcopy: "牌象整理情绪，卦象观察趋势，最后只留下今天能做的一步。",
     discText: "照见",
@@ -299,6 +308,15 @@ export const translations = {
     signOut: "退出"
   },
   en: {
+    modeRecommendationLabel: "Recommended lens",
+    modeRecommendationDefault: "Start by organizing the feelings, relationship, and present context.",
+    modeRecommendationTarot: "This question is better suited to clarifying feelings, relationships, and the present context.",
+    modeRecommendationMeihua: "This question is better suited to observing timing, trend, and pace.",
+    modeRecommendationDual: "This question involves both feeling and timing. Two lenses do not mean greater certainty.",
+    modeRecommendationAccept: "Use recommendation",
+    modeOverrideLabel: "Or choose another lens",
+    safetySupport: "Your immediate safety matters more than generating a reading. Contact someone you trust, local emergency services, or a crisis support line now, and move away from anything you could use to hurt yourself or someone else.",
+    safetyProfessional: "This question needs professional judgment. AskAura cannot replace a doctor, lawyer, or licensed financial adviser. Reframe it around what facts you can verify and what questions to prepare.",
     heroCopy: "Ask one thing. Read two symbols.",
     heroSubcopy: "Card symbols clarify emotion. Gua symbols read momentum. The result ends with one next step.",
     discText: "Mirror",

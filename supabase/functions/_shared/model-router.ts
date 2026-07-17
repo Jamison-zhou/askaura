@@ -49,6 +49,7 @@ function normalizeEntry(req: AnyReadingRequest): ModelEntry {
   if (req.entry) return req.entry;
   if (req.mode === "anchor") return "daily";
   if (req.mode === "meihua-reading") return "meihua";
+  if (req.mode === "dual-reading") return "dual";
   if (req.mode === "followup") return "followup";
   if (req.mode === "weekly-summary") return "weekly";
   if (req.mode === "advice" || req.mode === "clarify") return "followup";

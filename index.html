@@ -145,6 +145,8 @@
           </div>
         </section>
 
+        <section id="adaptive-home" class="adaptive-home" aria-label="观察首页" hidden></section>
+
         <section class="work-panel compose-panel" aria-label="问题">
           <button class="panel-close" type="button" data-next="idle" aria-label="收起问题">×</button>
           <span class="panel-index">OBSERVATION / 001</span>
@@ -166,7 +168,15 @@
               </div>
             </div>
 
+            <section class="mode-recommendation" id="mode-recommendation" aria-live="polite">
+              <span data-i18n="modeRecommendationLabel">推荐观察方式</span>
+              <strong id="mode-recommendation-name" data-i18n="modeTarotResult">牌象解读</strong>
+              <p id="mode-recommendation-reason" data-i18n="modeRecommendationDefault">先从情绪、关系和当下处境开始整理。</p>
+              <button type="button" class="secondary muted" id="mode-recommendation-accept" data-i18n="modeRecommendationAccept">采用推荐</button>
+            </section>
+
             <div class="question-mode">
+              <span class="question-mode-label" data-i18n="modeOverrideLabel">也可以自己切换</span>
               <div class="mode-card-grid" id="mode-card-grid" role="group" aria-label="选择观察方式">
                 <button type="button" class="mode-card is-selected" data-mode-card="tarot" aria-pressed="true">
                   <span class="mode-card-dot" aria-hidden="true"></span>
@@ -484,7 +494,6 @@
           <button type="button" data-history-filter="tarot" data-i18n="modeTarot">牌象</button>
           <button type="button" data-history-filter="meihua" data-i18n="modeMeihua">梅花</button>
           <button type="button" data-history-filter="dual" data-i18n="modeDual">双象</button>
-          <button type="button" data-history-filter="daily" data-i18n="modeDaily">当下</button>
         </div>
         <div class="history-list" id="history-list"></div>
         <div class="weekly-summary" id="weekly-summary">

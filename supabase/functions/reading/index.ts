@@ -20,6 +20,7 @@ import type {
   AnchorRequest,
   AnyReadingRequest,
   ClarifyRequest,
+  DualReadingRequest,
   FollowupRequest,
   MeihuaReadingRequest,
   ReadingMode,
@@ -34,6 +35,7 @@ import { buildClarifyPrompt } from "../_shared/prompts/clarify.ts";
 import { buildFollowupPrompt } from "../_shared/prompts/followup.ts";
 import { buildWeeklySummaryPrompt } from "../_shared/prompts/weekly-summary.ts";
 import { buildMeihuaPrompt } from "../_shared/prompts/meihua.ts";
+import { buildDualPrompt } from "../_shared/prompts/dual.ts";
 import { validateTokens } from "../_shared/token-validator.ts";
 import { loadRuntimeConfig } from "../_shared/runtime-config.ts";
 import { resolveModelRoute } from "../_shared/model-router.ts";
@@ -45,7 +47,7 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
   if (!b || typeof b !== "object") return false;
   const o = b as Record<string, unknown>;
   if (typeof o.mode !== "string") return false;
-  if (!["reading", "advice", "anchor", "meihua-reading", "clarify", "followup", "weekly-summary"].includes(o.mode)) return false;
+  if (!["reading", "advice", "anchor", "meihua-reading", "dual-reading", "clarify", "followup", "weekly-summary"].includes(o.mode)) return false;
   if (o.language !== "zh" && o.language !== "en") return false;
   if (o.mode === "weekly-summary") {
     return Array.isArray(o.records) && o.records.length >= 3;
@@ -62,6 +64,11 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
   if (o.mode === "meihua-reading") {
     return typeof o.guaName === "string" && o.guaName.length > 0;
   }
+  if (o.mode === "dual-reading") {
+    return typeof o.question === "string" && o.question.trim().length > 0 &&
+      typeof o.guaName === "string" && o.guaName.length > 0 &&
+      Array.isArray(o.cards) && o.cards.length > 0;
+  }
   if (typeof o.cardName !== "string" || !o.cardName) return false;
   if (o.orientation !== "upright" && o.orientation !== "reversed") return false;
   return true;
@@ -77,6 +84,8 @@ function buildUserPrompt(req: AnyReadingRequest): string {
       return buildAnchorPrompt(req as AnchorRequest);
     case "meihua-reading":
       return buildMeihuaPrompt(req as MeihuaReadingRequest);
+    case "dual-reading":
+      return buildDualPrompt(req as DualReadingRequest);
     case "clarify":
       return buildClarifyPrompt(req as ClarifyRequest);
     case "followup":
@@ -115,7 +124,7 @@ Deno.serve(async (req: Request) => {
 
   if (!isReadingRequest(body)) {
     return jsonResponse(
-      { error: "Invalid request shape (expected reading/advice/anchor/meihua-reading/clarify/followup/weekly-summary)" },
+      { error: "Invalid request shape (expected reading/advice/anchor/meihua-reading/dual-reading/clarify/followup/weekly-summary)" },
       400,
     );
   }

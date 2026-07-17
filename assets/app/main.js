@@ -1,6 +1,7 @@
       import {
         clearDailyAnchors,
         clearHistory,
+        cleanupExpiredTemporaryRecords,
         createStorage,
         loadDailyAnchor,
         loadHistory,
@@ -21,6 +22,7 @@
       } from "./ritual-engine.js";
       import { deriveCompanionSnapshot } from "./companion.js";
       import { createReadingClient } from "./reading-client.js";
+      import { buildDualReadingRequest, prepareObservation } from "./controllers/observation-controller.js";
       import {
         actionFromRecord as actionFromResultRecord,
         buildActionAdvice,
@@ -44,12 +46,16 @@
       import { buildCompactShareLines as formatCompactShareLines } from "./share-text.js";
       import { getAskAuraConfig } from "./config.js";
       import { systemConvergenceEnabled } from "./feature-flags.js";
+      import { deriveHomeState } from "./journey-model.js";
+      import { renderHome } from "./views/home-view.js";
+      import { renderObservationRecommendation } from "./views/observation-view.js";
       import { createSyncClient } from "./sync.js";
       import { nextToneForMode } from "./ui-state.js";
       import { getAppElements } from "./dom.js";
       import { translations } from "./i18n.js";
 
-      document.documentElement.dataset.systemVersion = systemConvergenceEnabled() ? "v1" : "legacy";
+      const isSystemV1 = systemConvergenceEnabled();
+      document.documentElement.dataset.systemVersion = isSystemV1 ? "v1" : "legacy";
       const publicConfig = getAskAuraConfig(window);
       const API_URL = publicConfig.supabaseUrl + "/functions/v1/reading";
       const CONFIG_API_URL = publicConfig.supabaseUrl + "/functions/v1/admin-config";
@@ -156,6 +162,62 @@
       const THEME_STORAGE_KEY = "askaura.theme.v1";
       function t(key) {
         return translations[lang][key] || translations.zh[key] || key;
+      }
+
+      function renderAdaptiveHome() {
+        if (!isSystemV1 || !els.adaptiveHome) {
+          if (els.adaptiveHome) els.adaptiveHome.hidden = true;
+          els.composePanel.hidden = false;
+          return;
+        }
+        const records = cleanupExpiredTemporaryRecords(recordStore);
+        renderHome(els.adaptiveHome, deriveHomeState(records));
+        els.composePanel.hidden = true;
+        els.room.dataset.step = "idle";
+        syncRailNav();
+      }
+
+      function openObservationEntry(record = null) {
+        if (record) {
+          const nextMode = ["tarot", "meihua", "dual"].includes(record.mode) ? record.mode : "tarot";
+          setMode(nextMode);
+          els.input.value = record.question || "";
+        }
+        if (els.adaptiveHome) els.adaptiveHome.hidden = true;
+        els.composePanel.hidden = false;
+        els.room.dataset.step = "idle";
+        updateModeRecommendation();
+        setTimeout(() => els.input.focus(), 60);
+      }
+
+      function homeRecord(recordId) {
+        return loadHistory(recordStore).find((record) => record.id === recordId) || null;
+      }
+
+      function handleHomeAction(event) {
+        const button = event.target.closest("[data-home-action]");
+        if (!button) return;
+        const record = homeRecord(button.dataset.recordId);
+        if (button.dataset.homeAction === "start") openObservationEntry();
+        if (button.dataset.homeAction === "resume") openObservationEntry(record);
+        if (button.dataset.homeAction === "echo") {
+          if (record && showStoredRecord(record)) return;
+          renderHistoryList();
+          openUtilityPanel(els.historyPanel);
+        }
+        if (button.dataset.homeAction === "journey") {
+          renderHistoryList();
+          openUtilityPanel(els.historyPanel);
+        }
+      }
+
+      function updateModeRecommendation() {
+        if (!els.modeRecommendation) return;
+        renderObservationRecommendation({
+          container: els.modeRecommendation,
+          name: els.modeRecommendationName,
+          reason: els.modeRecommendationReason
+        }, { question: els.input.value, translate: t });
       }
 
       function applyTheme(nextTheme, persist = true) {
@@ -288,7 +350,7 @@
       }
 
       function updateGuaCastSelector() {
-        const show = mode === "meihua";
+        const show = mode === "meihua" || mode === "dual";
         els.guaCastSelector.hidden = !show;
         if (!show) selectedGuaCastMethod = "time";
         els.guaSeedInput.hidden = selectedGuaCastMethod === "time";
@@ -326,6 +388,7 @@
         updatePlaceholderSample(true);
         updateDailyModeState();
         updateCastCopy();
+        updateModeRecommendation();
         renderHistoryList();
         updateAuthUi();
       }
@@ -344,10 +407,9 @@
 
       function setMode(nextMode) {
         if (isRunning) return;
-        const previousMode = mode;
         mode = nextMode;
         if (mode !== "tarot") selectedSpreadType = "single";
-        if (mode !== "meihua") selectedGuaCastMethod = "time";
+        if (mode !== "meihua" && mode !== "dual") selectedGuaCastMethod = "time";
         els.modeCards.forEach((button) => {
           const isSelected = button.dataset.modeCard === mode;
           button.classList.toggle("is-selected", isSelected);
@@ -359,7 +421,6 @@
         resetExperience();
         syncRailNav();
         els.input.disabled = false;
-        if (mode === "meihua" || previousMode === "meihua") els.input.value = "";
         updateModeHint();
         updateModeLabel();
         updateQuestionCopy();
@@ -415,10 +476,10 @@
 
       function prepareDailyCompose() {
         const isDaily = mode === "daily";
-        els.input.hidden = isDaily || mode === "meihua";
+        els.input.hidden = isDaily;
         els.questionExamples.hidden = els.input.hidden;
         els.spreadSelector.hidden = mode !== "tarot";
-        els.guaCastSelector.hidden = mode !== "meihua";
+        els.guaCastSelector.hidden = mode !== "meihua" && mode !== "dual";
         els.guaComposeMark.hidden = mode !== "meihua";
       }
 
@@ -1017,6 +1078,8 @@
       function hideQuestionAssist() {
         if (!els.questionAssist) return;
         els.questionAssist.hidden = true;
+        els.questionAssistAccept.hidden = false;
+        els.questionAssistOriginal.hidden = false;
         els.questionAssistAccept.onclick = null;
         els.questionAssistOriginal.onclick = null;
         els.questionAssistAccept.disabled = false;
@@ -1038,6 +1101,8 @@
         };
 
         els.questionAssist.hidden = false;
+        els.questionAssistAccept.hidden = false;
+        els.questionAssistOriginal.hidden = false;
         els.questionAssistNote.textContent = t("questionAssistWorking");
         els.questionAssistAccept.disabled = true;
         els.questionAssistOriginal.disabled = false;
@@ -1073,6 +1138,14 @@
             updateCastCopy();
           }
         }
+      }
+
+      function showSafetyNotice(safetyRoute) {
+        els.questionAssist.hidden = false;
+        els.questionAssistNote.textContent = t(safetyRoute.route === "support" ? "safetySupport" : "safetyProfessional");
+        els.questionAssistAccept.hidden = true;
+        els.questionAssistOriginal.hidden = true;
+        els.questionAssist.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
 
       function showResult() {
@@ -1838,6 +1911,12 @@
             ? (els.input.value.trim() || (lang === "zh" ? "此刻起卦，观察下一步方向。" : "Cast this moment and read the next direction."))
             : "";
 
+        const preparation = prepareObservation(question);
+        if (preparation.status !== "ready") {
+          showSafetyNotice({ route: preparation.status === "support" ? "support" : "professional-boundary" });
+          return;
+        }
+
         if (!requestDetail.skipQuestionAssist && shouldOfferQuestionAssist(question)) {
           await showQuestionAssist(question);
           return;
@@ -1895,7 +1974,7 @@
               orientation: primaryCard.orientation,
               spreadType: ritualResult.spreadType,
               cards: selectedCards.map(({ name, label, position, orientation }) => ({ name, label, position, orientation })),
-              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
+              intent: lang === "zh" ? "看清" : "clarity",
               question,
               round: 1,
               sessionHistory: clarificationHistoryText(clarificationContext),
@@ -1940,7 +2019,7 @@
               tier: "basic",
               entry: "meihua",
               guaName: gua.name,
-              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
+              intent: lang === "zh" ? "看清" : "clarity",
               question,
               language: lang
             }, renderAction);
@@ -1977,41 +2056,32 @@
             renderGua(gua.binary);
             els.answerKicker.textContent = `${t("modeDual")} · ${primaryCard.imageAlt} / ${lang === "zh" ? gua.name : gua.en}`;
             updateSymbolSummary({ sourceMode: "dual", name: els.cardImage.alt, question, cards: selectedCards });
-            const tarotFull = await streamReading({
-              mode: "reading",
-              tier: "basic",
-              entry: "dual",
-              cardName: primaryCard.name,
-              orientation: primaryCard.orientation,
-              spreadType: "single",
+            const full = await streamReading(buildDualReadingRequest({
+              question,
               cards: selectedCards.map(({ name, label, position, orientation }) => ({ name, label, position, orientation })),
-              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
-              question,
-              round: 1,
-              sessionHistory: "",
-              language: lang
-            }, renderAction);
-            const tarotParts = renderTarotReading(tarotFull);
-            const meihuaFull = await streamReading({
-              mode: "meihua-reading",
-              tier: "basic",
-              entry: "dual",
               guaName: gua.name,
-              intent: lang === "zh" ? "鐪嬫竻" : "clarity",
-              question,
-              language: lang
-            }, renderAction);
-            const meihua = renderMeihuaReading(meihuaFull);
-            const meihuaAction = meihua.action;
-            showDualReading(tarotParts, gua, meihuaAction);
+              language: lang,
+              intent: lang === "zh" ? "看清" : "clarity"
+            }), renderAction);
+            const tokens = parseTokens(full);
+            const tarotParts = {
+              coreQuestion: cleanTaggedOutputText(tokens.TAROT_EVIDENCE, ""),
+              tension: cleanTaggedOutputText(tokens.TAROT_EVIDENCE, ""),
+              judgment: cleanTaggedOutputText(tokens.SUMMARY, ""),
+              avoid: cleanTaggedOutputText(tokens.AVOID, ""),
+              watch: cleanTaggedOutputText(tokens.WATCH, "")
+            };
+            const guaEvidence = cleanTaggedOutputText(tokens.GUA_EVIDENCE, "");
+            renderAction(full);
+            showDualReading(tarotParts, gua, lastAction);
             const report = {
               summary: tarotParts.judgment || (lang === "zh" ? "牌象和卦象都在提醒你先降低噪音，再决定下一步。" : "Card and gua signals both suggest reducing noise before choosing the next step."),
               tarotText: tarotParts.tension || tarotParts.coreQuestion,
-              guaText: [meihua.signal, meihua.trend].filter(Boolean).join("\n"),
-              dualText: [tarotParts.judgment, meihua.trend].filter(Boolean).join("\n"),
+              guaText: guaEvidence,
+              dualText: tarotParts.judgment,
               actionText: lastAction,
-              dontText: tarotParts.avoid || meihua.avoid,
-              watchText: tarotParts.watch || meihua.watch,
+              dontText: tarotParts.avoid,
+              watchText: tarotParts.watch,
               questionText: question,
               sourceMode: "dual"
             };
@@ -2020,7 +2090,7 @@
               mode: "dual",
               title: els.answerKicker.textContent,
               question,
-              answer: `${tarotFull}\n${meihuaFull}`,
+              answer: full,
               action: lastAction,
               reading: tarotParts,
               report,
@@ -2931,11 +3001,22 @@
       }
 
       els.nextBtns.forEach((button) => button.addEventListener("click", () => {
+        if (isSystemV1 && button.dataset.next === "idle") {
+          resetExperience();
+          renderAdaptiveHome();
+          return;
+        }
         els.room.dataset.step = button.dataset.next;
         syncRailNav();
       }));
+      els.adaptiveHome?.addEventListener("click", handleHomeAction);
       els.modeBtns.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
       els.modeCards.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.modeCard)));
+      els.input.addEventListener("input", updateModeRecommendation);
+      els.modeRecommendationAccept?.addEventListener("click", () => {
+        const recommendedMode = els.modeRecommendation.dataset.recommendedMode || "tarot";
+        setMode(recommendedMode);
+      });
       els.langBtns.forEach((btn) => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
       els.themeBtns.forEach((btn) => btn.addEventListener("click", () => applyTheme(btn.dataset.themeSetting)));
       els.questionExamples.addEventListener("click", (event) => {
@@ -3077,6 +3158,7 @@
       });
       els.reset.addEventListener("click", () => {
         resetExperience();
+        renderAdaptiveHome();
       });
       els.ritualClose.addEventListener("click", () => {
         if (activeRitualCancel) activeRitualCancel();
@@ -3152,6 +3234,7 @@
         applyTheme(document.documentElement.dataset.theme || "night", false);
         applyLanguage("zh");
         setMode("tarot");
+        renderAdaptiveHome();
         renderHistoryList();
         updateAuthUi();
         initFieldCanvas();

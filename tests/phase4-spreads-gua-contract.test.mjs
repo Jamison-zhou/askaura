@@ -57,7 +57,8 @@ assert.match(html, /const hasDetailedReport = !els\.tarotReadingGrid\.hidden \|\
 const renderActionBlock = html.match(/function renderAction\(rawText\) \{([\s\S]*?)\n\s*\}/)?.[1] || "";
 assert.match(renderActionBlock, /lastAction = sentence;[\s\S]*return sentence;/, "streaming action text is retained for saving without rendering a duplicate top action");
 assert.doesNotMatch(renderActionBlock, /els\.action\.textContent = sentence/, "streaming action text is not written into the top action slot");
-assert.match(html, /const meihua = renderMeihuaReading\(meihuaFull\);[\s\S]*guaText: \[meihua\.signal, meihua\.trend\]\.filter\(Boolean\)\.join\("\\n"\)/, "dual mode reuses richer meihua report tokens");
+assert.match(html, /streamReading\(buildDualReadingRequest\(\{[\s\S]*question,[\s\S]*cards: selectedCards\.map[\s\S]*guaName: gua\.name,[\s\S]*language: lang/, "dual mode sends both evidence sources through one combined request");
+assert.doesNotMatch(html, /tarotFull|meihuaFull/, "dual mode no longer chains two separate generation requests");
 assert.match(meihuaPrompt, /\[GUA_SIGNAL\]/, "meihua prompt requires signal token");
 assert.match(meihuaPrompt, /\[GUA_TREND\]/, "meihua prompt requires trend token");
 assert.match(meihuaPrompt, /\[ACTION\]/, "meihua prompt keeps action token");

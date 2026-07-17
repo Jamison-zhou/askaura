@@ -14,6 +14,9 @@ assert.match(html, /nextStepHeading/, "action board heading uses the next step t
 assert.match(html, /is-dual-report/, "dual report rendering has a panel-level class hook");
 assert.match(html, /sourceMode === "dual"/, "dual report class is driven by sourceMode");
 assert.match(html, /id="mode-card-grid"/, "front-end renders a mode card selector");
+assert.match(html, /id="adaptive-home"/, "front-end has the adaptive home mount");
+assert.match(html, /deriveHomeState/, "adaptive home is derived from observation lifecycle state");
+assert.match(html, /renderAdaptiveHome/, "adaptive home is part of the boot and reset flow");
 assert.match(html, /data-mode-card="tarot"/, "mode card selector includes tarot mode");
 assert.match(html, /data-mode-card="meihua"/, "mode card selector includes meihua mode");
 assert.match(html, /data-mode-card="dual"/, "mode card selector includes dual mode");
