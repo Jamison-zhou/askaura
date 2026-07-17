@@ -209,3 +209,23 @@ Release is a no-go if any of these are true:
 - Quality, usage, share, or resonance data stores raw private text where the design says it must not.
 - Payment UI or provider-specific payment behavior appears while Phase 8B is still blocked.
 - Mobile layout blocks the primary reading flow.
+
+## 2026-07-17 System Convergence V1 Local Run
+
+**Target:** isolated local worktree, `http://127.0.0.1:5175/index.html`
+
+**Result:** local release candidate passed; production cutover remains gated.
+
+- [x] All 45 `*.test.mjs` files passed under Node 24.18.0.
+- [x] New-user adaptive home opened the question-first observation entry.
+- [x] Question text persisted while manually switching from tarot to meihua.
+- [x] Settings exposed local/cloud scope, AI processing disclosure, analytics opt-out, export, purge controls, theme, and experimental language status.
+- [x] Night, light, and mono themes rendered the new controls with readable themed states.
+- [x] A seeded active observation produced the echo-due home, journey map, echo choices, and persisted a `changed` echo.
+- [x] Desktop 1920×900 and mobile 390×844 had no horizontal overflow; the mobile menu and settings panel opened.
+- [x] Browser event drain contained no runtime or log error entries.
+- [x] Local rollback override switched from V1 to legacy and back while reading the same local records.
+- [ ] Authenticated preview smoke was not run because dedicated smoke credentials were not present.
+- [ ] Default V1 cutover remains disabled until the authenticated preview gate passes.
+
+No deployment, cloud purge, account deletion, or live payment action was performed during this local run.

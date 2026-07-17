@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { addJourneyEcho } from "../assets/app/controllers/journey-controller.js";
 
 const view = readFileSync(new URL("../assets/app/views/journey-view.js", import.meta.url), "utf8");
+const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const sectionPatterns = {
   active: /recordSection\(labels\.active, "active"/,
   echoes: /recordSection\(title, "echoes"/,
@@ -21,5 +22,6 @@ for (const action of ["echo", "pause", "resume", "close", "edit"]) {
 const closed = addJourneyEcho({ lifecycleState: "active" }, "passed", "", new Date("2026-07-17T00:00:00.000Z"));
 assert.equal(closed.echoStatus, "passed");
 assert.equal(closed.lifecycleState, "closed");
+assert.match(css, /\.journey-record-actions button,[\s\S]*?color: var\(--obs-ink/, "journey actions inherit every observation theme");
 
 console.log("journey view contract passed");

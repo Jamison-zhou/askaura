@@ -4649,9 +4649,46 @@ html[data-system-version="v1"] .mobile-theme-switcher {
   gap: 8px;
 }
 
+.settings-options button,
+.settings-actions button {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid var(--obs-line, var(--control-border, rgba(240, 237, 229, 0.14)));
+  border-radius: 9px;
+  background: var(--obs-surface-soft, var(--control-bg, rgba(240, 237, 229, 0.032)));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+  font: inherit;
+}
+
+.settings-options button:hover:not(:disabled),
+.settings-actions button:hover:not(:disabled) {
+  border-color: var(--obs-line-strong, var(--control-border-active, rgba(156, 122, 74, 0.34)));
+  background: var(--obs-surface-hover, rgba(240, 237, 229, 0.07));
+}
+
+.settings-options button:disabled,
+.settings-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .settings-options button[aria-pressed="true"] {
   border-color: rgba(200, 90, 80, 0.62);
-  color: var(--text, #f0ede5);
+  background: var(--obs-accent-soft, rgba(200, 90, 80, 0.11));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+}
+
+.settings-view label:has([data-settings-analytics]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-view [data-settings-analytics] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #c85a50;
 }
 
 .account-access > summary {
@@ -4790,6 +4827,23 @@ html[data-system-version="v1"] .mobile-theme-switcher {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.journey-record-actions button,
+.journey-echo-prompt button {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--obs-line, var(--control-border, rgba(240, 237, 229, 0.14)));
+  border-radius: 9px;
+  background: var(--obs-surface-soft, var(--control-bg, rgba(240, 237, 229, 0.032)));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+  font: inherit;
+}
+
+.journey-record-actions button:hover,
+.journey-echo-prompt button:hover {
+  border-color: var(--obs-line-strong, var(--control-border-active, rgba(156, 122, 74, 0.34)));
+  background: var(--obs-surface-hover, rgba(240, 237, 229, 0.07));
 }
 
 .journey-echo-prompt {
