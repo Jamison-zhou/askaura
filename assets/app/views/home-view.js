@@ -12,7 +12,7 @@ const DEFAULT_LABELS = {
   "echo-due": {
     eyebrow: "ECHO DUE",
     title: "该回来看看后来怎样了",
-    body: "不需要写长复盘，只记录事实有没有变化。",
+    body: "不用写长记录，只留下事实有没有变化。",
   },
   active: {
     eyebrow: "ACTIVE OBSERVATION",

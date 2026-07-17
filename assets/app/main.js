@@ -24,6 +24,14 @@
       import { createReadingClient } from "./reading-client.js";
       import { buildDualReadingRequest, prepareObservation } from "./controllers/observation-controller.js";
       import {
+        addJourneyEcho,
+        confirmResultAction,
+        confirmResultInsight,
+        createTemporaryResult,
+        saveResultObservation,
+        updateJourneyState
+      } from "./controllers/journey-controller.js";
+      import {
         actionFromRecord as actionFromResultRecord,
         buildActionAdvice,
         cleanTaggedOutputText,
@@ -49,6 +57,8 @@
       import { deriveHomeState } from "./journey-model.js";
       import { renderHome } from "./views/home-view.js";
       import { renderObservationRecommendation } from "./views/observation-view.js";
+      import { renderResultWorkflow, setSuccessfulResultActions } from "./views/result-view.js";
+      import { renderJourneyView } from "./views/journey-view.js";
       import { createSyncClient } from "./sync.js";
       import { nextToneForMode } from "./ui-state.js";
       import { getAppElements } from "./dom.js";
@@ -137,6 +147,7 @@
       const tarotDeck = TAROT_DECK;
 
       const els = getAppElements();
+      if (isSystemV1 && els.save) els.save.hidden = true;
 
       let lang = "zh";
       let mode = "tarot";
@@ -1221,10 +1232,13 @@
       }
 
       function saveResultRecord(data) {
-        const record = createRecord({
+        const baseRecord = createRecord({
           ...data,
           title: data.mode === "daily" ? cleanText(data.title, "") : normalizedTitleText(data),
         });
+        const record = isSystemV1 && baseRecord.mode !== "daily"
+          ? createTemporaryResult(baseRecord)
+          : baseRecord;
         saveHistoryRecord(recordStore, record);
         if (record.mode === "daily") saveDailyAnchor(recordStore, todayKey(), record);
         syncAfterSave(record);
@@ -1237,7 +1251,78 @@
         updateActionStatusUi(record.actionStatus || "");
         updateReviewUi(record);
         if (els.save) els.save.textContent = t("savedHistory");
+        if (isSystemV1 && record.mode !== "daily") {
+          renderResultWorkflow(els, record, { language: lang });
+          setSuccessfulResultActions(els, true);
+        }
         return record;
+      }
+
+      function persistJourneyRecord(record) {
+        saveHistoryRecord(recordStore, record);
+        syncAfterSave(record);
+        renderHistoryList();
+        lastRecord = record;
+        if (isSystemV1) renderResultWorkflow(els, record, { language: lang });
+        return record;
+      }
+
+      function handleResultWorkflow(event) {
+        const action = event.target.closest("[data-result-action]")?.dataset.resultAction;
+        if (!action || !lastRecord) return;
+        try {
+          if (action === "confirm-insight") {
+            persistJourneyRecord(confirmResultInsight(lastRecord, els.insightInput.value));
+          } else if (action === "accept-action") {
+            persistJourneyRecord(confirmResultAction(lastRecord, {
+              action: els.actionInput.value,
+              actionTheme: els.actionThemeInput.value
+            }));
+          } else if (action === "edit-action") {
+            els.actionInput.focus();
+            els.actionInput.select();
+          } else if (action === "save-observation") {
+            persistJourneyRecord(saveResultObservation(lastRecord));
+          } else if (action === "leave-temporary") {
+            resetExperience();
+            renderAdaptiveHome();
+          }
+        } catch (error) {
+          els.resultWorkflowStatus.textContent = error.message === "insight_required"
+            ? "请先确认一个属于你的洞见。"
+            : "请保留一个具体、可执行的下一步。";
+        }
+      }
+
+      function handleFailureAction(event) {
+        const action = event.target.closest("[data-failure-action]")?.dataset.failureAction;
+        if (!action) return;
+        if (action === "retry") {
+          els.form.requestSubmit();
+        } else if (action === "later") {
+          resetExperience();
+          renderAdaptiveHome();
+        } else if (action === "edit-question") {
+          els.room.dataset.step = "compose";
+          els.composePanel.hidden = false;
+          setTimeout(() => els.input.focus(), 60);
+        } else if (action === "save-symbol") {
+          const base = createRecord({
+            mode,
+            title: els.answerKicker.textContent || t("answerTitle"),
+            question: lastQuestion,
+            answer: "",
+            action: "",
+            imageSrc: els.cardImage?.getAttribute("src") || "",
+            imageAlt: els.cardImage?.alt || ""
+          });
+          const record = createTemporaryResult(base);
+          saveHistoryRecord(recordStore, record);
+          lastRecord = record;
+          renderHistoryList();
+          resetExperience();
+          renderAdaptiveHome();
+        }
       }
 
       function saveFollowupToCurrentRecord(question, answer) {
@@ -1411,6 +1496,11 @@
           question: record.question || "",
           cards: record.cards || []
         });
+
+        if (isSystemV1 && record.mode !== "daily") {
+          renderResultWorkflow(els, record, { language: lang });
+          setSuccessfulResultActions(els, record.lifecycleState !== "temporary" || Boolean(record.answer));
+        }
 
         return true;
       }
@@ -1929,6 +2019,7 @@
         setSignalPhase(0);
         els.cast.textContent = t(modeConfig().generating);
         lastQuestion = question;
+        let generationFailed = false;
         try {
           const ritualResult = await playRitual(mode);
           showBrandLoading(mode);
@@ -1954,6 +2045,7 @@
           els.exportPdf.disabled = true;
           els.room.setAttribute("aria-busy", "true");
           lastAction = "";
+          lastRecord = null;
 
           if (mode === "tarot") {
             if (!ritualResult?.cards?.length) throw new Error("Card selection missing");
@@ -1996,7 +2088,7 @@
               mode: "tarot",
               title: els.answerKicker.textContent,
               question,
-              answer: lastAction || full,
+              answer: full,
               action: lastAction,
               reading: readingParts,
               report,
@@ -2128,11 +2220,20 @@
             els.room.dataset.step = "compose";
             return;
           }
+          generationFailed = true;
           renderStructuredReport({
             summary: lang === "zh" ? "这次没有等到清晰回应，可以先停一下，稍后换个更具体的问题再试。" : "No clear response arrived this time. Pause, then try again with a more specific question.",
             actionText: lang === "zh" ? "先停一下，稍后换个更具体的问题再试一次。" : "Pause, then try again with a more specific question.",
             sourceMode: mode
           });
+          if (isSystemV1) {
+            renderResultWorkflow(els, {
+              answer: "",
+              action: "",
+              report: { summary: els.resultSummary.textContent }
+            }, { failed: true, language: lang });
+            setSuccessfulResultActions(els, false);
+          }
           console.error(error);
         } finally {
           await waitForBrandLoading();
@@ -2145,11 +2246,12 @@
           els.again.disabled = false;
           els.save.disabled = false;
           els.newReading.disabled = false;
-          els.copy.disabled = false;
-          els.copySummary.disabled = false;
-          els.copyFull.disabled = false;
-          els.shareImage.disabled = false;
-          els.exportPdf.disabled = false;
+          els.copy.disabled = generationFailed;
+          els.copySummary.disabled = generationFailed;
+          els.copyFull.disabled = generationFailed;
+          els.shareImage.disabled = generationFailed;
+          els.exportPdf.disabled = generationFailed;
+          if (isSystemV1) setSuccessfulResultActions(els, !generationFailed && Boolean(lastRecord));
           els.room.removeAttribute("aria-busy");
           isRunning = false;
           pendingClarificationContext = null;
@@ -2562,6 +2664,11 @@
       }
 
       function openCompanionPanel() {
+        if (isSystemV1) {
+          renderJourneyView(els.journeyView, loadHistory(recordStore), { language: lang, echoRecordId: "" });
+          openUtilityPanel(els.companionPanel);
+          return;
+        }
         const snapshot = deriveCompanionSnapshot(loadHistory(recordStore));
         els.companionInsight.textContent = companionInsightText(snapshot);
         renderCompanionList(els.companionTrail, snapshot.observationTrail || [], companionTrailText, "companionTrailEmpty");
@@ -2580,6 +2687,40 @@
         syncClient.saveCompanionProfile(snapshot, snapshot.quietFlags || [])
           .catch((error) => console.warn("Companion sync skipped", error));
         openUtilityPanel(els.companionPanel);
+      }
+
+      function renderJourney(echoRecordId = "") {
+        renderJourneyView(els.journeyView, loadHistory(recordStore), { language: lang, echoRecordId });
+      }
+
+      function handleJourneyInteraction(event) {
+        const echoStatus = event.target.closest("[data-echo-status]")?.dataset.echoStatus;
+        if (echoStatus) {
+          const recordId = event.target.closest(".journey-echo-prompt")?.dataset.echoRecordId;
+          const record = loadHistory(recordStore).find((entry) => entry.id === recordId);
+          if (!record) return;
+          const updated = addJourneyEcho(record, echoStatus);
+          saveHistoryRecord(recordStore, updated);
+          syncAfterSave(updated);
+          renderJourney();
+          renderAdaptiveHome();
+          return;
+        }
+        const button = event.target.closest("[data-journey-action]");
+        if (!button) return;
+        const record = loadHistory(recordStore).find((entry) => entry.id === button.dataset.recordId);
+        if (!record) return;
+        if (button.dataset.journeyAction === "echo") {
+          renderJourney(record.id);
+        } else if (["pause", "resume", "close"].includes(button.dataset.journeyAction)) {
+          const updated = updateJourneyState(record, button.dataset.journeyAction);
+          saveHistoryRecord(recordStore, updated);
+          syncAfterSave(updated);
+          renderJourney();
+          renderAdaptiveHome();
+        } else if (button.dataset.journeyAction === "edit") {
+          if (showStoredRecord(record)) closeUtilityPanels();
+        }
       }
 
       async function copyShareText(kind) {
@@ -3041,6 +3182,15 @@
         if (selectedGuaCastMethod !== "time") els.guaSeedInput.focus();
       });
       els.form.addEventListener("submit", runExperience);
+      els.resultWorkflow?.addEventListener("click", (event) => {
+        handleResultWorkflow(event);
+        handleFailureAction(event);
+      });
+      els.actionInput?.addEventListener("input", () => {
+        if (!lastRecord || !els.acceptAction) return;
+        els.acceptAction.disabled = !lastRecord.selectedInsight || !els.actionInput.value.trim();
+      });
+      els.journeyView?.addEventListener("click", handleJourneyInteraction);
       els.actionStatus.addEventListener("click", (event) => {
         const button = event.target.closest("[data-action-status]");
         if (!button) return;

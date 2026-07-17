@@ -280,6 +280,38 @@
               <span class="action-sentence-label" data-i18n="actionSentenceLabel" hidden>今日行动</span>
               <p class="action-sentence" id="action-sentence" hidden></p>
             </div>
+            <section class="result-workflow" id="result-workflow" data-result-step="summary" hidden>
+              <div class="result-confirmation" id="result-confirmation">
+                <span class="result-workflow-label">把这次观察变成你自己的判断</span>
+                <label>
+                  <span>我确认的洞见</span>
+                  <textarea id="insight-input" rows="2" maxlength="220"></textarea>
+                </label>
+                <button type="button" data-result-action="confirm-insight" id="confirm-insight-btn">确认这个洞见</button>
+                <label>
+                  <span>今天可以做的一步</span>
+                  <textarea id="action-input" rows="2" maxlength="180"></textarea>
+                </label>
+                <label class="action-theme-field">
+                  <span>给这一步一个主题（可编辑）</span>
+                  <input id="action-theme-input" type="text" maxlength="40" placeholder="例如：边界、沟通、休息" />
+                </label>
+                <div class="result-confirmation-actions">
+                  <button type="button" data-result-action="accept-action" id="accept-action-btn" disabled>接受这一步，加入旅程</button>
+                  <button type="button" data-result-action="edit-action" id="edit-action-btn">编辑行动</button>
+                  <button type="button" data-result-action="save-observation" id="save-observation-btn">只保存这次观察</button>
+                  <button type="button" data-result-action="leave-temporary" id="leave-temporary-btn">先离开，保留 7 天</button>
+                </div>
+                <p id="result-workflow-status" aria-live="polite"></p>
+              </div>
+              <div class="failure-actions" id="failure-actions" hidden>
+                <strong>这次生成没有完成</strong>
+                <button type="button" data-failure-action="retry">重新生成</button>
+                <button type="button" data-failure-action="later">稍后继续</button>
+                <button type="button" data-failure-action="save-symbol">只保存问题与象</button>
+                <button type="button" data-failure-action="edit-question">修改问题</button>
+              </div>
+            </section>
             <h3 class="result-section-title action-board-heading" id="action-board-title" data-i18n="nextStepHeading" hidden>下一步怎么做</h3>
             <div class="action-board" id="action-board" hidden>
               <section>
@@ -295,6 +327,9 @@
                 <p id="action-watch"></p>
               </section>
             </div>
+            <details class="result-evidence" id="result-evidence" data-result-action="expand-evidence">
+              <summary>查看完整依据</summary>
+              <p class="result-evidence-text" id="result-evidence-text"></p>
             <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
               <section>
                 <span data-i18n="tarotCoreLabel">牌面告诉你</span>
@@ -323,6 +358,7 @@
                 <p id="report-dual"></p>
               </section>
             </div>
+            </details>
             <div class="action-status" id="action-status" hidden>
               <span data-i18n="actionStatusLabel">这一步后来怎么样？</span>
               <div>
@@ -333,10 +369,10 @@
               </div>
             </div>
             <div class="review-box" id="review-box" hidden>
-              <span data-i18n="reviewLabel">三天后复盘</span>
+              <span data-i18n="reviewLabel">三天后回声</span>
               <p id="review-status"></p>
               <textarea id="review-note-input" rows="3" maxlength="180" data-i18n-placeholder="reviewPlaceholder" placeholder="三天后，这个行动带来了什么变化？"></textarea>
-              <button type="button" class="secondary muted" id="review-save-btn" data-i18n="reviewSave">保存复盘</button>
+              <button type="button" class="secondary muted" id="review-save-btn" data-i18n="reviewSave">保存回声</button>
             </div>
             <div class="result-followup-section" id="result-followup-section">
               <div class="followup-chips" id="followup-chips" hidden aria-label="继续探索这次结果">
@@ -351,7 +387,7 @@
                     <button type="button" data-followup-question="push" data-i18n="followupPush">如果我主动推进，会发生什么？</button>
                     <button type="button" data-followup-question="avoid" data-i18n="followupAvoid">我现在最该避免什么？</button>
                     <button type="button" data-followup-question="blocker" data-i18n="followupBlocker">这件事真正的阻力是什么？</button>
-                    <button type="button" data-followup-question="review" data-i18n="followupReview">三天后我该如何复盘？</button>
+                    <button type="button" data-followup-question="review" data-i18n="followupReview">三天后，我应该留意什么变化？</button>
                   </div>
                 </div>
                 <div class="followup-group followup-ritual-group">
@@ -557,6 +593,8 @@
       <button class="utility-backdrop" type="button" data-close-utility aria-label="关闭同行"></button>
       <section class="utility-sheet companion-panel" aria-label="长期同行">
         <button class="utility-close" type="button" data-close-utility aria-label="关闭同行">×</button>
+        <div id="journey-view" class="journey-workspace"></div>
+        <div class="legacy-companion-view" hidden aria-hidden="true">
         <p class="panel-kicker" data-i18n="companionKicker">长期同行</p>
         <p class="panel-helper" data-i18n="companionIntro">保存 3 次以上后，这里会开始整理重复出现的牌象、主题和行动。</p>
         <p class="companion-insight" id="companion-insight"></p>
@@ -581,6 +619,7 @@
             <span data-i18n="companionCollection">象与行动</span>
             <div id="companion-collection"></div>
           </section>
+        </div>
         </div>
       </section>
     </div>
