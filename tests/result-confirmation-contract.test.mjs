@@ -9,6 +9,7 @@ import {
 } from "../assets/app/controllers/journey-controller.js";
 
 const view = readFileSync(new URL("../assets/app/views/result-view.js", import.meta.url), "utf8");
+const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const actions = ["confirm-insight", "accept-action", "edit-action", "save-observation", "leave-temporary", "expand-evidence"];
 actions.forEach((action) => assert.match(appSource, new RegExp(`data-result-action="${action}"`), `result exposes ${action}`));
 assert.match(appSource, /<details class="result-evidence"[\s\S]*id="result-evidence-text"/, "complete AI evidence is collapsed by default");
@@ -27,5 +28,15 @@ assert.ok(active.echoDueAt);
 const failureActions = [...appSource.matchAll(/data-failure-action="([^"]+)"/g)].map((match) => match[1]);
 assert.deepEqual(failureActions, ["retry", "later", "save-symbol", "edit-question"]);
 assert.match(view, /setSuccessfulResultActions/, "successful-result controls share one disabled-state boundary");
+assert.match(
+  css,
+  /\.result-confirmation textarea,[\s\S]*?\.result-confirmation input \{[\s\S]*?background: var\(--obs-surface-soft,[\s\S]*?color: var\(--obs-ink,/,
+  "result workflow fields use the observation theme instead of browser defaults",
+);
+assert.match(
+  css,
+  /\.result-confirmation > button,[\s\S]*?\.result-confirmation-actions button,[\s\S]*?\.failure-actions button \{[\s\S]*?background: var\(--obs-surface-soft,[\s\S]*?color: var\(--obs-ink,/,
+  "result workflow buttons stay legible on dark themes",
+);
 
 console.log("result confirmation contract passed");

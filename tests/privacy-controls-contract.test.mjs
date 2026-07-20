@@ -17,5 +17,6 @@ assert.match(sync, /dailyAnchors: \[\]/);
 assert.doesNotMatch(sync.match(/function exportData[\s\S]*?\n  }/)?.[0] || "", /access_token|refresh_token/);
 assert.match(css, /\.settings-options button,[\s\S]*?color: var\(--obs-ink/, "settings controls inherit every observation theme");
 assert.match(css, /\[data-settings-analytics\][\s\S]*?accent-color:/, "analytics preference uses a compact themed checkbox");
+assert.match(css, /\.utility-close \{[\s\S]*?z-index: 2;/, "utility close button stays above rendered panel content");
 
 console.log("privacy controls contract passed");
