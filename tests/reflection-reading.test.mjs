@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 
-import { REFLECTION_DECK_VERSION } from "../assets/app/reflection-deck.js";
+import {
+  REFLECTION_DECK,
+  REFLECTION_DECK_VERSION,
+} from "../assets/app/reflection-deck.js";
 import {
   buildReflectionReadingRequest,
   completeReflectionReading,
@@ -96,6 +99,50 @@ assert.throws(
   () => buildReflectionReadingRequest({ cards: null, question: "test" }),
   new Error("Reflection card selection missing"),
 );
+assert.throws(
+  () => buildReflectionReadingRequest({ cards: [card(), card()], question: "test" }),
+  new Error("Reflection spread requires one or three cards"),
+);
+assert.throws(
+  () => buildReflectionReadingRequest({ cards: [null], question: "test" }),
+  new Error("Reflection card selection missing"),
+);
+assert.throws(
+  () => buildReflectionReadingRequest({ cards: new Array(1), question: "test" }),
+  new Error("Reflection card selection missing"),
+);
+assert.throws(
+  () => buildReflectionReadingRequest({ cards: [{}], question: "test" }),
+  new Error("Reflection card selection missing"),
+);
+assert.throws(
+  () => buildReflectionReadingRequest({ cards: ["not-a-card"], question: "test" }),
+  new Error("Reflection card selection missing"),
+);
+
+const zhCnRequest = buildReflectionReadingRequest({
+  cards: [card()],
+  question: "test",
+  language: "zh-CN",
+});
+assert.equal(zhCnRequest.language, "zh");
+assert.equal(zhCnRequest.intent, "看清");
+
+const emptyLanguageRequest = buildReflectionReadingRequest({
+  cards: [card()],
+  question: "test",
+  language: "",
+});
+assert.equal(emptyLanguageRequest.language, "zh");
+assert.equal(emptyLanguageRequest.intent, "看清");
+
+const regionalEnglishRequest = buildReflectionReadingRequest({
+  cards: [card()],
+  question: "test",
+  language: "en-US",
+});
+assert.equal(regionalEnglishRequest.language, "en");
+assert.equal(regionalEnglishRequest.intent, "clarity");
 
 assert.deepEqual(
   parseReflectionReading(`
@@ -119,6 +166,17 @@ assert.deepEqual(parseReflectionReading("[REFLECTION] 只保留 已知事实"), 
   verify: "",
   action: "",
 });
+
+const inlineLowercase = parseReflectionReading(
+  "[reflection] First fact [hidden] Untested idea [verify] Check the source [action] Ask one question",
+);
+assert.deepEqual(inlineLowercase, {
+  reflection: "First fact",
+  hidden: "Untested idea",
+  verify: "Check the source",
+  action: "Ask one question",
+});
+assert.doesNotMatch(Object.values(inlineLowercase).join(" "), /\[(reflection|hidden|verify|action)\]/i);
 
 const cardCompleted = completeReflectionReading(
   "[REFLECTION] AI 已写的观察\n[ACTION] AI 已写的动作",
@@ -165,6 +223,45 @@ assert.doesNotMatch(
   [...Object.values(zhDefault), ...Object.values(enDefault)].join(" "),
   /算命|玄学|转运|灵签|改运|命中注定|will definitely|guaranteed|destiny/i,
 );
+
+const zhLocalizedCard = completeReflectionReading("", [{
+  ...card(),
+  visibleLineZh: "明确的中文观察",
+  hiddenLineZh: "明确的中文假设",
+  reflectionQuestionsZh: ["明确的中文核验"],
+  actionSeedsZh: ["明确的中文动作"],
+}], "zh-CN");
+assert.deepEqual(zhLocalizedCard, {
+  reflection: "明确的中文观察",
+  hidden: "明确的中文假设",
+  verify: "明确的中文核验",
+  action: "明确的中文动作",
+});
+
+assert.deepEqual(completeReflectionReading("", null, ""), zhDefault);
+
+const enFromGenericZhCard = completeReflectionReading(
+  "[REFLECTION] Keep this AI observation.",
+  [card()],
+  "en-US",
+);
+assert.deepEqual(enFromGenericZhCard, {
+  reflection: "Keep this AI observation.",
+  hidden: enDefault.hidden,
+  verify: enDefault.verify,
+  action: enDefault.action,
+});
+assert.doesNotMatch(Object.values(enFromGenericZhCard).join(" "), /[\u3400-\u9fff]/);
+
+for (const deckCard of REFLECTION_DECK) {
+  const deckCardEnglish = completeReflectionReading("", [deckCard], "en-GB");
+  assert.deepEqual(deckCardEnglish, {
+    reflection: deckCard.visibleLineEn,
+    hidden: deckCard.hiddenLineEn,
+    verify: deckCard.reflectionQuestionsEn[0],
+    action: deckCard.actionSeedsEn[0],
+  }, `${deckCard.id} should use explicit English fallback fields`);
+}
 
 const emptyCardAction = completeReflectionReading(
   "[REFLECTION] Existing",

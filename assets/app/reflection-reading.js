@@ -5,6 +5,14 @@ function clean(value) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
+function normalizeLanguage(language) {
+  return /^en(?:-|$)/i.test(clean(language)) ? "en" : "zh";
+}
+
+function isValidCard(card) {
+  return Boolean(card && typeof card === "object" && !Array.isArray(card) && clean(card.name));
+}
+
 function requestCard(card = {}) {
   return {
     id: card.id,
@@ -33,7 +41,15 @@ export function buildReflectionReadingRequest({
     throw new Error("Reflection card selection missing");
   }
 
-  const selectedCards = cards.slice(0, 3);
+  const selectedCards = Array.from(cards.slice(0, 3));
+  if (selectedCards.some((card) => !isValidCard(card))) {
+    throw new Error("Reflection card selection missing");
+  }
+  if (selectedCards.length === 2) {
+    throw new Error("Reflection spread requires one or three cards");
+  }
+
+  const normalizedLanguage = normalizeLanguage(language);
   return {
     mode: "reading",
     tier: "basic",
@@ -42,16 +58,20 @@ export function buildReflectionReadingRequest({
     cardName: clean(selectedCards[0].name),
     spreadType: selectedCards.length === 3 ? "reflection_triad" : "single",
     cards: selectedCards.map(requestCard),
-    intent: language === "zh" ? "看清" : "clarity",
+    intent: normalizedLanguage === "zh" ? "看清" : "clarity",
     question: clean(question),
     round: 1,
     sessionHistory: clean(sessionHistory),
-    language,
+    language: normalizedLanguage,
   };
 }
 
 export function parseReflectionReading(rawText) {
-  const tokens = parseTaggedTokens(rawText);
+  const normalizedText = String(rawText ?? "").replace(
+    /\[(REFLECTION|HIDDEN|VERIFY|ACTION)\]/gi,
+    (_, tag) => `\n[${tag.toUpperCase()}] `,
+  );
+  const tokens = parseTaggedTokens(normalizedText);
   return {
     reflection: clean(tokens.REFLECTION),
     hidden: clean(tokens.HIDDEN),
@@ -75,15 +95,33 @@ const DEFAULTS = {
   },
 };
 
+function cardFallback(card, field, language, { list = false } = {}) {
+  const localizedField = `${field}${language === "zh" ? "Zh" : "En"}`;
+  const localizedValue = list ? card?.[localizedField]?.[0] : card?.[localizedField];
+  if (clean(localizedValue)) return clean(localizedValue);
+  if (language !== "zh") return "";
+  const genericValue = list ? card?.[field]?.[0] : card?.[field];
+  return clean(genericValue);
+}
+
 export function completeReflectionReading(rawText, cards, language = "zh") {
   const parsed = parseReflectionReading(rawText);
   const primaryCard = Array.isArray(cards) ? cards[0] : null;
-  const defaults = language === "zh" ? DEFAULTS.zh : DEFAULTS.en;
+  const normalizedLanguage = normalizeLanguage(language);
+  const defaults = DEFAULTS[normalizedLanguage];
 
   return {
-    reflection: parsed.reflection || clean(primaryCard?.visibleLine) || defaults.reflection,
-    hidden: parsed.hidden || clean(primaryCard?.hiddenLine) || defaults.hidden,
-    verify: parsed.verify || clean(primaryCard?.reflectionQuestions?.[0]) || defaults.verify,
-    action: parsed.action || clean(primaryCard?.actionSeeds?.[0]) || defaults.action,
+    reflection: parsed.reflection
+      || cardFallback(primaryCard, "visibleLine", normalizedLanguage)
+      || defaults.reflection,
+    hidden: parsed.hidden
+      || cardFallback(primaryCard, "hiddenLine", normalizedLanguage)
+      || defaults.hidden,
+    verify: parsed.verify
+      || cardFallback(primaryCard, "reflectionQuestions", normalizedLanguage, { list: true })
+      || defaults.verify,
+    action: parsed.action
+      || cardFallback(primaryCard, "actionSeeds", normalizedLanguage, { list: true })
+      || defaults.action,
   };
 }
