@@ -31,6 +31,11 @@ assert.deepEqual(spreadPositions("reflection_triad", { relation: "关系如何�
   { key: "relation", category: "relation", label: "关系如何作用" },
   { key: "movement", category: "movement", label: "可以尝试怎样变化" },
 ]);
+assert.deepEqual(spreadPositions("reflection_triad", {}, "en"), [
+  { key: "state", category: "state", label: "How am I now?" },
+  { key: "relation", category: "relation", label: "What is influencing me?" },
+  { key: "movement", category: "movement", label: "What change can I try?" },
+]);
 assert.deepEqual(spreadPositions("missing", { single: "此刻观察" }, "zh"), [
   { key: "single", category: null, label: "此刻观察" },
 ]);
@@ -47,6 +52,8 @@ assert.equal(spreadDisplayName("missing", { single: "One card" }, "en"), "One ca
 
 assert.equal(ritualSpreadTypeForMode("tarot", "reflection_triad"), "reflection_triad");
 assert.equal(ritualSpreadTypeForMode("tarot"), "single");
+assert.equal(ritualSpreadTypeForMode("tarot", "relationship_tension"), "single");
+assert.equal(ritualSpreadTypeForMode("tarot", "unknown"), "single");
 assert.equal(ritualSpreadTypeForMode("dual", "reflection_triad"), "single");
 assert.equal(ritualSpreadTypeForMode("meihua", "reflection_triad"), "single");
 

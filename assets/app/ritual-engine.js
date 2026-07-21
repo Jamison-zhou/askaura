@@ -22,7 +22,9 @@ export function spreadDisplayName(type = "single", labels = {}, language = "zh")
 }
 
 export function ritualSpreadTypeForMode(mode, selectedSpreadType = "single") {
-  return mode === "tarot" ? selectedSpreadType : "single";
+  return mode === "tarot" && SPREAD_TYPES.includes(selectedSpreadType)
+    ? selectedSpreadType
+    : "single";
 }
 
 export function ritualCardLayout(index, deckLength = REFLECTION_DECK.length) {
