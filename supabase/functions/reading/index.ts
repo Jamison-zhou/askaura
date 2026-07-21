@@ -44,8 +44,13 @@ function isBoundedString(value: unknown, maxLength: number): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.length <= maxLength;
 }
 
-function isBoundedStringArray(value: unknown, maxItems: number, maxItemLength: number): value is string[] {
-  return Array.isArray(value) && value.length <= maxItems &&
+function isBoundedStringArray(
+  value: unknown,
+  minItems: number,
+  maxItems: number,
+  maxItemLength: number,
+): value is string[] {
+  return Array.isArray(value) && value.length >= minItems && value.length <= maxItems &&
     value.every((item) => isBoundedString(item, maxItemLength));
 }
 
@@ -75,7 +80,9 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
     if ("orientation" in o) return false;
     if (!isBoundedString(o.cardName, 80)) return false;
     if (o.spreadType !== "single" && o.spreadType !== "reflection_triad") return false;
-    if (!Array.isArray(o.cards) || ![1, 3].includes(o.cards.length)) return false;
+    if (!Array.isArray(o.cards)) return false;
+    const expectedCardCount = o.spreadType === "single" ? 1 : 3;
+    if (o.cards.length !== expectedCardCount) return false;
     if (!isBoundedString(o.intent, 120)) return false;
     if (!isBoundedString(o.question, 1200)) return false;
     if (!Number.isInteger(o.round) || (o.round as number) < 1 || (o.round as number) > 3) return false;
@@ -92,9 +99,9 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
         isBoundedString(item.coreMeaning, 240) &&
         isBoundedString(item.visibleLine, 240) &&
         isBoundedString(item.hiddenLine, 240) &&
-        isBoundedStringArray(item.reflectionQuestions, 3, 240) &&
-        isBoundedStringArray(item.actionSeeds, 3, 240) &&
-        isBoundedStringArray(item.prohibitedClaims, 6, 240);
+        isBoundedStringArray(item.reflectionQuestions, 1, 3, 240) &&
+        isBoundedStringArray(item.actionSeeds, 1, 3, 240) &&
+        isBoundedStringArray(item.prohibitedClaims, 1, 6, 240);
     });
   }
   if (typeof o.cardName !== "string" || !o.cardName) return false;

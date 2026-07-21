@@ -1,7 +1,5 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
-import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -15,18 +13,8 @@ const modules = {
 };
 
 function runTsScript(script) {
-  let node = process.execPath;
-  if (!process.allowedNodeEnvironmentFlags.has("--experimental-strip-types")) {
-    const voltaImages = resolve(homedir(), "AppData/Local/Volta/tools/image/node");
-    const compatible = existsSync(voltaImages)
-      ? readdirSync(voltaImages)
-        .filter((version) => Number(version.split(".")[0]) >= 22)
-        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))[0]
-      : "";
-    if (compatible) node = resolve(voltaImages, compatible, "node.exe");
-  }
   return execFileSync(
-    node,
+    process.execPath,
     ["--experimental-strip-types", "--input-type=module", "-e", script],
     { encoding: "utf8" },
   ).trim();
