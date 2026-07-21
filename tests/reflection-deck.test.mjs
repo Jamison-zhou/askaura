@@ -36,22 +36,27 @@ assert.deepEqual(REFLECTION_CATEGORIES, {
 });
 
 const expectedCards = [
-  ["state-empty-chair", "空椅", "等待别人先行动，把决定权留在外部"],
-  ["state-bottled-rain", "瓶中雨", "情绪持续发生，却没有流向可以承接它的地方"],
-  ["state-full-cup", "满杯", "容量接近边界，却仍在继续接收"],
-  ["state-fog-window", "雾窗", "并非没有答案，而是当前视角无法看清"],
-  ["relation-reverse-shadow", "逆影", "外在方向与内在意愿并不一致"],
-  ["relation-one-way-bridge", "单向桥", "有人不断靠近，但关系没有形成真正交汇"],
-  ["relation-borrowed-umbrella", "借来的伞", "依靠一种保护，同时接受它附带的条件"],
-  ["relation-wrong-key", "错钥", "双方都在尝试打开关系，却使用了不同的理解方式"],
-  ["movement-unlit-lantern", "未燃灯", "已经拥有资源或能力，但尚未主动使用"],
-  ["movement-loosened-knot", "松结", "改变不一定需要切断，也可以先降低束缚"],
-  ["movement-side-door", "侧门", "当前路径不是唯一入口"],
-  ["movement-low-tide-steps", "退潮阶", "暂停推进后，原本被覆盖的下一步才会出现"],
+  ["state-empty-chair", "空椅", "Empty Chair", "等待别人先行动，把决定权留在外部"],
+  ["state-bottled-rain", "瓶中雨", "Rain in a Bottle", "情绪持续发生，却没有流向可以承接它的地方"],
+  ["state-full-cup", "满杯", "Full Cup", "容量接近边界，却仍在继续接收"],
+  ["state-fog-window", "雾窗", "Fogged Window", "并非没有答案，而是当前视角无法看清"],
+  ["relation-reverse-shadow", "逆影", "Contrary Shadow", "外在方向与内在意愿并不一致"],
+  ["relation-one-way-bridge", "单向桥", "One-way Bridge", "有人不断靠近，但关系没有形成真正交汇"],
+  ["relation-borrowed-umbrella", "借来的伞", "Borrowed Umbrella", "依靠一种保护，同时接受它附带的条件"],
+  ["relation-wrong-key", "错钥", "Wrong Key", "双方都在尝试打开关系，却使用了不同的理解方式"],
+  ["movement-unlit-lantern", "未燃灯", "Unlit Lantern", "已经拥有资源或能力，但尚未主动使用"],
+  ["movement-loosened-knot", "松结", "Loosened Knot", "改变不一定需要切断，也可以先降低束缚"],
+  ["movement-side-door", "侧门", "Side Door", "当前路径不是唯一入口"],
+  ["movement-low-tide-steps", "退潮阶", "Low-tide Steps", "暂停推进后，原本被覆盖的下一步才会出现"],
 ];
 
 assert.deepEqual(
-  REFLECTION_DECK.map(({ id, imageNameZh, coreMeaningZh }) => [id, imageNameZh, coreMeaningZh]),
+  REFLECTION_DECK.map(({ id, imageNameZh, imageNameEn, coreMeaningZh }) => [
+    id,
+    imageNameZh,
+    imageNameEn,
+    coreMeaningZh,
+  ]),
   expectedCards,
 );
 
@@ -67,6 +72,8 @@ const requiredStrings = [
   "hiddenLineZh",
   "hiddenLineEn",
   "visualBrief",
+  "visualBriefZh",
+  "visualBriefEn",
   "imageSrc",
   "imageAltZh",
   "imageAltEn",
@@ -86,25 +93,35 @@ for (const card of REFLECTION_DECK) {
   assert.equal(card.reflectionQuestionsEn.length, 2, `${card.id}.reflectionQuestionsEn`);
   assert.equal(card.actionSeedsZh.length, 2, `${card.id}.actionSeedsZh`);
   assert.equal(card.actionSeedsEn.length, 2, `${card.id}.actionSeedsEn`);
-  assert.ok(card.prohibitedClaims.length >= 2, `${card.id}.prohibitedClaims`);
+  assert.ok(card.prohibitedClaimsZh.length >= 2, `${card.id}.prohibitedClaimsZh`);
+  assert.ok(card.prohibitedClaimsEn.length >= 2, `${card.id}.prohibitedClaimsEn`);
+  assert.deepEqual(card.prohibitedClaims, card.prohibitedClaimsZh, `${card.id}.prohibitedClaims compatibility alias`);
 
   for (const key of [
     "reflectionQuestionsZh",
     "reflectionQuestionsEn",
     "actionSeedsZh",
     "actionSeedsEn",
-    "prohibitedClaims",
+    "prohibitedClaimsZh",
+    "prohibitedClaimsEn",
   ]) {
     assert.ok(card[key].every((value) => String(value).trim()), `${card.id}.${key} contains no blanks`);
   }
 
   assert.match(card.hiddenLineZh, /也许|可能/, `${card.id}.hiddenLineZh stays tentative`);
-  assert.doesNotMatch(
-    JSON.stringify(card),
-    /正位|逆位|upright|reversed|命中注定|转运|算命|玄学/i,
-    `${card.id} contains prohibited language`,
-  );
 }
+
+const serializedDeck = JSON.stringify(REFLECTION_DECK);
+assert.doesNotMatch(
+  serializedDeck,
+  /算命|玄学|转运|灵签|改运|命中注定|亲爱的|宝贝|正位|逆位|upright|reversed/iu,
+  "deck contains prohibited language",
+);
+assert.doesNotMatch(
+  serializedDeck,
+  /[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u,
+  "deck contains emoji",
+);
 
 assert.equal(new Set(REFLECTION_DECK.map((card) => card.id)).size, 12);
 assert.equal(new Set(REFLECTION_DECK.map((card) => card.imageNameZh)).size, 12);
