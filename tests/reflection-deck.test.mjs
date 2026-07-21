@@ -35,6 +35,15 @@ assert.deepEqual(REFLECTION_CATEGORIES, {
   },
 });
 
+for (const category of Object.values(REFLECTION_CATEGORIES)) {
+  assert.ok(Object.isFrozen(category), `${category.en} category should be frozen`);
+}
+const originalStateFallback = REFLECTION_CATEGORIES.state.fallbackSrc;
+assert.throws(() => {
+  REFLECTION_CATEGORIES.state.fallbackSrc = "./mutated.svg";
+}, TypeError);
+assert.equal(REFLECTION_CATEGORIES.state.fallbackSrc, originalStateFallback);
+
 const expectedCards = [
   ["state-empty-chair", "空椅", "Empty Chair", "等待别人先行动，把决定权留在外部"],
   ["state-bottled-rain", "瓶中雨", "Rain in a Bottle", "情绪持续发生，却没有流向可以承接它的地方"],
@@ -81,6 +90,15 @@ const requiredStrings = [
   "meaningVersion",
 ];
 
+const requiredFrozenArrays = [
+  "reflectionQuestionsZh",
+  "reflectionQuestionsEn",
+  "actionSeedsZh",
+  "actionSeedsEn",
+  "prohibitedClaimsZh",
+  "prohibitedClaimsEn",
+];
+
 for (const card of REFLECTION_DECK) {
   assert.ok(Object.isFrozen(card), `${card.id} should be frozen`);
   for (const key of requiredStrings) {
@@ -95,7 +113,14 @@ for (const card of REFLECTION_DECK) {
   assert.equal(card.actionSeedsEn.length, 2, `${card.id}.actionSeedsEn`);
   assert.ok(card.prohibitedClaimsZh.length >= 2, `${card.id}.prohibitedClaimsZh`);
   assert.ok(card.prohibitedClaimsEn.length >= 2, `${card.id}.prohibitedClaimsEn`);
-  assert.deepEqual(card.prohibitedClaims, card.prohibitedClaimsZh, `${card.id}.prohibitedClaims compatibility alias`);
+  assert.strictEqual(card.prohibitedClaims, card.prohibitedClaimsZh, `${card.id}.prohibitedClaims compatibility alias`);
+
+  for (const key of requiredFrozenArrays) {
+    const originalValues = [...card[key]];
+    assert.ok(Object.isFrozen(card[key]), `${card.id}.${key} should be frozen`);
+    assert.throws(() => card[key].push("mutation"), TypeError, `${card.id}.${key} should reject push`);
+    assert.deepEqual(card[key], originalValues, `${card.id}.${key} should remain unchanged`);
+  }
 
   for (const key of [
     "reflectionQuestionsZh",

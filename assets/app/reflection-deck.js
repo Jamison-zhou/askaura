@@ -2,30 +2,47 @@ export const REFLECTION_DECK_VERSION = "reflection-v1";
 export const REFLECTION_MEANING_VERSION = "1.0.0";
 
 export const REFLECTION_CATEGORIES = Object.freeze({
-  state: {
+  state: Object.freeze({
     zh: "状态象",
     en: "State",
     fallbackSrc: "./assets/cards/reflection-v1/fallback-state.svg",
-  },
-  relation: {
+  }),
+  relation: Object.freeze({
     zh: "关系象",
     en: "Relation",
     fallbackSrc: "./assets/cards/reflection-v1/fallback-relation.svg",
-  },
-  movement: {
+  }),
+  movement: Object.freeze({
     zh: "动势象",
     en: "Movement",
     fallbackSrc: "./assets/cards/reflection-v1/fallback-movement.svg",
-  },
+  }),
 });
 
-const makeCard = (card) => Object.freeze({
-  ...card,
-  visualBrief: card.visualBriefZh,
-  prohibitedClaims: card.prohibitedClaimsZh,
-  deckVersion: REFLECTION_DECK_VERSION,
-  meaningVersion: REFLECTION_MEANING_VERSION,
-});
+const frozenCopy = (values) => Object.freeze([...values]);
+
+const makeCard = (card) => {
+  const reflectionQuestionsZh = frozenCopy(card.reflectionQuestionsZh);
+  const reflectionQuestionsEn = frozenCopy(card.reflectionQuestionsEn);
+  const actionSeedsZh = frozenCopy(card.actionSeedsZh);
+  const actionSeedsEn = frozenCopy(card.actionSeedsEn);
+  const prohibitedClaimsZh = frozenCopy(card.prohibitedClaimsZh);
+  const prohibitedClaimsEn = frozenCopy(card.prohibitedClaimsEn);
+
+  return Object.freeze({
+    ...card,
+    reflectionQuestionsZh,
+    reflectionQuestionsEn,
+    actionSeedsZh,
+    actionSeedsEn,
+    prohibitedClaimsZh,
+    prohibitedClaimsEn,
+    visualBrief: card.visualBriefZh,
+    prohibitedClaims: prohibitedClaimsZh,
+    deckVersion: REFLECTION_DECK_VERSION,
+    meaningVersion: REFLECTION_MEANING_VERSION,
+  });
+};
 
 export const REFLECTION_DECK = Object.freeze([
   makeCard({
