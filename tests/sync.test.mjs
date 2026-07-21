@@ -265,6 +265,46 @@ assert.equal(historyRecordFromRow(row).followups[0].answer, "Check one signal.")
 assert.equal(row.clarification_of.previousCard, "The Moon");
 assert.equal(historyRecordFromRow(row).clarificationOf.sourceResultId, "source-roundtrip");
 
+const reflectionRow = historyRecordToRow({
+  id: "reflection-row",
+  mode: "tarot",
+  title: "Reflection",
+  answer: "Observe.",
+  spreadType: "reflection_triad",
+  deckVersion: "reflection-v1",
+  meaningVersion: "1.0.0",
+  cards: [{
+    id: "threshold",
+    name: "Threshold",
+    category: "state",
+    coreMeaning: "A limit is visible.",
+    visibleLine: "The current boundary is clear.",
+    hiddenLine: "One assumption remains untested.",
+    reflectionQuestions: ["What is known?"],
+    actionSeeds: ["Write down one fact."],
+    prohibitedClaims: ["The outcome is fixed."],
+    label: "State",
+    position: "state",
+    imageSrc: "./threshold.webp",
+    imageFallbackSrc: "./fallback.webp",
+    imageAlt: "Threshold",
+    deckVersion: "reflection-v1",
+    meaningVersion: "1.0.0",
+  }],
+  createdAt: "2026-07-21T00:00:00.000Z",
+});
+const reflectionRecord = historyRecordFromRow(reflectionRow);
+assert.equal(reflectionRecord.deckVersion, "reflection-v1");
+assert.equal(reflectionRecord.meaningVersion, "1.0.0");
+assert.equal(reflectionRecord.spreadType, "reflection_triad");
+assert.equal(reflectionRecord.cards[0].coreMeaning, "A limit is visible.");
+assert.deepEqual(reflectionRecord.cards[0].prohibitedClaims, ["The outcome is fixed."]);
+assert.equal("orientation" in reflectionRecord.cards[0], false);
+
+const legacyRecord = historyRecordFromRow(row);
+assert.equal(legacyRecord.cards[0].orientation, "reversed");
+assert.equal(legacyRecord.cards[0].imageSrc, "./assets/cards/17-the-star.jpg");
+
 const cloudAnchor = await client.loadDailyAnchor("2026-05-23");
 assert.equal(cloudAnchor.status, "synced");
 assert.equal(cloudAnchor.record.id, "cloud-anchor");

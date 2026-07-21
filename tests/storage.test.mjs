@@ -125,6 +125,47 @@ assert.equal(loadHistory(followupStore)[0].favorite, true);
 assert.equal(loadHistory(followupStore)[0].spreadType, "three_current_resistance_next");
 assert.equal(loadHistory(followupStore)[0].cards[0].position, "current");
 
+const reflectionStore = createStorage(memoryStorage());
+saveHistoryRecord(reflectionStore, {
+  id: "reflection-record",
+  mode: "tarot",
+  title: "Reflection",
+  answer: "Check the observable facts.",
+  spreadType: "reflection_triad",
+  deckVersion: "reflection-v1",
+  meaningVersion: "1.0.0",
+  cards: [{
+    id: "threshold",
+    name: "Threshold",
+    category: "movement",
+    coreMeaning: "A limit is changing.",
+    visibleLine: "The old pace no longer fits.",
+    hiddenLine: "A smaller step may be enough.",
+    reflectionQuestions: ["What is changing?"],
+    actionSeeds: ["Reduce one commitment."],
+    prohibitedClaims: ["Change is guaranteed."],
+    label: "Movement",
+    position: "movement",
+    imageSrc: "./threshold.webp",
+    imageFallbackSrc: "./fallback.webp",
+    imageAlt: "Threshold",
+    deckVersion: "reflection-v1",
+    meaningVersion: "1.0.0",
+  }],
+  createdAt: "2026-07-21T00:00:00.000Z",
+});
+const persistedReflection = loadHistory(reflectionStore)[0];
+assert.equal(persistedReflection.spreadType, "reflection_triad");
+assert.equal(persistedReflection.deckVersion, "reflection-v1");
+assert.equal(persistedReflection.meaningVersion, "1.0.0");
+assert.equal(persistedReflection.cards[0].coreMeaning, "A limit is changing.");
+assert.deepEqual(persistedReflection.cards[0].prohibitedClaims, ["Change is guaranteed."]);
+assert.equal("orientation" in persistedReflection.cards[0], false);
+
+const persistedLegacy = loadHistory(followupStore)[0].cards[0];
+assert.equal(persistedLegacy.orientation, "upright");
+assert.equal(persistedLegacy.imageSrc, "./assets/cards/18-the-moon.jpg");
+
 const invalidStatus = saveHistoryRecord(createStorage(memoryStorage()), {
   id: "invalid-status",
   mode: "tarot",

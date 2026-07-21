@@ -51,6 +51,8 @@ export function normalizeHistoryRecord(record) {
     reviewNote: stringValue(record.reviewNote),
     favorite: Boolean(record.favorite),
     spreadType: normalizeSpreadType(record.spreadType),
+    deckVersion: stringValue(record.deckVersion),
+    meaningVersion: stringValue(record.meaningVersion),
     imageSrc: stringValue(record.imageSrc),
     imageAlt: stringValue(record.imageAlt),
     cards: normalizeCards(record.cards),
@@ -92,7 +94,8 @@ export function historyRecordToRow(record) {
 }
 
 export function historyRecordFromRow(row) {
-  return {
+  const firstCard = Array.isArray(row.cards) ? row.cards[0] : null;
+  return normalizeHistoryRecord({
     id: row.id,
     mode: row.mode,
     title: row.title || "",
@@ -104,6 +107,8 @@ export function historyRecordFromRow(row) {
     reviewNote: row.review_note || "",
     favorite: Boolean(row.is_favorite),
     spreadType: row.spread_type || "single",
+    deckVersion: stringValue(firstCard?.deckVersion),
+    meaningVersion: stringValue(firstCard?.meaningVersion),
     imageSrc: row.image_src || "",
     imageAlt: row.image_alt || "",
     cards: Array.isArray(row.cards) ? row.cards : [],
@@ -114,7 +119,7 @@ export function historyRecordFromRow(row) {
     language: row.language || "zh",
     createdAt: row.created_at,
     updatedAt: row.updated_at || row.created_at,
-  };
+  });
 }
 
 export function historyTimestamp(record) {
@@ -149,6 +154,27 @@ function normalizeCards(value) {
   if (!Array.isArray(value)) return [];
   return value.map((item) => {
     if (!item || typeof item !== "object") return null;
+    const id = stringValue(item.id);
+    if (id) {
+      return {
+        id,
+        name: stringValue(item.name),
+        category: ["state", "relation", "movement"].includes(item.category) ? item.category : "state",
+        coreMeaning: stringValue(item.coreMeaning),
+        visibleLine: stringValue(item.visibleLine),
+        hiddenLine: stringValue(item.hiddenLine),
+        reflectionQuestions: normalizeStringArray(item.reflectionQuestions, 3),
+        actionSeeds: normalizeStringArray(item.actionSeeds, 3),
+        prohibitedClaims: normalizeStringArray(item.prohibitedClaims, 6),
+        label: stringValue(item.label),
+        position: stringValue(item.position),
+        imageSrc: stringValue(item.imageSrc),
+        imageFallbackSrc: stringValue(item.imageFallbackSrc),
+        imageAlt: stringValue(item.imageAlt),
+        deckVersion: stringValue(item.deckVersion),
+        meaningVersion: stringValue(item.meaningVersion),
+      };
+    }
     const name = stringValue(item.name);
     const label = stringValue(item.label);
     const imageSrc = stringValue(item.imageSrc);
@@ -164,12 +190,17 @@ function normalizeCards(value) {
   }).filter(Boolean);
 }
 
+function normalizeStringArray(value, limit) {
+  if (!Array.isArray(value)) return [];
+  return value.map(stringValue).filter(Boolean).slice(0, limit);
+}
+
 function normalizeActionStatus(value) {
   return ["done", "not_done", "skipped", "not_fit"].includes(value) ? value : "";
 }
 
 function normalizeSpreadType(value) {
-  return ["single", "three_current_resistance_next", "relationship_tension", "choice_a_b_reminder"].includes(value)
+  return ["single", "reflection_triad", "three_current_resistance_next", "relationship_tension", "choice_a_b_reminder"].includes(value)
     ? value
     : "single";
 }

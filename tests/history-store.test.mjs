@@ -44,6 +44,79 @@ assert.equal(normalized.cards[0].orientation, "reversed");
 assert.equal(normalized.followups.length, 1);
 assert.equal(normalized.followups[0].sourceResultId, "record-1");
 
+const reflectionRecord = normalizeHistoryRecord({
+  id: "reflection-roundtrip",
+  mode: "tarot",
+  title: "Reflection",
+  answer: "Observe first.",
+  spreadType: "reflection_triad",
+  deckVersion: " reflection-v1 ",
+  meaningVersion: " 1.0.0 ",
+  cards: [{
+    id: " threshold ",
+    name: " Threshold ",
+    category: "relation",
+    coreMeaning: " A boundary is becoming visible. ",
+    visibleLine: " The current limit is already noticeable. ",
+    hiddenLine: " The unspoken expectation may be adding pressure. ",
+    reflectionQuestions: [" What changed? ", "", 42, " What remains true? ", " What is assumed? ", "ignored"],
+    actionSeeds: [" Name one boundary. ", null, " Ask one question. ", " Pause once. ", "ignored"],
+    prohibitedClaims: [" It is destined. ", "", 42, " They will leave. ", " You must act now. ", " This always works. ", " The answer is certain. ", " Nothing can change. ", "ignored"],
+    label: " Relation ",
+    position: " relation ",
+    orientation: "reversed",
+    imageSrc: " ./threshold.webp ",
+    imageFallbackSrc: " ./fallback.webp ",
+    imageAlt: " Threshold card ",
+    deckVersion: " reflection-v1 ",
+    meaningVersion: " 1.0.0 ",
+  }],
+  createdAt: "2026-07-21T00:00:00.000Z",
+});
+
+assert.equal(reflectionRecord.deckVersion, "reflection-v1");
+assert.equal(reflectionRecord.meaningVersion, "1.0.0");
+assert.equal(reflectionRecord.spreadType, "reflection_triad");
+assert.deepEqual(reflectionRecord.cards[0], {
+  id: "threshold",
+  name: "Threshold",
+  category: "relation",
+  coreMeaning: "A boundary is becoming visible.",
+  visibleLine: "The current limit is already noticeable.",
+  hiddenLine: "The unspoken expectation may be adding pressure.",
+  reflectionQuestions: ["What changed?", "What remains true?", "What is assumed?"],
+  actionSeeds: ["Name one boundary.", "Ask one question.", "Pause once."],
+  prohibitedClaims: ["It is destined.", "They will leave.", "You must act now.", "This always works.", "The answer is certain.", "Nothing can change."],
+  label: "Relation",
+  position: "relation",
+  imageSrc: "./threshold.webp",
+  imageFallbackSrc: "./fallback.webp",
+  imageAlt: "Threshold card",
+  deckVersion: "reflection-v1",
+  meaningVersion: "1.0.0",
+});
+assert.equal("orientation" in reflectionRecord.cards[0], false);
+
+const invalidReflectionCard = normalizeHistoryRecord({
+  id: "invalid-reflection-card",
+  cards: [{ id: "card", category: "future", reflectionQuestions: ["", null], actionSeeds: "bad", prohibitedClaims: [] }],
+  createdAt: "2026-07-21T00:00:00.000Z",
+});
+assert.equal(invalidReflectionCard.cards[0].category, "state");
+assert.deepEqual(invalidReflectionCard.cards[0].reflectionQuestions, []);
+assert.deepEqual(invalidReflectionCard.cards[0].actionSeeds, []);
+assert.deepEqual(invalidReflectionCard.cards[0].prohibitedClaims, []);
+
+for (const spreadType of [
+  "single",
+  "reflection_triad",
+  "three_current_resistance_next",
+  "relationship_tension",
+  "choice_a_b_reminder",
+]) {
+  assert.equal(normalizeHistoryRecord({ spreadType }).spreadType, spreadType);
+}
+
 const existing = [
   { id: "same", mode: "tarot", title: "old", answer: "old", createdAt: "2026-06-04T00:00:00.000Z", updatedAt: "2026-06-04T00:00:00.000Z" },
   { id: "local-new", mode: "daily", title: "local", answer: "local", createdAt: "2026-06-04T02:00:00.000Z" }
@@ -126,5 +199,27 @@ assert.equal(fromRow.followups[0].sourceResultId, "roundtrip");
 assert.equal(fromRow.clarificationOf.sourceResultId, "source");
 assert.equal(fromRow.language, "en");
 assert.equal(fromRow.updatedAt, "2026-06-04T00:10:00.000Z");
+
+const reflectionRow = historyRecordToRow(reflectionRecord);
+assert.deepEqual(reflectionRow.cards, reflectionRecord.cards);
+const reflectionFromRow = historyRecordFromRow({
+  ...reflectionRow,
+  deckVersion: "do-not-use-row-field",
+  meaningVersion: "do-not-use-row-field",
+});
+assert.deepEqual(reflectionFromRow.cards, reflectionRecord.cards);
+assert.equal(reflectionFromRow.deckVersion, "reflection-v1");
+assert.equal(reflectionFromRow.meaningVersion, "1.0.0");
+assert.equal("orientation" in reflectionFromRow.cards[0], false);
+
+const legacyFromRow = historyRecordFromRow(historyRecordToRow(roundtripRecord));
+assert.deepEqual(legacyFromRow.cards[0], {
+  name: "The Star",
+  label: "Self",
+  position: "self",
+  orientation: "reversed",
+  imageSrc: "./star.jpg",
+  imageAlt: "The Star",
+});
 
 console.log("history store tests passed");
