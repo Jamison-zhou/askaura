@@ -87,7 +87,7 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
     if (!isBoundedString(o.question, 1200)) return false;
     if (!Number.isInteger(o.round) || (o.round as number) < 1 || (o.round as number) > 3) return false;
     if (typeof o.sessionHistory !== "string" || o.sessionHistory.length > 2000) return false;
-    return o.cards.every((card) => {
+    const cardsValid = o.cards.every((card) => {
       if (!card || typeof card !== "object" || Array.isArray(card)) return false;
       const item = card as Record<string, unknown>;
       return isBoundedString(item.id, 64) &&
@@ -102,6 +102,18 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
         isBoundedStringArray(item.reflectionQuestions, 1, 3, 240) &&
         isBoundedStringArray(item.actionSeeds, 1, 3, 240) &&
         isBoundedStringArray(item.prohibitedClaims, 1, 6, 240);
+    });
+    if (!cardsValid) return false;
+    if (o.cardName !== (o.cards[0] as Record<string, unknown>).name) return false;
+    const cardIds = o.cards.map((card) => (card as Record<string, unknown>).id);
+    if (new Set(cardIds).size !== cardIds.length) return false;
+    if (o.spreadType === "single") {
+      return (o.cards[0] as Record<string, unknown>).position === "single";
+    }
+    const expectedPositions = ["state", "relation", "movement"];
+    return o.cards.every((card, index) => {
+      const item = card as Record<string, unknown>;
+      return item.position === expectedPositions[index] && item.category === item.position;
     });
   }
   if (typeof o.cardName !== "string" || !o.cardName) return false;

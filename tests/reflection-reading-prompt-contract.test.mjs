@@ -163,5 +163,20 @@ assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cards[
 assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cards[0].reflectionQuestions = [42]; })), false, "non-string array element is rejected");
 assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cards[0].actionSeeds = ["   "]; })), false, "blank array element is rejected");
 assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cards[0].prohibitedClaims = ["x".repeat(241)]; })), false, "overlong array element is rejected");
+assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cards[0].category = "movement"; })), true, "single accepts any reflection category");
+assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cardName = "Another card"; })), false, "main card name must match the first card");
+assert.equal(isReadingRequest(changed(validTriad, (payload) => { payload.cards[1].id = payload.cards[0].id; })), false, "duplicate card ids are rejected");
+assert.equal(isReadingRequest(changed(validSingle, (payload) => { payload.cards[0].position = "state"; })), false, "single requires the single position");
+assert.equal(isReadingRequest(changed(validTriad, (payload) => {
+  payload.cards[1].position = "state";
+  payload.cards[1].category = "state";
+})), false, "triad rejects repeated and missing positions");
+assert.equal(isReadingRequest(changed(validTriad, (payload) => { payload.cards[1].category = "movement"; })), false, "triad category must match position");
+assert.equal(isReadingRequest(changed(validTriad, (payload) => {
+  payload.cards[0].position = "relation";
+  payload.cards[0].category = "relation";
+  payload.cards[1].position = "state";
+  payload.cards[1].category = "state";
+})), false, "triad positions must stay in state relation movement order");
 
 console.log("reflection reading prompt contract tests passed");
