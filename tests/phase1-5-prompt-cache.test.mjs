@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { existsSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -13,8 +15,18 @@ const modules = {
 };
 
 function runTsScript(script) {
+  let node = process.execPath;
+  if (!process.allowedNodeEnvironmentFlags.has("--experimental-strip-types")) {
+    const voltaImages = resolve(homedir(), "AppData/Local/Volta/tools/image/node");
+    const compatible = existsSync(voltaImages)
+      ? readdirSync(voltaImages)
+        .filter((version) => Number(version.split(".")[0]) >= 22)
+        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))[0]
+      : "";
+    if (compatible) node = resolve(voltaImages, compatible, "node.exe");
+  }
   return execFileSync(
-    process.execPath,
+    node,
     ["--experimental-strip-types", "--input-type=module", "-e", script],
     { encoding: "utf8" },
   ).trim();
@@ -24,12 +36,52 @@ const prompts = JSON.parse(runTsScript(`
   const out = {};
   out.reading = (await import(${JSON.stringify(modules.reading)})).buildReadingPrompt({
     mode: "reading",
-    cardName: "The Moon",
-    orientation: "upright",
+    deckVersion: "reflection-v1",
+    cardName: "DYNAMIC_READING_CARD",
+    spreadType: "single",
+    cards: [{
+      id: "state-dynamic-card",
+      category: "state",
+      name: "DYNAMIC_READING_CARD",
+      label: "DYNAMIC_READING_LABEL",
+      position: "single",
+      coreMeaning: "DYNAMIC_READING_CORE",
+      visibleLine: "DYNAMIC_READING_VISIBLE",
+      hiddenLine: "DYNAMIC_READING_HIDDEN",
+      reflectionQuestions: ["DYNAMIC_READING_VERIFY"],
+      actionSeeds: ["DYNAMIC_READING_ACTION"],
+      prohibitedClaims: ["DYNAMIC_READING_PROHIBITED"],
+      meaningVersion: "1.0.0",
+    }],
     intent: "clarity",
     question: "DYNAMIC_READING_QUESTION",
     round: 1,
     sessionHistory: "DYNAMIC_READING_HISTORY",
+    language: "en",
+  });
+  out.readingAlternate = (await import(${JSON.stringify(modules.reading)})).buildReadingPrompt({
+    mode: "reading",
+    deckVersion: "reflection-v1",
+    cardName: "ALTERNATE_READING_CARD",
+    spreadType: "single",
+    cards: [{
+      id: "movement-alternate-card",
+      category: "movement",
+      name: "ALTERNATE_READING_CARD",
+      label: "ALTERNATE_READING_LABEL",
+      position: "single",
+      coreMeaning: "ALTERNATE_READING_CORE",
+      visibleLine: "ALTERNATE_READING_VISIBLE",
+      hiddenLine: "ALTERNATE_READING_HIDDEN",
+      reflectionQuestions: ["ALTERNATE_READING_VERIFY"],
+      actionSeeds: ["ALTERNATE_READING_ACTION"],
+      prohibitedClaims: ["ALTERNATE_READING_PROHIBITED"],
+      meaningVersion: "1.0.0",
+    }],
+    intent: "clarity",
+    question: "ALTERNATE_READING_QUESTION",
+    round: 1,
+    sessionHistory: "ALTERNATE_READING_HISTORY",
     language: "en",
   });
   out.meihua = (await import(${JSON.stringify(modules.meihua)})).buildMeihuaPrompt({
@@ -82,7 +134,19 @@ function assertDynamicContextLast(name, prompt, dynamicMarkers, stableMarkers = 
   }
 }
 
-assertDynamicContextLast("reading", prompts.reading, ["DYNAMIC_READING_QUESTION", "DYNAMIC_READING_HISTORY"], ["[CORE_QUESTION]", "[ACTION]", "[AVOID]", "[WATCH]"]);
+assertDynamicContextLast("reading", prompts.reading, ["DYNAMIC_READING_QUESTION", "DYNAMIC_READING_HISTORY", "DYNAMIC_READING_CARD", "DYNAMIC_READING_CORE"], ["[REFLECTION]", "[HIDDEN]", "[VERIFY]", "[ACTION]"]);
+const readingContextIndex = prompts.reading.indexOf("Dynamic context:");
+const readingStablePrefix = prompts.reading.slice(0, readingContextIndex);
+const alternateReadingContextIndex = prompts.readingAlternate.indexOf("Dynamic context:");
+assert.equal(
+  readingStablePrefix,
+  prompts.readingAlternate.slice(0, alternateReadingContextIndex),
+  "reading stable prefix is identical across different questions and cards",
+);
+for (const marker of ["DYNAMIC_READING_QUESTION", "DYNAMIC_READING_HISTORY", "DYNAMIC_READING_CARD", "DYNAMIC_READING_LABEL", "DYNAMIC_READING_CORE"]) {
+  assert.doesNotMatch(readingStablePrefix, new RegExp(marker), `reading stable prefix excludes ${marker}`);
+}
+assert.match(prompts.reading.slice(readingContextIndex), /<DYNAMIC_CONTEXT>[\s\S]*<QUESTION>DYNAMIC_READING_QUESTION<\/QUESTION>[\s\S]*<CARD_1>/, "reading dynamic values stay in the delimited tail");
 assertDynamicContextLast("meihua", prompts.meihua, ["DYNAMIC_MEIHUA_QUESTION"], ["[GUA_SIGNAL]", "[GUA_TREND]", "[ACTION]", "[AVOID]", "[WATCH]"]);
 assertDynamicContextLast("advice", prompts.advice, ["DYNAMIC_ADVICE_QUESTION", "DYNAMIC_ADVICE_SUMMARY"], ["[ACTION]"]);
 assertDynamicContextLast("anchor", prompts.anchor, ["Temperance"], ["[ANCHOR_CORE]", "[ANCHOR_TAKEAWAY]"]);

@@ -12,12 +12,12 @@ const meihuaPrompt = readFileSync(new URL("../supabase/functions/_shared/prompts
 const tokenValidator = readFileSync(new URL("../supabase/functions/_shared/token-validator.ts", import.meta.url), "utf8");
 const migration = readFileSync(new URL("../supabase/migrations/202606030008_askaura_spread_cards.sql", import.meta.url), "utf8");
 
-assert.match(types, /export type SpreadType = "single" \| "three_current_resistance_next" \| "relationship_tension" \| "choice_a_b_reminder"/, "backend types define all spread types");
-assert.match(types, /cards\?: SpreadCard\[\]/, "reading request accepts spread cards");
-assert.match(types, /spreadType\?: SpreadType/, "reading request accepts spread type");
+assert.match(types, /export type SpreadType = "single" \| "reflection_triad"/, "backend types define reflection spread types only");
+assert.match(types, /cards: SpreadCard\[\]/, "reading request requires reflection cards");
+assert.match(types, /spreadType: SpreadType/, "reading request requires a reflection spread type");
 
 assert.match(html, /id="spread-selector"/, "tarot mode exposes a spread selector");
-assert.equal((html.match(/data-spread-type=/g) || []).length, 4, "front-end exposes four spread choices");
+assert.equal((html.match(/data-spread-type=/g) || []).length, 4, "legacy front-end spread choices remain until reflection UI wiring");
 assert.match(html, /let selectedSpreadType = "single"/, "single card remains the default");
 assert.match(html, /mode !== "tarot"[\s\S]*selectedSpreadType = "single"/, "non-tarot modes reset to single spread");
 assert.match(html, /spreadPositions\(spreadType\)/, "ritual reads spread positions before selecting cards");
@@ -42,9 +42,9 @@ assert.match(migration, /add column if not exists spread_type text/, "migration 
 assert.match(migration, /add column if not exists cards jsonb/, "migration adds cards jsonb");
 assert.match(migration, /add column if not exists gua jsonb/, "migration adds gua jsonb");
 
-assert.match(readingPrompt, /one sentence per card/i, "spread prompt keeps one sentence per card");
-assert.match(readingPrompt, /must not claim to know the other person's hidden mind/, "relationship spread protects hidden-mind boundary");
-assert.match(readingPrompt, /must not decide A or B for the user/, "choice spread does not decide for the user");
+assert.match(readingPrompt, /slice\(0, 3\)/, "reflection prompt formats at most three cards");
+assert.match(readingPrompt, /must not define the user or anyone else/i, "reflection prompt does not define people from card semantics");
+assert.match(readingPrompt, /hypotheses, not facts/i, "reflection prompt treats card semantics as hypotheses");
 
 assert.match(html, /id="gua-cast-selector"/, "meihua mode exposes cast method selector");
 assert.equal((html.match(/data-gua-cast=/g) || []).length, 4, "front-end exposes four gua cast methods");

@@ -4,7 +4,7 @@
 import type { ReadingMode } from "./types.ts";
 
 const REQUIRED_TOKENS: Record<ReadingMode, string[]> = {
-  reading: ["CORE_QUESTION", "TENSION", "JUDGMENT", "ACTION", "AVOID", "WATCH"],
+  reading: ["REFLECTION", "HIDDEN", "VERIFY", "ACTION"],
   advice: ["ACTION"],
   anchor: [
     "ANCHOR_CORE",

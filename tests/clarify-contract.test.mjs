@@ -16,19 +16,13 @@ assert.match(prompt, /\[CLARIFIED_QUESTION\]/, "clarify prompt asks for question
 assert.match(prompt, /\[CLARIFY_NOTE\]/, "clarify prompt asks for note token");
 
 const readingPrompt = readFileSync(new URL("../supabase/functions/_shared/prompts/reading.ts", import.meta.url), "utf8");
-assert.match(validator, /CORE_QUESTION/, "core question token is required for tarot");
-assert.match(validator, /TENSION/, "tension token is required for tarot");
-assert.match(validator, /JUDGMENT/, "judgment token is required for tarot");
-assert.match(validator, /AVOID/, "avoid token is required for tarot");
-assert.match(validator, /WATCH/, "watch token is required for tarot");
-assert.match(readingPrompt, /\[CORE_QUESTION\]/, "reading prompt asks for core question");
-assert.match(readingPrompt, /\[TENSION\]/, "reading prompt asks for tension");
-assert.match(readingPrompt, /\[JUDGMENT\]/, "reading prompt asks for judgment");
-assert.match(readingPrompt, /\[AVOID\]/, "reading prompt asks for avoid guidance");
-assert.match(readingPrompt, /\[WATCH\]/, "reading prompt asks for watch guidance");
+assert.match(validator, /reading: \["REFLECTION", "HIDDEN", "VERIFY", "ACTION"\]/, "reading requires the four reflection tokens");
+assert.match(readingPrompt, /\[REFLECTION\]/, "reading prompt asks for grounded reflection");
+assert.match(readingPrompt, /\[HIDDEN\]/, "reading prompt asks for a tentative hidden hypothesis");
+assert.match(readingPrompt, /\[VERIFY\]/, "reading prompt asks for verification");
+assert.match(readingPrompt, /\[ACTION\]/, "reading prompt asks for an action");
 
-const tarotCards = ritualEngine.match(/\["[^"]+",\s*"[^"]+",\s*"\d\d-[^"]+\.jpg"\]/g) || [];
-assert.equal(tarotCards.length, 22, "ritual engine tarot deck includes 22 major arcana cards");
+assert.match(ritualEngine, /REFLECTION_DECK/, "ritual engine uses the original reflection deck");
 assert.match(html, /const tarotDeck = TAROT_DECK;/, "front-end uses ritual engine tarot deck data");
 assert.match(html, /id="question-assist"/, "front-end has a non-blocking question assist panel");
 assert.match(html, /function shouldOfferQuestionAssist/, "front-end uses a local question assist heuristic");

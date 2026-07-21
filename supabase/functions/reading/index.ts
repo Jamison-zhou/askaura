@@ -40,6 +40,15 @@ import { resolveModelRoute } from "../_shared/model-router.ts";
 import { recordUsageEvent, resolveEntitlement } from "../_shared/entitlements.ts";
 import { recordQualityEvent, scanContentSafety } from "../_shared/quality.ts";
 
+function isBoundedString(value: unknown, maxLength: number): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maxLength;
+}
+
+function isBoundedStringArray(value: unknown, maxItems: number, maxItemLength: number): value is string[] {
+  return Array.isArray(value) && value.length <= maxItems &&
+    value.every((item) => isBoundedString(item, maxItemLength));
+}
+
 function isReadingRequest(b: unknown): b is AnyReadingRequest {
   if (!b || typeof b !== "object") return false;
   const o = b as Record<string, unknown>;
@@ -60,6 +69,33 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
   // meihua-reading uses guaName instead of cardName/orientation
   if (o.mode === "meihua-reading") {
     return typeof o.guaName === "string" && o.guaName.length > 0;
+  }
+  if (o.mode === "reading") {
+    if (o.deckVersion !== "reflection-v1") return false;
+    if ("orientation" in o) return false;
+    if (!isBoundedString(o.cardName, 80)) return false;
+    if (o.spreadType !== "single" && o.spreadType !== "reflection_triad") return false;
+    if (!Array.isArray(o.cards) || ![1, 3].includes(o.cards.length)) return false;
+    if (!isBoundedString(o.intent, 120)) return false;
+    if (!isBoundedString(o.question, 1200)) return false;
+    if (!Number.isInteger(o.round) || (o.round as number) < 1 || (o.round as number) > 3) return false;
+    if (typeof o.sessionHistory !== "string" || o.sessionHistory.length > 2000) return false;
+    return o.cards.every((card) => {
+      if (!card || typeof card !== "object" || Array.isArray(card)) return false;
+      const item = card as Record<string, unknown>;
+      return isBoundedString(item.id, 64) &&
+        (item.category === "state" || item.category === "relation" || item.category === "movement") &&
+        isBoundedString(item.name, 80) &&
+        isBoundedString(item.label, 80) &&
+        (item.position === "single" || item.position === "state" || item.position === "relation" || item.position === "movement") &&
+        isBoundedString(item.meaningVersion, 32) &&
+        isBoundedString(item.coreMeaning, 240) &&
+        isBoundedString(item.visibleLine, 240) &&
+        isBoundedString(item.hiddenLine, 240) &&
+        isBoundedStringArray(item.reflectionQuestions, 3, 240) &&
+        isBoundedStringArray(item.actionSeeds, 3, 240) &&
+        isBoundedStringArray(item.prohibitedClaims, 6, 240);
+    });
   }
   if (typeof o.cardName !== "string" || !o.cardName) return false;
   if (o.orientation !== "upright" && o.orientation !== "reversed") return false;

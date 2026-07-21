@@ -14,13 +14,22 @@ export interface LLMRuntimeOptions {
 
 export type ModelTier = "basic" | "pro";
 export type ModelEntry = "tarot" | "meihua" | "dual" | "daily" | "followup" | "weekly";
-export type SpreadType = "single" | "three_current_resistance_next" | "relationship_tension" | "choice_a_b_reminder";
+export type ReflectionCategory = "state" | "relation" | "movement";
+export type SpreadType = "single" | "reflection_triad";
 
 export interface SpreadCard {
+  id: string;
+  category: ReflectionCategory;
   name: string;
   label: string;
-  position: string;
-  orientation: Orientation;
+  position: "single" | ReflectionCategory;
+  coreMeaning: string;
+  visibleLine: string;
+  hiddenLine: string;
+  reflectionQuestions: string[];
+  actionSeeds: string[];
+  prohibitedClaims: string[];
+  meaningVersion: string;
 }
 
 export interface ModelRouteHints {
@@ -30,10 +39,10 @@ export interface ModelRouteHints {
 
 export interface ReadingRequest {
   mode: "reading";
+  deckVersion: "reflection-v1";
   cardName: string;
-  orientation: Orientation;
-  spreadType?: SpreadType;
-  cards?: SpreadCard[];
+  spreadType: SpreadType;
+  cards: SpreadCard[];
   intent: string;
   question: string;
   round: number;
