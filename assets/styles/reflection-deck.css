@@ -1,0 +1,163 @@
+:root {
+  --reflection-state: #71869a;
+  --reflection-relation: #c85a50;
+  --reflection-movement: #6f998d;
+  --reflection-category: var(--reflection-state);
+}
+
+/*
+ * Observation plate card back.
+ * It stays legible in the full fan: two unequal fields, one route and one node.
+ * Fine registration marks only become visible when a card is pulled closer.
+ */
+.ritual-card-back {
+  --card-back-metal: rgba(199, 181, 151, 0.54);
+  --card-back-metal-soft: rgba(199, 181, 151, 0.17);
+  --card-back-blue: rgba(113, 134, 154, 0.13);
+  --card-back-node: #c85a50;
+  --card-back-base-a: #0a121b;
+  --card-back-base-b: #050910;
+  --card-back-inset: #071019;
+  isolation: isolate;
+  border: 0;
+  background:
+    linear-gradient(var(--card-back-node), var(--card-back-node)) 50% 50% / 5.5% 3.6% no-repeat,
+    linear-gradient(27deg, transparent 49.2%, var(--card-back-metal) 49.45% 50.55%, transparent 50.8%) 50% 50% / 58% 42% no-repeat,
+    radial-gradient(circle, transparent 0 2px, var(--card-back-metal) 2.4px 3px, transparent 3.4px) 50% 8.5% / 12px 12px no-repeat,
+    radial-gradient(circle, transparent 0 2px, var(--card-back-metal) 2.4px 3px, transparent 3.4px) 50% 91.5% / 12px 12px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) 12px 12px / 19px 1px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) 12px 12px / 1px 19px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) calc(100% - 12px) 12px / 19px 1px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) calc(100% - 12px) 12px / 1px 19px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) 12px calc(100% - 12px) / 19px 1px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) 12px calc(100% - 12px) / 1px 19px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) calc(100% - 12px) calc(100% - 12px) / 19px 1px no-repeat,
+    linear-gradient(var(--card-back-metal), var(--card-back-metal)) calc(100% - 12px) calc(100% - 12px) / 1px 19px no-repeat,
+    radial-gradient(ellipse at 48% 44%, rgba(113, 134, 154, 0.12), transparent 56%),
+    repeating-linear-gradient(112deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 7px),
+    linear-gradient(155deg, var(--card-back-base-a), var(--card-back-base-b) 72%);
+  box-shadow:
+    inset 0 0 0 1px rgba(232, 224, 207, 0.13),
+    inset 0 0 0 5px var(--card-back-inset),
+    inset 0 0 0 6px var(--card-back-metal-soft),
+    inset 0 0 0 10px rgba(1, 5, 9, 0.76),
+    inset 0 0 42px rgba(0, 0, 0, 0.48),
+    0 12px 26px rgba(0, 0, 0, 0.30);
+}
+
+.ritual-card-back::before,
+.ritual-card-back::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  display: block;
+  border: 1px solid var(--card-back-metal);
+  border-radius: 0;
+  background:
+    linear-gradient(145deg, rgba(215, 198, 170, 0.10), transparent 42%),
+    linear-gradient(180deg, var(--card-back-blue), rgba(5, 9, 15, 0.10));
+  opacity: 0.86;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.22);
+  transition: opacity 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.ritual-card-back::before {
+  inset: 24% auto auto 17%;
+  width: 30%;
+  height: 50%;
+  clip-path: polygon(0 0, 100% 13%, 100% 87%, 0 100%);
+}
+
+.ritual-card-back::after {
+  inset: 29% 18% auto auto;
+  width: 23%;
+  height: 42%;
+  aspect-ratio: auto;
+  transform: none;
+  clip-path: polygon(0 13%, 100% 0, 100% 100%, 0 87%);
+}
+
+.ritual-stage.is-awaiting-card .ritual-card:hover .ritual-card-back::before,
+.ritual-stage.is-awaiting-card .ritual-card:hover .ritual-card-back::after,
+.ritual-stage.is-awaiting-card .ritual-card:focus-visible .ritual-card-back::before,
+.ritual-stage.is-awaiting-card .ritual-card:focus-visible .ritual-card-back::after,
+.ritual-stage.is-previewing .ritual-card.is-chosen .ritual-card-back::before,
+.ritual-stage.is-previewing .ritual-card.is-chosen .ritual-card-back::after {
+  border-color: rgba(215, 198, 170, 0.78);
+  opacity: 1;
+  box-shadow: inset 0 0 20px rgba(200, 90, 80, 0.055);
+}
+
+.ritual-stage.is-awaiting-card .ritual-card:hover .ritual-card-back,
+.ritual-stage.is-awaiting-card .ritual-card:focus-visible .ritual-card-back,
+.ritual-stage.is-previewing .ritual-card.is-chosen .ritual-card-back {
+  box-shadow:
+    inset 0 0 0 1px rgba(232, 224, 207, 0.22),
+    inset 0 0 0 5px var(--card-back-inset),
+    inset 0 0 0 6px rgba(215, 198, 170, 0.32),
+    inset 0 0 0 10px rgba(1, 5, 9, 0.76),
+    inset 0 0 42px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(200, 90, 80, 0.24),
+    0 18px 34px rgba(0, 0, 0, 0.40);
+}
+
+:root[data-theme="light"] .ritual-card-back {
+  --card-back-metal: rgba(83, 72, 59, 0.62);
+  --card-back-metal-soft: rgba(83, 72, 59, 0.16);
+  --card-back-blue: rgba(61, 76, 88, 0.08);
+  --card-back-base-a: #e5ded1;
+  --card-back-base-b: #cfc7ba;
+  --card-back-inset: #d9d1c4;
+  background-color: #d7d0c3;
+  filter: none;
+}
+
+:root[data-theme="mono"] .ritual-card-back {
+  --card-back-metal: rgba(239, 239, 235, 0.52);
+  --card-back-metal-soft: rgba(239, 239, 235, 0.16);
+  --card-back-blue: rgba(255, 255, 255, 0.055);
+  --card-back-node: #f0f0ed;
+  --card-back-base-a: #171717;
+  --card-back-base-b: #050505;
+  --card-back-inset: #0c0c0c;
+  filter: grayscale(1);
+}
+
+.symbol-card[data-card-category="state"] {
+  --reflection-category: var(--reflection-state);
+}
+
+.symbol-card[data-card-category="relation"] {
+  --reflection-category: var(--reflection-relation);
+}
+
+.symbol-card[data-card-category="movement"] {
+  --reflection-category: var(--reflection-movement);
+}
+
+.symbol-card[data-card-category] {
+  border-left-color: var(--reflection-category);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--reflection-category) 58%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual-card,
+  .ritual-card-3d,
+  .ritual-card-back::before,
+  .ritual-card-back::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .ritual-stage.is-awaiting-card .ritual-card:hover,
+  .ritual-stage.is-awaiting-card .ritual-card:focus-visible {
+    transform:
+      translate3d(
+        calc(var(--card-x) * var(--ritual-fan-scale)),
+        calc(var(--card-y) * var(--ritual-fan-scale)),
+        0
+      )
+      rotateZ(var(--card-angle))
+      scale(var(--card-scale));
+  }
+}

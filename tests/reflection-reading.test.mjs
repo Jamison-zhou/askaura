@@ -44,7 +44,7 @@ assert.deepEqual(singleRequest, {
     category: "state",
     name: "雾窗",
     label: "我现在怎样",
-    position: "state",
+    position: "single",
     coreMeaning: "当前视角还看不清",
     visibleLine: " 已经确定的\n事实 ",
     hiddenLine: "也许还有一个 未验证的假设",
@@ -74,6 +74,7 @@ const triadRequest = buildReflectionReadingRequest({
 });
 assert.equal(triadRequest.cards.length, 3);
 assert.deepEqual(triadRequest.cards.map(({ id }) => id), ["one", "two", "three"]);
+assert.deepEqual(triadRequest.cards.map(({ position }) => position), ["state", "relation", "movement"]);
 assert.equal(triadRequest.spreadType, "reflection_triad");
 assert.equal(triadRequest.cardName, "One");
 assert.equal(triadRequest.intent, "clarity");

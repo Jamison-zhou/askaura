@@ -147,8 +147,65 @@ export function actionFromRecord(record) {
   return cleanTaggedOutputText(record?.action || tokens.ACTION || record?.answer, "");
 }
 
+function reflectionTokens(text) {
+  const normalized = String(text ?? "").replace(
+    /\[(REFLECTION|HIDDEN|VERIFY|ACTION)\]/gi,
+    (_, tag) => `\n[${tag.toUpperCase()}] `,
+  );
+  return parseTaggedTokens(normalized);
+}
+
+function reflectionSnapshotValue(card, field, language, { list = false } = {}) {
+  const localizedField = `${field}${language === "en" ? "En" : "Zh"}`;
+  const localized = list ? card?.[localizedField]?.[0] : card?.[localizedField];
+  const generic = list ? card?.[field]?.[0] : card?.[field];
+  return cleanTaggedOutputText(localized || generic, "");
+}
+
+function reflectionReportFromRecord(record, { language, questionText }) {
+  const saved = record?.report || {};
+  const reading = record?.reading || {};
+  const tokens = reflectionTokens(record?.answer || "");
+  const primaryCard = Array.isArray(record?.cards) ? record.cards[0] : null;
+  const summary = cleanTaggedOutputText(
+    saved.summary || reading.reflection || reading.REFLECTION || tokens.REFLECTION,
+    reflectionSnapshotValue(primaryCard, "visibleLine", language),
+  );
+  const tarotText = cleanTaggedOutputText(
+    saved.tarotText || reading.hidden || reading.HIDDEN || tokens.HIDDEN,
+    reflectionSnapshotValue(primaryCard, "hiddenLine", language),
+  );
+  const dualText = cleanTaggedOutputText(
+    saved.dualText || reading.verify || reading.VERIFY || tokens.VERIFY,
+    reflectionSnapshotValue(primaryCard, "reflectionQuestions", language, { list: true }),
+  );
+  const actionText = cleanTaggedOutputText(
+    saved.actionText || reading.action || reading.ACTION || tokens.ACTION || record?.action,
+    reflectionSnapshotValue(primaryCard, "actionSeeds", language, { list: true }),
+  );
+  const guaText = cleanTaggedOutputText(
+    saved.guaText,
+    record?.gua ? describeGua(record.gua, { language }) : "",
+  );
+  if (!summary && !tarotText && !dualText && !actionText && !guaText) return null;
+  return {
+    summary,
+    tarotText,
+    guaText,
+    dualText,
+    actionText,
+    dontText: cleanTaggedOutputText(saved.dontText, ""),
+    watchText: cleanTaggedOutputText(saved.watchText, ""),
+    ...(questionText ? { questionText } : {}),
+    sourceMode: record?.mode,
+  };
+}
+
 export function reportFromRecord(record, { language = "zh" } = {}) {
   const questionText = cleanResultText(record?.question, "");
+  if (record?.deckVersion === "reflection-v1") {
+    return reflectionReportFromRecord(record, { language, questionText });
+  }
   if (record?.report) {
     const tokens = parseTaggedTokens(record?.answer || "");
     const dontText = record.report.dontText || cleanTaggedOutputText(tokens.AVOID, "");

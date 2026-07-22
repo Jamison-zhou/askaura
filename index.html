@@ -33,6 +33,8 @@
     </noscript>
     <link rel="stylesheet" href="./styles.css?v=20260605-low-light-redesign-2" />
     <link rel="stylesheet" href="./theme-observation.css?v=20260716-cardback-v2" />
+    <link rel="stylesheet" href="./assets/styles/reflection-deck.css?v=20260722-observation-plate-v2" />
+    <link rel="stylesheet" href="./assets/styles/reflection-shell.css?v=20260722-card-frame-v2" />
     <script>
       window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
       window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
@@ -209,9 +211,7 @@
               <div class="spread-selector" id="spread-selector">
                 <span data-i18n="spreadSelectorLabel">牌阵</span>
                 <button type="button" class="is-selected" data-spread-type="single" data-i18n="spreadSingle">单牌</button>
-                <button type="button" data-spread-type="three_current_resistance_next" data-i18n="spreadThree">现状 / 阻力 / 下一步</button>
-                <button type="button" data-spread-type="relationship_tension" data-i18n="spreadRelationship">关系张力</button>
-                <button type="button" data-spread-type="choice_a_b_reminder" data-i18n="spreadChoice">选择 A / B</button>
+                <button type="button" data-spread-type="reflection_triad" data-i18n="spreadReflectionTriad">三象</button>
               </div>
               <div class="gua-cast-selector" id="gua-cast-selector" hidden>
                 <span data-i18n="guaCastLabel">起卦方式</span>
@@ -332,15 +332,15 @@
               <p class="result-evidence-text" id="result-evidence-text"></p>
             <div class="tarot-reading-grid" id="tarot-reading-grid" hidden>
               <section>
-                <span data-i18n="tarotCoreLabel">牌面告诉你</span>
+                <span data-i18n="reflectionSeenLabel">这张牌照见了什么</span>
                 <p id="tarot-core-question"></p>
               </section>
               <section>
-                <span data-i18n="tarotTensionLabel">你真正卡住的是</span>
+                <span data-i18n="reflectionHiddenLabel">可能被忽略的部分</span>
                 <p id="tarot-tension"></p>
               </section>
               <section>
-                <span data-i18n="tarotJudgmentLabel">这次结果提醒你</span>
+                <span data-i18n="reflectionVerifyLabel">可以怎样验证</span>
                 <p id="tarot-judgment"></p>
               </section>
             </div>

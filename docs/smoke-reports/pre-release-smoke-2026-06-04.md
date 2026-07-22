@@ -51,7 +51,7 @@ Result:
 
 ### Local Browser Smoke
 
-Chrome headless generated DOM and screenshots under:
+Chrome headless originally generated DOM and screenshots under the following local folder. Those one-time binary artifacts were removed after the report was preserved; rerun the smoke checklist to regenerate current evidence.
 
 ```text
 D:\CursorAgentChats\askaura\docs\smoke-reports\artifacts-2026-06-04

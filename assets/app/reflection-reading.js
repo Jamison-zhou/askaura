@@ -13,13 +13,13 @@ function isValidCard(card) {
   return Boolean(card && typeof card === "object" && !Array.isArray(card) && clean(card.name));
 }
 
-function requestCard(card = {}) {
+function requestCard(card = {}, position = card.position) {
   return {
     id: card.id,
     category: card.category,
     name: card.name,
     label: card.label,
-    position: card.position,
+    position,
     coreMeaning: card.coreMeaning,
     visibleLine: card.visibleLine,
     hiddenLine: card.hiddenLine,
@@ -50,6 +50,9 @@ export function buildReflectionReadingRequest({
   }
 
   const normalizedLanguage = normalizeLanguage(language);
+  const positions = selectedCards.length === 3
+    ? ["state", "relation", "movement"]
+    : ["single"];
   return {
     mode: "reading",
     tier: "basic",
@@ -57,7 +60,7 @@ export function buildReflectionReadingRequest({
     deckVersion: REFLECTION_DECK_VERSION,
     cardName: clean(selectedCards[0].name),
     spreadType: selectedCards.length === 3 ? "reflection_triad" : "single",
-    cards: selectedCards.map(requestCard),
+    cards: selectedCards.map((card, index) => requestCard(card, positions[index])),
     intent: normalizedLanguage === "zh" ? "看清" : "clarity",
     question: clean(question),
     round: 1,

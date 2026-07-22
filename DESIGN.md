@@ -1,302 +1,66 @@
-# Design System: Noomo Digital Storytelling
+# AskAura Design System
 
-Source: https://storytelling.noomoagency.com/
+AskAura（象问）是一个 AI 反思产品，不是占卜工具。视觉和交互的任务是帮助用户放慢判断、看见另一种解释，并把结果收束成一个今天可以验证的小行动。
 
-## 1. Visual Theme & Atmosphere
+## 1. Product posture
 
-Noomo's storytelling experience is a cinematic, scroll-driven editorial site—not a conventional marketing landing page. The atmosphere blends soft lavender daylight with deep navy immersion, oversized italic serif drama, and precise sans-serif utility. Motion is central: letter-by-letter reveals, glowing hero typography, liquid-glass overlays, and scroll-triggered narrative beats turn reading into an experience.
+- 长期行动与旅程是产品核心；抽卡与观象是游戏化入口。
+- 牌面提供隐喻，不暗示确定结局，不预测未来，不替用户做决定。
+- 一次体验应形成：问题 → 观察 → 验证 → 行动 → 可选复盘。
+- 界面要安静、精确、可读，不使用廉价神秘学装饰或泛游戏 HUD。
 
-- Overall feeling: Premium creative agency, immersive, poetic, slightly mystical
-- Visual density: Sparse at any single viewport moment; extremely tall scroll canvas (~27k px) with staged scenes
-- Brand posture: Confident, craft-led, emotionally intelligent—not corporate SaaS
-- Signature motifs: Gradient-filled italic hero wordmarks, decorative inline icons (bird, star), radial lavender glows, animated underline rules, circular glass CTAs
+## 2. Visual language
 
-### Key Characteristics
+- 主色：深靛蓝、灰蓝、旧木色、象牙灰。
+- 行动节点：低饱和暖金；面积克制，只标记关系或可行动的位置。
+- 系统强调：低饱和红，主要用于选中、注册点、状态变化与危险操作。
+- 深夜、浅色、单色三种主题共享同一层级与语义，不为每个主题另造一套布局。
+- 背景允许水面、雾、墙面和低对比材质；正文区域必须保证稳定对比度。
 
-- Dual-type pairing: **TheSeasons** italic serif for emotional headlines; **TTNeoris** sans for structure and UI
-- Periwinkle hero canvas (`#C4C5F1`) transitions into deep brand blues (`#00276E`, `#060B1D`) on scroll
-- Hero `storytelling` uses viewport-scaled italic type (~19.5vw) with gradient text fill and intentional horizontal offset
-- Navigation uses compact pill buttons with shape-shifting border radii on hover
-- Scroll storytelling sections use large italic display copy, split across animated lines
-- Fixed chrome: translucent header + pointer-events-none footer overlay with oversized contact CTA
-- 3D / WebGL-adjacent immersion suggested by loader reveal mask and long-form case studies (Salesforce, AMD, Coinbase, Intel, Vogue)
+## 3. Typography
 
-## 2. Color Palette & Roles
+- 中文展示与标题：霞鹜新致宋子集，承担品牌和章节气质。
+- 正文与控件：IBM Plex Sans SC 子集，承担清晰度和信息密度。
+- 英文与编号：IBM Plex Sans Condensed / EB Garamond，作为结构标记，不喧宾夺主。
+- 层级主要通过字号、留白和位置建立；避免用过多粗体、描边或发光制造“高级感”。
 
-| Role | Semantic Name | Value | Usage |
-| --- | --- | --- | --- |
-| Hero canvas | Periwinkle Sky | `#C4C5F1` | Opening scene body background |
-| Primary text | Brand Black | `#29345A` | Headlines, nav labels on light surfaces |
-| Display accent | Blush Lavender | `#FDEBFD` | Hero display word base color |
-| Deep surface | Brand Blue 600 | `#00276E` | Immersive panels, glass overlays |
-| Midnight | Dark 400 | `#060B1D` | Blurred ambient blobs, dark scenes |
-| Night base | Dark 500 | `#051125` | Deepest backgrounds |
-| Core brand | Brand Blue | `#3762BE` | Links, accents, brand moments |
-| Mid blue | Brand Blue 500 | `#143A8A` | Secondary blue surfaces |
-| Light blue | Brand Blue 200 | `#88AEFF` | Soft highlights |
-| Deep blue | Brand Blue 300 | `#062969` | Rich blue accents |
-| Rose accent | Brand Rose 200 | `#6248A4` | Editorial accent, alternate button tone |
-| Neutral light | Brand White | `#F5F5F5` | Text on dark, soft neutrals |
-| Pure white | White | `#FFFFFF` | Footer links, glass borders, CTA text |
-| Hot emphasis | Ember Orange | `#FF5A1F` | Animated hero glow states (inferred from keyframes) |
-| Loader wash | Lilac Gradient | `#CEBDF8 → #E2DBF8` | Preloader background |
+## 4. Reflection card system
 
-### Primary
+- 当前卡组位于 `assets/cards/reflection-v1/`，语义定义位于 `assets/app/reflection-deck.js`。
+- 一张牌只表达一个反思隐喻：一个主体，加一个与主体发生关系的次要元素。
+- 约 60%–70% 画面保持安静留白；缩到 64px 高时仍能读出主体和异常关系。
+- 原画不包含文字、编号、Logo、边框或 UI；这些由网页统一叠加。
+- 正面框架采用“观察档案页”逻辑：细线、角标、克制留白，不使用繁复塔罗花边。
+- 卡背采用“双界 + 路径 + 节点”母题，当前文件为 `assets/cards/backs/askaura-observation-gate-back.webp`。
+- 新增卡牌不受传统 22 张限制，但必须归入清晰类别并补齐中英文含义、观察问题、行动种子和禁用断言。
 
-- `#29345A` anchors readable editorial copy on pale fields
-- `#3762BE` / `#143A8A` carry the Noomo institutional blue story through immersive sections
+## 5. Layout and interaction
 
-### Interactive
+- 首页优先展示一个明确问题入口，模式选择是辅助而不是产品主角。
+- 抽卡仪式可以有空间感和层次，但不得遮挡步骤、关闭按钮或主要操作。
+- 结果页先给主线，再给“照见 / 忽略 / 验证”，最后只保留一个具体行动。
+- 弹层必须支持可见关闭按钮、遮罩点击和 `Escape`；禁止用不可交互的装饰层覆盖按钮。
+- 动效服务于状态变化：洗牌、抽取、翻牌、加载、保存。减少持续漂浮、重模糊和大面积滤镜。
+- `prefers-reduced-motion` 下提供完整静态体验。
 
-- Nav pills: text `#29345A`, transparent fill, border implied via shape not heavy stroke
-- Footer / overlay links: `#FFFFFF` at full or ~61% opacity
-- Hover on simple buttons morphs radius and reveals white gradient underline span
-- Glass CTA rings use animated white gradient borders with 0.4s ease-in-out transitions
+## 6. Share and saved images
 
-### Neutral Scale
+- 分享图固定为 1080 × 1440 的“观察记录”，不是网页截图。
+- 必须包含：品牌、日期/编号、问题摘要、牌面、三段观察和一个行动。
+- 牌面使用克制的档案框与内边距，不套厚重相框；文本区域留足呼吸空间。
+- 导出前将远程或本地图片转成可嵌入数据，避免下载后出现空白牌面。
+- 夜间、浅色和单色主题只改变色板，不改变导出结构。
 
-- `#F5F5F5` on dark
-- `#FFFFFF` for high-contrast UI on navy
-- `#000000` for base text fallback
+## 7. Guardrails
 
-### Surface & Overlay
+- 不使用“算命、玄学、转运、灵签、改运、命中注定”等承诺式语言。
+- 不增加星盘、符号阵列、魔法粒子、烛台堆叠或无意义仪式道具。
+- 不把页面做成普通 SaaS 卡片墙，也不把它做成只有氛围没有可操作结果的概念站。
+- 不在 `index.html` 继续堆积业务逻辑；新能力按模块放入 `assets/app/`，样式按职责放入 `assets/styles/`。
 
-- `liquid-glass` panels: `bg-brand-blue-600/41` (~41% opacity deep blue glass)
-- Radial lavender atmospherics: `rgba(234, 189, 246, 0.1–0.2)` in corner gradients
-- Header case-back gradient: `linear-gradient(180deg, rgba(0,0,0,0.7), transparent)`
+## 8. Source of truth
 
-### Theme Modes
-
-Single-mode experience observed (no user-facing light/dark toggle). The page **changes atmosphere by scroll scene** rather than theme switch:
-
-#### Light / Opening Scene
-
-- Background: `#C4C5F1`
-- Text: `#29345A`
-- Display: blush-lavender gradient-filled italic serif
-
-#### Dark / Immersive Scene
-
-- Background: `#00276E`, `#060B1D`, `#051125`
-- Text: `#F5F5F5`, `#FFFFFF`
-- Effects: blur blobs, glass overlays, white gradient borders
-
-## 3. Typography Rules
-
-### Font Family
-
-- **Display / editorial:** `TheSeasons`, serif, frequently *italic*
-- **UI / body / subheads:** `TTNeoris`, sans-serif
-- **Fallback stack:** system-ui, Apple Color Emoji, Segoe UI Emoji
-
-### Hierarchy
-
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| Hero display | TheSeasons italic | 19.5vw (~246px @ 1262px) | 400 | 1.0 | -0.1vw | Centered, translated ~18.6vw right; gradient text fill per letter |
-| Hero subhead | TTNeoris | 66px desktop / 38px mobile | 400 | 60px / tight | -1.98px (`-.03em`) | "The power of digital"; italic span inside h2 |
-| Section display | TheSeasons italic | ~5.2rem small variant | 400 | tight | negative tracking | Animated editorial blocks |
-| Nav / UI | TTNeoris | 18px | 400 | 20px | -0.18px | 24px tall pill buttons |
-| Mobile menu | TTNeoris | 30px | 400 | 30px | normal | Full-screen overlay links |
-| Footer CTA email | TTNeoris | 66px desktop / 30px mobile | 400 | 60px / 30px | -1.98px | Oversized contact anchor |
-| Micro UI | TTNeoris | 10px base body reset | 400 | 15px | normal | Root body font-size reference |
-
-### Principles
-
-- Use **scale contrast** more than weight contrast—display sizes are enormous, weights stay near 400
-- Italic serif signals emotion; sans signals clarity
-- Negative tracking on large sans sizes (`-.01em` to `-.03em`)
-- Inline decorative icons (bird, star) substitute for emoji or bullet ornamentation
-- Animated text may split words into per-letter spans for scroll/hover choreography
-
-## 4. Component Stylings
-
-### Buttons and Links
-
-**Simple nav button (`simple-button`)**
-- Height: 24px (`h-24` = 2.4rem)
-- Padding: 8px horizontal (`px-8`)
-- Font: 18px TTNeoris, brand black
-- Radius variants: `medium-rounded` 4px default → 20px hover; `full-rounded` 20px → 0px hover; `none-rounded` 0px → 20px hover
-- Hover: inner `span` expands white linear-gradient underline (`90deg, transparent → white → transparent`)
-- Transition: `all 300ms ease-in-out`
-- Dark/rose theme classes swap text to white or `#6248A4`
-
-**Glass / release CTA**
-- Circular control with masked gradient border (`::before` / `::after` white gradients)
-- Backdrop blur 6px on inner gradient surface
-- Hover flips border gradient direction opacity
-
-**Footer email link**
-- Massive text link, white, no button chrome
-- Social links at 18px with optional 61% opacity
-
-### Cards & Containers
-
-- `liquid-glass` containers: low-opacity blue glass over dark scenes
-- Case study blocks use full-bleed imagery with typographic overlays
-- Long-form sections rely on whitespace and typographic scale, not card grids
-
-### Navigation
-
-- Fixed header, `z-index: 10`, top padding 38px desktop / 20px mobile
-- Logo with dual-wrapper hover crossfade on desktop
-- Right cluster: Agency / Labs / Contact compact pills + menu trigger
-- Mobile menu: large 30px white links, opacity-animated entrance
-- Header may include dark gradient backplate over case imagery
-
-### Distinctive Components
-
-- **Hero title letters (`.char`)**: per-letter gradient text fill `white → #E3F0FF`, negative margins for overlap
-- **Animated underline rules**: 2px lines, white on dark, width ~250–700px, translated for composition
-- **Text-with-stars**: pseudo-element star SVG ornaments before/after phrases
-- **Preloader**: lilac diagonal gradient with radial reveal mask (`--reveal-radius`, feathered edge)
-- **Sound button**: 48px circular control, bottom-right area
-- **Scroll cue**: "Scroll to explore" / "Tap to explore" with star icon
-
-### Image Treatment
-
-- Inline SVG/PNG icons at text scale (bird ~4.8rem wide, stars ~0.8rem)
-- Case imagery full-bleed; logos ~130–203px wide in header/footer
-- Blurred color blobs as ambient backgrounds, not photos
-
-## 5. Layout Principles
-
-### Spacing System
-
-- Base unit: `--spacing: 0.1rem` (1px at default root)
-- Common tokens: 16, 20, 24, 26, 28, 30, 32, 38, 40, 46, 60, 66, 134, 145 (all × 0.1rem → rem-like scale)
-- Container padding: `2rem` desktop (`--container-padding`), `1.6rem` mobile (`--container-padding-xs`)
-- Section vertical padding often `30px` (`py-30`)
-- Hero occupies full viewport height (`h-screen`)
-
-### Grid & Container
-
-- Full-bleed immersive layout; content frequently optically centered then intentionally offset (hero translate)
-- Fixed header/footer overlays; main narrative scrolls beneath/through
-- Wide editorial measure for hero; narrower stacked copy in principle sections
-
-### Whitespace Philosophy
-
-- One major idea per viewport band
-- Generous vertical scroll distance between narrative beats
-- Composition uses negative margins and overlapping type rather than tight grids
-
-### Border Radius Scale
-
-| Token | Value | Usage |
-| --- | --- | --- |
-| `--radius-xs` | 0.4rem (4px) | Nav pill default |
-| `--radius-7` | 0.7rem | Small UI |
-| `--radius` | 2.4rem | Medium surfaces |
-| `--radius-full` | 9999px | Circles, sound button, glass rings |
-| Ad hoc | 20px | Nav hover pill state |
-
-## 6. Depth & Elevation
-
-- Prefer **atmosphere over drop shadows**: radial gradients, blur blobs, glass overlays
-- `blur-sm` 8px, `blur-lg` 16px, `blur-2xl` 40px, custom `blur(80px)` ambient shapes
-- Glass borders simulated via gradient masks, not box-shadow cards
-- Hero text glow uses layered `text-shadow` oranges for heat states
-- Z-index ladder: base content → footer overlay `z-9` → header `z-10` → loader/menu higher
-
-## 7. Do's and Don'ts
-
-### Do
-
-- Pair oversized italic serif display with restrained sans subheads
-- Use scroll to change scene color temperature (lavender → navy)
-- Animate typography at the letter or line level for narrative emphasis
-- Keep nav compact and shape-playful; let hero typography dominate
-- Use gradient text fills and soft radial glows instead of hard cards
-- End sections with concrete editorial principles and case-study proof
-
-### Don't
-
-- Don't flatten the hero into a standard left-text/right-image SaaS layout
-- Don't use heavy card shadows or generic purple-on-white AI palette
-- Don't over-bold type; hierarchy comes from size, italic, and color
-- Don't treat the page as a single-screen landing—it is a long story
-- Don't add emoji or casual chat tone; voice stays elevated and agency-grade
-
-## 8. Responsive Behavior
-
-### Breakpoints
-
-- Mobile-first utilities with `xs:` and `lg:` prefixes
-- Observed mobile threshold around `max-width: 767px` in hero CSS
-- Desktop reference captured at 1262×624 viewport
-
-### Collapsing Strategy
-
-- Hero h1: 19.5vw → 18.8vw, minor translate adjustment
-- Hero h2 margin-bottom compresses on mobile
-- Header padding reduces; some decorative lines hidden on mobile (`lg:!block xs:!hidden`)
-- Footer email scales 66px → 30px
-- Footer layout shifts from full-screen fixed overlay to flexible height on smaller breakpoints
-
-### Touch Targets
-
-- Menu and sound controls use circular 48px-ish hit areas
-- Nav pills are small (24px tall) on desktop—acceptable for precision desktop agency UI; mobile menu enlarges to 30px text links
-
-## 9. Agent Prompt Guide
-
-### Quick Color Reference
-
-- Canvas light: `#C4C5F1`
-- Text dark: `#29345A`
-- Display blush: `#FDEBFD`
-- Deep blue: `#00276E`
-- Midnight: `#060B1D`
-- Accent rose: `#6248A4`
-- White UI: `#FFFFFF`
-
-### Example Component Prompts
-
-**Hero**
-> Build a full-viewport hero on a periwinkle `#C4C5F1` field. Subhead in TTNeoris 66px brand black `#29345A` reading "The power of digital". Below, an enormous italic TheSeasons headline "storytelling" at ~20vw, shifted right, with per-letter white-to-ice-blue gradient fill. Add a small "Tap to explore" cue with star icon. Motion: staggered letter pop-in, subtle orange glow pulse on hero title.
-
-**Nav pills**
-> Fixed top header with TTNeoris 18px links styled as 24px-tall pills. Default radii vary per item (4px, 20px, 0). On hover, morph radius and reveal a horizontal white gradient underline through the pill. Colors: `#29345A` on transparent over light hero.
-
-**Editorial scroll section**
-> Dark navy scene with oversized italic TheSeasons display copy, broken across animated lines. Include thin white horizontal rules offset compositionally. Pair with a principle headline in sans and explanatory lines beneath. Use `#F5F5F5` text on `#00276E` / `#060B1D` backgrounds.
-
-**Footer overlay**
-> Fixed full-screen footer frame with pointer-events selectively enabled. Large white email link at 66px, social links at 18px, tagline "Let us help you tell your story the way it was meant". Minimal chrome, cinematic spacing.
-
-### Iteration Guide
-
-- If result feels too "SaaS": increase serif scale, add italic, reduce card boxes
-- If result feels flat: add radial lavender glows and gradient text fills
-- If result feels noisy: slow motion, enlarge whitespace, one focal type element per scene
-- Match scroll rhythm: each section should feel like a chapter, not a feature grid
-
-## Interaction Patterns
-
-- **Preloader reveal:** radial mask expands from center over lilac gradient
-- **Hero entrance:** `heroTitleEntrance` blur + translateY + rotateX; per-char `heroLetterPop` stagger
-- **Scroll narrative:** long page (~27000px); sections animate on scroll (letter cascades e.g. "Reimagine Phoenix")
-- **Hover nav:** radius morph + gradient underline sweep (300ms ease-in-out)
-- **Glass controls:** border gradient direction swap on hover (400ms)
-- **Reduced motion:** animations disabled; static opacity/color fallbacks
-
-## Content & Messaging Patterns
-
-- Headlines poetic and principle-driven: "Storytelling is much more than words"
-- Structured advice blocks: title + short imperative + supporting lines
-- Case study name-drops as social proof: Salesforce, AMD, Coinbase, Intel, Vogue
-- CTA tone: invitational, not aggressive—"Let us help you tell your story the way it was meant"
-- Contact presented as oversized email, not form-first
-
-## Observed Pages
-
-- https://storytelling.noomoagency.com/ — primary immersive storytelling experience (desktop evidence @ 1262px)
-
-## Evidence Notes
-
-- Extracted via `agent-browser` eval (DOM, computed styles, CSS variables, stylesheet rules)
-- Mobile viewport pass not fully captured in this run; responsive rules inferred from CSS `xs:` / `lg:` utilities and media queries
-- 3D/WebGL scene internals not directly inspected; immersive behavior inferred from meta description and scroll-length structure
-- Ember orange glow values taken from observed `@keyframes heroTitleGlowIdle` in stylesheet rules
+- 产品状态：`docs/ask-aura-implementation-plans/00-index.md`
+- 卡组视觉与生成提示：`docs/design/reflection-deck-v1/image2-prompts.md`
+- 运行代码：`assets/app/`、`assets/styles/`、`assets/cards/reflection-v1/`
+- 历史原型和一次性生成包不属于运行系统，不应重新引入主分支。

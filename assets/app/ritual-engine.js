@@ -69,7 +69,7 @@ export function ritualCardLayout(index, deckLength = REFLECTION_DECK.length) {
   };
 }
 
-export function ritualVisibleIndexes(deckLength = TAROT_DECK.length, visibleCount = 15) {
+export function ritualVisibleIndexes(deckLength = REFLECTION_DECK.length, visibleCount = 15) {
   const total = Math.max(0, Number(deckLength) || 0);
   const count = Math.min(total, Math.max(1, Number(visibleCount) || 1));
   if (count === total) return Array.from({ length: total }, (_, index) => index);
@@ -94,11 +94,23 @@ export function recordCardFromSelection(selection, {
     imageNameEn: card.imageNameEn,
     category: card.category,
     coreMeaning: isZh ? card.coreMeaningZh : card.coreMeaningEn,
+    coreMeaningZh: card.coreMeaningZh,
+    coreMeaningEn: card.coreMeaningEn,
     visibleLine: isZh ? card.visibleLineZh : card.visibleLineEn,
+    visibleLineZh: card.visibleLineZh,
+    visibleLineEn: card.visibleLineEn,
     hiddenLine: isZh ? card.hiddenLineZh : card.hiddenLineEn,
+    hiddenLineZh: card.hiddenLineZh,
+    hiddenLineEn: card.hiddenLineEn,
     reflectionQuestions: isZh ? card.reflectionQuestionsZh : card.reflectionQuestionsEn,
+    reflectionQuestionsZh: card.reflectionQuestionsZh,
+    reflectionQuestionsEn: card.reflectionQuestionsEn,
     actionSeeds: isZh ? card.actionSeedsZh : card.actionSeedsEn,
+    actionSeedsZh: card.actionSeedsZh,
+    actionSeedsEn: card.actionSeedsEn,
     prohibitedClaims: isZh ? card.prohibitedClaimsZh : card.prohibitedClaimsEn,
+    prohibitedClaimsZh: card.prohibitedClaimsZh,
+    prohibitedClaimsEn: card.prohibitedClaimsEn,
     label: selection.position?.label || singleLabel,
     position: selection.position?.key || "single",
     imageSrc: card.imageSrc,

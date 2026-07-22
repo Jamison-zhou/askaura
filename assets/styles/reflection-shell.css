@@ -1,0 +1,601 @@
+/*
+ * AskAura reflection shell
+ * One final convergence layer for the question, draw and result surfaces.
+ * It deliberately removes the old observatory scenery instead of adding
+ * another decorative theme on top of it.
+ */
+
+:root {
+  --reflection-page: #08111a;
+  --reflection-page-deep: #050b12;
+  --reflection-sheet: rgba(12, 22, 32, 0.92);
+  --reflection-sheet-soft: rgba(226, 231, 232, 0.045);
+  --reflection-line: rgba(226, 231, 232, 0.13);
+  --reflection-line-strong: rgba(226, 231, 232, 0.24);
+  --reflection-text: #e8e5dd;
+  --reflection-text-soft: #b7b8b4;
+  --reflection-text-muted: #7f898d;
+  --reflection-warm: #d7c6aa;
+  --reflection-shadow: 0 28px 80px rgba(0, 5, 10, 0.34);
+}
+
+:root[data-theme="light"] {
+  --reflection-page: #e7e2d8;
+  --reflection-page-deep: #d9d3c8;
+  --reflection-sheet: rgba(242, 238, 228, 0.94);
+  --reflection-sheet-soft: rgba(8, 17, 25, 0.04);
+  --reflection-line: rgba(8, 17, 25, 0.14);
+  --reflection-line-strong: rgba(8, 17, 25, 0.26);
+  --reflection-text: #121a20;
+  --reflection-text-soft: #465057;
+  --reflection-text-muted: #707679;
+  --reflection-warm: #75634f;
+  --reflection-shadow: 0 24px 70px rgba(58, 52, 43, 0.10);
+}
+
+:root[data-theme="mono"] {
+  --reflection-page: #080808;
+  --reflection-page-deep: #030303;
+  --reflection-sheet: rgba(16, 16, 16, 0.95);
+  --reflection-sheet-soft: rgba(255, 255, 255, 0.045);
+  --reflection-line: rgba(255, 255, 255, 0.14);
+  --reflection-line-strong: rgba(255, 255, 255, 0.28);
+  --reflection-text: #f0f0ed;
+  --reflection-text-soft: #bebeba;
+  --reflection-text-muted: #878783;
+  --reflection-warm: #d0d0cc;
+}
+
+html,
+body {
+  background: var(--reflection-page-deep);
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(113, 134, 154, 0.10), transparent 34rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 36%);
+}
+
+body::after {
+  background-image: radial-gradient(currentColor 0.45px, transparent 0.45px);
+  background-size: 8px 8px;
+  color: var(--reflection-text);
+  opacity: 0.035;
+}
+
+/* Shared page surface */
+.mirror-room,
+:root[data-theme="light"] .mirror-room,
+:root[data-theme="mono"] .mirror-room {
+  background:
+    radial-gradient(ellipse at 72% 26%, rgba(113, 134, 154, 0.10), transparent 34rem),
+    radial-gradient(ellipse at 18% 82%, rgba(200, 90, 80, 0.035), transparent 28rem),
+    linear-gradient(145deg, var(--reflection-page), var(--reflection-page-deep));
+}
+
+.mirror-room::before,
+:root[data-theme="light"] .mirror-room::before {
+  background:
+    linear-gradient(90deg, transparent 0 21.7%, var(--reflection-line) 21.75% 21.8%, transparent 21.85%),
+    linear-gradient(180deg, transparent 0 41%, var(--reflection-line) 41.05% 41.1%, transparent 41.15%);
+  box-shadow: inset 0 -100px 150px color-mix(in srgb, var(--reflection-page-deep) 54%, transparent);
+  opacity: 0.44;
+}
+
+.side-rail {
+  border-bottom-color: var(--reflection-line);
+}
+
+.mirror-room[data-step="idle"] .hero-content {
+  width: min(100%, 1360px);
+  min-height: calc(100dvh - 142px);
+  padding: clamp(44px, 7dvh, 76px) 0 clamp(34px, 5dvh, 56px);
+  grid-template-columns: minmax(300px, 0.78fr) minmax(560px, 1.22fr);
+  gap: clamp(54px, 7vw, 104px);
+  align-items: center;
+}
+
+.mirror-room[data-step="idle"] .idle-copy {
+  position: static;
+  align-self: center;
+  gap: 18px;
+}
+
+.mirror-room[data-step="idle"] .copy-block h1 {
+  max-width: 7.2em;
+  color: var(--reflection-text);
+  font-size: clamp(52px, 4.8vw, 76px);
+  line-height: 1.09;
+  letter-spacing: -0.035em;
+  text-shadow: none;
+}
+
+.copy-block .hero-subcopy,
+.hero-protocol,
+.question-mode .mode-primer,
+.compose-actions .privacy-note {
+  color: var(--reflection-text-muted);
+}
+
+.mirror-room[data-step="idle"] .compose-panel,
+.mirror-room[data-step="idle"] .compose-panel:focus-within,
+:root[data-theme="light"] .mirror-room[data-step="idle"] .compose-panel,
+:root[data-theme="light"] .mirror-room[data-step="idle"] .compose-panel:focus-within {
+  border-color: var(--reflection-line);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--reflection-text) 4%, transparent), transparent 30%),
+    var(--reflection-sheet);
+  box-shadow: var(--reflection-shadow), inset 0 1px 0 color-mix(in srgb, var(--reflection-text) 5%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.compose-panel textarea,
+:root[data-theme="light"] .compose-panel textarea,
+:root[data-theme="light"] .compose-panel textarea:focus {
+  border-color: var(--reflection-line);
+  color: var(--reflection-text);
+  background: color-mix(in srgb, var(--reflection-page-deep) 52%, transparent);
+}
+
+.mode-card {
+  border-color: var(--reflection-line);
+  background: var(--reflection-sheet-soft);
+}
+
+.mode-card.is-selected,
+:root[data-theme="light"] .mode-card.is-selected {
+  border-color: color-mix(in srgb, var(--reflection-warm) 62%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--reflection-warm) 12%, transparent), transparent 68%),
+    var(--reflection-sheet-soft);
+  box-shadow: inset 0 0 0 1px rgba(200, 90, 80, 0.14);
+}
+
+/* Draw: a quiet observation field, not a second scenic world. */
+.ritual-stage,
+:root[data-theme="light"] .ritual-stage,
+:root[data-theme="mono"] .ritual-stage {
+  width: min(1760px, calc(100vw - 32px));
+  height: min(940px, calc(100dvh - 32px));
+  min-height: min(700px, calc(100dvh - 32px));
+  border-color: var(--reflection-line);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 76%, color-mix(in srgb, var(--reflection-warm) 9%, transparent), transparent 38%),
+    radial-gradient(ellipse at 50% 26%, rgba(113, 134, 154, 0.12), transparent 44%),
+    linear-gradient(180deg, var(--reflection-page), var(--reflection-page-deep));
+  box-shadow:
+    0 0 0 100vmax color-mix(in srgb, var(--reflection-page-deep) 82%, transparent),
+    var(--reflection-shadow),
+    inset 0 1px 0 color-mix(in srgb, var(--reflection-text) 5%, transparent);
+  backdrop-filter: none;
+}
+
+.ritual-stage-copy {
+  left: clamp(28px, 4vw, 64px);
+  top: clamp(34px, 6dvh, 70px);
+  gap: 10px;
+}
+
+.ritual-stage-copy strong {
+  max-width: 14em;
+  color: var(--reflection-text);
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1.28;
+}
+
+.ritual-deck {
+  height: min(620px, 62dvh);
+  transform: translateY(clamp(88px, 12dvh, 126px));
+}
+
+.ritual-card-back {
+  border-color: color-mix(in srgb, var(--reflection-warm) 34%, transparent);
+  filter: none;
+}
+
+.ritual-card-face {
+  filter: saturate(0.90) brightness(0.90) contrast(1.02);
+}
+
+.ritual-stage p {
+  bottom: clamp(34px, 5dvh, 54px);
+  border-color: var(--reflection-line);
+  color: var(--reflection-text-soft);
+  background: color-mix(in srgb, var(--reflection-page-deep) 74%, transparent);
+}
+
+.ritual-stage.is-previewing .ritual-preview-actions {
+  bottom: clamp(98px, 12dvh, 124px);
+}
+
+/* Card artwork opens as a collected observation plate, not a generic modal. */
+.card-lightbox {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card-lightbox[hidden] {
+  display: none;
+}
+
+.card-lightbox .lightbox-backdrop {
+  background:
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--reflection-text) 4%, transparent), transparent 34rem),
+    color-mix(in srgb, var(--reflection-page-deep) 90%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.lightbox-frame {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: min(460px, calc(100vw - 48px));
+  margin: 0;
+  padding: 14px 14px 18px;
+  transform: none;
+  border: 0;
+  border-radius: 2px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--reflection-text) 3.5%, transparent), transparent 42%),
+    color-mix(in srgb, var(--reflection-page-deep) 96%, transparent);
+  box-shadow:
+    0 0 0 1px var(--reflection-line),
+    0 0 0 7px color-mix(in srgb, var(--reflection-page-deep) 78%, transparent),
+    0 0 0 8px color-mix(in srgb, var(--reflection-warm) 18%, transparent),
+    0 34px 90px rgba(0, 4, 8, 0.58);
+  backdrop-filter: none;
+}
+
+.lightbox-frame::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 8px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) left top / 26px 1px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) left top / 1px 26px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) right top / 26px 1px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) right top / 1px 26px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) left bottom / 26px 1px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) left bottom / 1px 26px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) right bottom / 26px 1px no-repeat,
+    linear-gradient(var(--reflection-warm), var(--reflection-warm)) right bottom / 1px 26px no-repeat;
+  opacity: 0.38;
+}
+
+.lightbox-frame::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: -12px;
+  width: 7px;
+  height: 7px;
+  border: 3px solid var(--reflection-page-deep);
+  background: #c85a50;
+  box-shadow: 0 0 0 1px rgba(200, 90, 80, 0.30);
+  transform: translateX(-50%);
+}
+
+.lightbox-frame img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  max-height: calc(100dvh - 172px);
+  object-fit: contain;
+  border: 1px solid color-mix(in srgb, var(--reflection-warm) 20%, transparent);
+  background: var(--reflection-page-deep);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 18px 42px rgba(0, 4, 8, 0.30);
+}
+
+.lightbox-frame figcaption {
+  position: relative;
+  z-index: 3;
+  margin: 14px 18px 0;
+  color: var(--reflection-text-soft);
+  font-family: var(--obs-font-display);
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 0.015em;
+  text-align: center;
+}
+
+.lightbox-frame figcaption::before {
+  content: "OBSERVATION / IMAGE";
+  display: block;
+  margin-bottom: 5px;
+  color: var(--reflection-text-muted);
+  font-family: var(--obs-font-data);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.18em;
+}
+
+.lightbox-frame .lightbox-close {
+  z-index: 5;
+  right: -48px;
+  top: -1px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--reflection-line);
+  color: var(--reflection-text-muted);
+  background: color-mix(in srgb, var(--reflection-page-deep) 86%, transparent);
+  box-shadow: 0 10px 26px rgba(0, 4, 8, 0.22);
+}
+
+.lightbox-frame .lightbox-close:hover {
+  border-color: var(--reflection-line-strong);
+  color: var(--reflection-text);
+  background: var(--reflection-sheet);
+}
+
+@media (max-width: 560px) {
+  .card-lightbox {
+    padding: 14px;
+  }
+
+  .lightbox-frame {
+    width: min(100%, 420px);
+    padding: 10px 10px 15px;
+  }
+
+  .lightbox-frame img {
+    max-height: calc(100dvh - 132px);
+  }
+
+  .lightbox-frame .lightbox-close {
+    right: 17px;
+    top: 17px;
+    color: var(--reflection-text-soft);
+    background: color-mix(in srgb, var(--reflection-page-deep) 82%, transparent);
+  }
+}
+
+/* Result: image -> conclusion -> one action -> supporting detail. */
+.answer-panel {
+  width: min(100%, 1320px);
+  border-color: var(--reflection-line);
+  border-radius: 18px;
+  background: var(--reflection-sheet);
+  box-shadow: var(--reflection-shadow);
+}
+
+.result-layout,
+.answer-panel.is-dual-report .result-layout {
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: clamp(38px, 5vw, 70px);
+  padding: clamp(30px, 3.5vw, 52px);
+}
+
+.result-symbol-panel {
+  padding: 0 clamp(20px, 2vw, 28px) 0 0;
+  border-right: 1px solid var(--reflection-line);
+  background: transparent;
+  opacity: 1;
+}
+
+.symbol-card {
+  gap: 16px;
+  padding-left: 16px;
+  border: 0;
+  border-left: 2px solid var(--reflection-category, var(--reflection-line-strong));
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tarot-symbol img {
+  width: min(100%, 268px);
+  aspect-ratio: 5 / 8;
+  object-fit: cover;
+  border-color: var(--reflection-line-strong);
+  border-radius: 8px;
+  background: var(--reflection-page-deep);
+  box-shadow: 0 20px 48px rgba(0, 5, 10, 0.30);
+  transform: none;
+  filter: saturate(0.94) contrast(1.02) brightness(1);
+}
+
+.tarot-symbol img:hover {
+  border-color: color-mix(in srgb, var(--reflection-warm) 66%, transparent);
+  transform: translateY(-3px);
+  filter: saturate(0.98) contrast(1.03) brightness(1.03);
+}
+
+.result-main-panel,
+.answer-panel.is-dual-report .result-main-panel {
+  padding: 0;
+  gap: 22px;
+}
+
+.answer-title,
+.answer-panel.is-dual-report .answer-title {
+  font-size: clamp(38px, 3.8vw, 58px);
+  color: var(--reflection-text);
+}
+
+.core-conclusion,
+.answer-panel.is-dual-report .core-conclusion {
+  padding: clamp(20px, 2.4vw, 30px);
+  border: 1px solid var(--reflection-line);
+  border-left: 3px solid var(--obs-accent);
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(200, 90, 80, 0.075), transparent 46%),
+    var(--reflection-sheet-soft);
+  box-shadow: none;
+}
+
+.result-summary,
+.action-sentence,
+.tarot-reading-grid p,
+.report-stack p,
+.action-board p {
+  color: var(--reflection-text-soft);
+}
+
+.action-board,
+.answer-panel.is-dual-report .action-board {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.action-board section,
+.answer-panel.is-dual-report .action-board section,
+.tarot-reading-grid section,
+.report-stack section {
+  min-height: 0;
+  border-color: var(--reflection-line);
+  border-radius: 10px;
+  background: var(--reflection-sheet-soft);
+}
+
+.action-board section:first-child,
+.answer-panel.is-dual-report .action-board section:first-child {
+  grid-row: auto;
+  min-height: 0;
+  border-color: rgba(200, 90, 80, 0.28);
+  background: rgba(200, 90, 80, 0.08);
+}
+
+.result-actions,
+:root[data-theme="light"] .result-actions {
+  border-top-color: var(--reflection-line);
+  background: color-mix(in srgb, var(--reflection-page-deep) 46%, transparent);
+}
+
+@media (max-width: 980px) {
+  .mirror-room[data-step="idle"] .hero-content {
+    min-height: auto;
+    padding: 30px 0 42px;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .mirror-room[data-step="idle"] .copy-block h1 {
+    max-width: 8.5em;
+    font-size: clamp(44px, 8vw, 64px);
+  }
+
+  .result-layout,
+  .answer-panel.is-dual-report .result-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .result-symbol-panel {
+    position: static;
+    padding: 0 0 24px;
+    border-right: 0;
+    border-bottom: 1px solid var(--reflection-line);
+  }
+
+  .symbol-card {
+    grid-template-columns: minmax(130px, 190px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .symbol-summary-head,
+  .symbol-keywords,
+  .symbol-question,
+  .symbol-spread-list {
+    grid-column: 2;
+  }
+
+  .tarot-symbol {
+    grid-column: 1;
+    grid-row: 1 / span 5;
+  }
+}
+
+@media (max-width: 780px) {
+  .mirror-room,
+  :root[data-theme="light"] .mirror-room,
+  :root[data-theme="mono"] .mirror-room {
+    padding-inline: 14px;
+    background:
+      radial-gradient(ellipse at 50% 12%, rgba(113, 134, 154, 0.10), transparent 26rem),
+      linear-gradient(180deg, var(--reflection-page), var(--reflection-page-deep));
+  }
+
+  .mirror-room[data-step="idle"] .copy-block h1 {
+    font-size: clamp(40px, 12vw, 54px);
+  }
+
+  .ritual-stage,
+  :root[data-theme="light"] .ritual-stage,
+  :root[data-theme="mono"] .ritual-stage {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    min-height: 0;
+    border-radius: 14px;
+  }
+
+  .ritual-stage-copy {
+    left: 22px;
+    top: 72px;
+    max-width: calc(100% - 44px);
+  }
+
+  .ritual-stage-copy strong {
+    font-size: clamp(26px, 8vw, 36px);
+  }
+
+  .ritual-stepper {
+    top: 242px;
+  }
+
+  .ritual-deck {
+    width: calc(100% - 20px);
+    transform: translateY(82px);
+  }
+
+  .ritual-stage.is-previewing .ritual-preview-actions {
+    bottom: 94px;
+  }
+
+  .result-layout,
+  .answer-panel.is-dual-report .result-layout {
+    padding: 24px 18px 30px;
+  }
+
+  .symbol-card {
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 12px 16px;
+    padding-left: 12px;
+  }
+
+  .answer-title,
+  .answer-panel.is-dual-report .answer-title {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+
+  .action-board,
+  .answer-panel.is-dual-report .action-board {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .symbol-card {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .symbol-summary-head strong {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarot-symbol img {
+    transition: none;
+  }
+}

@@ -33,11 +33,13 @@ tmp-dev-server.*
 tmp-static-server.mjs
 docs/smoke-reports/**/chrome-profile/
 docs/smoke-reports/**/profile-*/
+docs/smoke-reports/artifacts-*/
 
 # Local scratch / generated assets
 tmp/
 memes/
 .superpowers/
+output/
 
 # Build / cache (no build step in this project, but defense in depth)
 dist/

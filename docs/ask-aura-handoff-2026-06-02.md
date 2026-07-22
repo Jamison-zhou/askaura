@@ -45,7 +45,7 @@ Primary files:
 - `index.html`: main UI, flow logic, i18n, tarot ritual, result rendering.
 - `styles.css`: visual system, ritual modal, result page styling.
 - `assets/app/storage.js`: history record normalization.
-- `assets/cards/backs/askaura-frosted-mirror-back.png`: current card back used by the ritual deck.
+- `assets/cards/backs/askaura-observation-gate-back.webp`: current card back used by the ritual deck. The earlier frosted-mirror asset has been retired.
 
 The app has three entry modes:
 

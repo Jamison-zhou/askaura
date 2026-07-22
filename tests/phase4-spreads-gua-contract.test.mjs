@@ -18,13 +18,13 @@ assert.match(types, /cards: SpreadCard\[\]/, "reading request requires reflectio
 assert.match(types, /spreadType: SpreadType/, "reading request requires a reflection spread type");
 
 assert.match(html, /id="spread-selector"/, "tarot mode exposes a spread selector");
-assert.equal((html.match(/data-spread-type=/g) || []).length, 4, "legacy front-end spread choices remain until reflection UI wiring");
+assert.equal((html.match(/data-spread-type=/g) || []).length, 2, "front-end exposes only the single and three-lens reflection spreads");
+assert.match(html, /data-spread-type="reflection_triad"/, "front-end exposes the category-aware three-lens spread");
 assert.match(html, /let selectedSpreadType = "single"/, "single card remains the default");
 assert.match(html, /mode !== "tarot"[\s\S]*selectedSpreadType = "single"/, "non-tarot modes reset to single spread");
 assert.match(html, /spreadPositions\(spreadType\)/, "ritual reads spread positions before selecting cards");
 assert.match(html, /excludedIndexes\.push\(selection\.index\)/, "sequential card choices cannot pick the same card twice");
-assert.match(html, /cards: selectedCards\.map/, "front-end sends spread cards to reading request");
-assert.match(html, /spreadType: ritualResult\.spreadType/, "front-end sends selected spread type to reading request");
+assert.match(html, /buildReflectionReadingRequest\(\{[\s\S]*cards: selectedCards/, "front-end sends structured cards through the reflection request builder");
 assert.match(html, /cards: selectedCards/, "saved tarot records include selected cards");
 assert.match(html, /id="symbol-spread-list"/, "result symbol panel includes a spread card list");
 assert.match(html, /function renderSymbolSpread\(cards = \[\]\)/, "front-end renders all selected spread cards, not only the primary card");

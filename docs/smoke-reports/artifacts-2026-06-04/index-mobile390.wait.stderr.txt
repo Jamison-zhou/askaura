@@ -1,5 +1,0 @@
-libpng warning: tRNS: invalid with alpha channel
-[47792:47264:0604/110149.370:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
-[47792:47264:0604/110149.394:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
-[47792:47264:0604/110149.396:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
-295447 bytes written to file D:\CursorAgentChats\askaura\docs\smoke-reports\artifacts-2026-06-04\index-mobile390.wait.png

@@ -88,6 +88,46 @@ assert.deepEqual(reportFromRecord(legacyTarot, { language: "en" }), {
   sourceMode: "tarot"
 });
 
+const reflectionRecord = {
+  mode: "tarot",
+  deckVersion: "reflection-v1",
+  question: "What am I avoiding?",
+  answer: "[REFLECTION] You keep circling the same fact.\n[HIDDEN] You may be protecting an assumption.\n[VERIFY] Ask for one concrete example.\n[ACTION] Write down the answer today."
+};
+assert.deepEqual(reportFromRecord(reflectionRecord, { language: "en" }), {
+  summary: "You keep circling the same fact.",
+  tarotText: "You may be protecting an assumption.",
+  guaText: "",
+  dualText: "Ask for one concrete example.",
+  actionText: "Write down the answer today.",
+  dontText: "",
+  watchText: "",
+  questionText: "What am I avoiding?",
+  sourceMode: "tarot"
+});
+
+const reflectionSnapshotFallback = reportFromRecord({
+  mode: "tarot",
+  deckVersion: "reflection-v1",
+  answer: "",
+  cards: [{
+    visibleLine: "You are waiting for a perfect signal.",
+    hiddenLine: "Waiting may be protecting you from choosing.",
+    reflectionQuestions: ["What evidence would be enough?"],
+    actionSeeds: ["Name one sufficient signal today."]
+  }]
+}, { language: "en" });
+assert.deepEqual(reflectionSnapshotFallback, {
+  summary: "You are waiting for a perfect signal.",
+  tarotText: "Waiting may be protecting you from choosing.",
+  guaText: "",
+  dualText: "What evidence would be enough?",
+  actionText: "Name one sufficient signal today.",
+  dontText: "",
+  watchText: "",
+  sourceMode: "tarot"
+});
+
 const meihuaRecord = {
   mode: "meihua",
   answer: "[GUA_SIGNAL] The signal is hesitation.\n[GUA_TREND] Better to move slower.\n[ACTION] Wait one day before replying.\n[AVOID] Do not force a reply.\n[WATCH] Watch whether pace improves."

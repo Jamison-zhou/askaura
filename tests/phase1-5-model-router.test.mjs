@@ -9,6 +9,7 @@ const adminHtml = readFileSync(new URL("../admin.html", import.meta.url), "utf8"
 const indexHtml = appSource;
 const modelRouterTs = readFileSync(new URL("../supabase/functions/_shared/model-router.ts", import.meta.url), "utf8");
 const providerTs = readFileSync(new URL("../supabase/functions/_shared/providers/openai-compatible.ts", import.meta.url), "utf8");
+const reflectionReadingJs = readFileSync(new URL("../assets/app/reflection-reading.js", import.meta.url), "utf8");
 
 assert.doesNotMatch(adminHtml, /name="(?:llm\.provider|llm\.model|models\.basic\.model|models\.pro\.model)"/, "admin does not expose editable provider or model routing fields");
 assert.match(adminHtml, /data-route-status="provider"/, "admin reports the fixed provider as read-only status");
@@ -19,7 +20,8 @@ assert.match(adminHtml, /name="models\.pro\.reasoningEffort"/, "admin still expo
 assert.match(adminHtml, /models:\s*\{\s*basic:\s*\{\s*\},\s*pro:\s*\{\s*\}\s*\}/, "admin form reads model tiers into the config object");
 assert.match(adminHtml, /field\.name\.includes\("\."\)/, "admin form treats dotted names as direct config paths");
 
-assert.match(indexHtml, /tier:\s*"basic",\s*entry:\s*"tarot"/, "front-end sends route hints for tarot");
+assert.match(reflectionReadingJs, /tier:\s*"basic",\s*entry,/, "reflection request sends the basic tier and selected entry route");
+assert.match(indexHtml, /entry:\s*"tarot"/, "tarot flow selects the tarot route");
 assert.match(indexHtml, /tier:\s*"basic",\s*entry:\s*"meihua"/, "front-end sends route hints for meihua");
 assert.doesNotMatch(indexHtml, /llm:\s*\{\s*provider:/, "front-end no longer sends provider selection in reading requests");
 assert.doesNotMatch(indexHtml, /llm:\s*\{\s*model:/, "front-end no longer sends model selection in reading requests");
@@ -27,6 +29,12 @@ assert.doesNotMatch(indexHtml, /llm:\s*\{\s*model:/, "front-end no longer sends 
 assert.match(modelRouterTs, /function resolveModelRoute/, "model router helper exists");
 assert.match(modelRouterTs, /return tier === "pro" \? "deepseek-v4-pro" : "deepseek-v4-flash";/, "model router normalizes model choice from tier only");
 assert.match(modelRouterTs, /const entryCap = ENTRY_TOKEN_CAP\[entry\]/, "model router caps tokens by entry");
+assert.match(providerTs, /reasoning_content\?: string/, "stream parser is aware of reasoning content but does not surface it");
+
+if (!process.allowedNodeEnvironmentFlags.has("--experimental-strip-types")) {
+  console.log("phase1.5 model router static tests passed; runtime TypeScript checks require Node 22+");
+  process.exit(0);
+}
 
 const modelRouterUrl = pathToFileURL(resolve("supabase/functions/_shared/model-router.ts")).href;
 const providerUrl = pathToFileURL(resolve("supabase/functions/_shared/providers/openai-compatible.ts")).href;
@@ -183,7 +191,5 @@ assert.equal(providerResult.text, "calm result", "chat trims the response conten
 assert.equal(providerResult.calls[1].thinking.type, "enabled", "stream request forwards thinking mode");
 assert.equal(providerResult.calls[1].reasoning_effort, "max", "stream request forwards reasoning effort");
 assert.deepEqual(providerResult.stream, ["A", "B"], "stream parser ignores reasoning content and yields content chunks only");
-
-assert.match(providerTs, /reasoning_content\?: string/, "stream parser is aware of reasoning content but does not surface it");
 
 console.log("phase1.5 model router tests passed");

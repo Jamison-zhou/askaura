@@ -12,16 +12,20 @@
       } from "./storage.js";
       import { guaFromCast, guaFromTime } from "./meihua.js";
       import {
-        TAROT_DECK,
-        cardKeywords as ritualCardKeywords,
         primaryCardFromRecordCards as selectPrimaryCardFromRecordCards,
         recordCardFromSelection as buildRecordCardFromSelection,
         ritualCardLayout,
-        ritualVisibleIndexes,
         ritualSpreadTypeForMode,
         spreadDisplayName as ritualSpreadDisplayName,
         spreadPositions as ritualSpreadPositions
       } from "./ritual-engine.js";
+      import { REFLECTION_DECK, reflectionCardForSelection } from "./reflection-deck.js";
+      import { buildReflectionReadingRequest, completeReflectionReading } from "./reflection-reading.js";
+      import {
+        buildObservationShareSvg,
+        imageSourceToDataUrl,
+        svgToPngBlob as renderSharePngBlob
+      } from "./share-image.js?v=20260722-observation-share-v2";
       import { deriveCompanionSnapshot } from "./companion.js";
       import { createReadingClient } from "./reading-client.js";
       import { createProductEventClient } from "./product-events.js";
@@ -152,7 +156,7 @@
         };
       }
 
-      const tarotDeck = TAROT_DECK;
+      const reflectionDeck = REFLECTION_DECK;
 
       const els = getAppElements();
       if (isSystemV1 && els.save) els.save.hidden = true;
@@ -336,18 +340,10 @@
       function spreadLabels() {
         return {
           spreadSingle: t("spreadSingle"),
-          spreadThree: t("spreadThree"),
-          spreadRelationship: t("spreadRelationship"),
-          spreadChoice: t("spreadChoice"),
-          spreadPositionCurrent: t("spreadPositionCurrent"),
-          spreadPositionResistance: t("spreadPositionResistance"),
-          spreadPositionNext: t("spreadPositionNext"),
-          spreadPositionSelf: t("spreadPositionSelf"),
-          spreadPositionOther: t("spreadPositionOther"),
-          spreadPositionTension: t("spreadPositionTension"),
-          spreadPositionChoiceA: t("spreadPositionChoiceA"),
-          spreadPositionChoiceB: t("spreadPositionChoiceB"),
-          spreadPositionReminder: t("spreadPositionReminder")
+          reflectionTriad: t("spreadReflectionTriad"),
+          state: t("spreadPositionState"),
+          relation: t("spreadPositionRelation"),
+          movement: t("spreadPositionMovement")
         };
       }
 
@@ -511,7 +507,7 @@
       function setResultLabels(sourceMode) {
         const tarotLabels = sourceMode === "dual"
           ? ["reportTarotLabel", "reportGuaLabel", "reportDualLabel"]
-          : ["tarotCardMessageLabel", "tarotStuckLabel", "tarotJudgmentLabel"];
+          : ["reflectionSeenLabel", "reflectionHiddenLabel", "reflectionVerifyLabel"];
         const meihuaLabels = ["guaShowsLabel", "guaTrendLabel", "guaAdviceLabel"];
         const labels = sourceMode === "meihua" ? meihuaLabels : tarotLabels;
         [
@@ -548,6 +544,19 @@
         if (!els.tarotReadingGrid.hidden) {
           requestAnimationFrame(() => els.tarotReadingGrid.classList.add("is-revealed"));
         }
+      }
+
+      function showReflectionCardImage(card) {
+        if (!card) return;
+        els.cardImage.onerror = () => {
+          if (els.cardImage.dataset.fallbackApplied === "true" || !card.imageFallbackSrc) return;
+          els.cardImage.dataset.fallbackApplied = "true";
+          els.cardImage.src = card.imageFallbackSrc;
+        };
+        els.cardImage.dataset.fallbackApplied = "false";
+        els.cardImage.src = card.imageSrc;
+        els.cardImage.alt = card.imageAlt;
+        els.tarotSymbol.dataset.cardCategory = card.category || "";
       }
 
       function hideReport() {
@@ -690,16 +699,19 @@
         return actionFromResultRecord(record);
       }
 
-      function randomItem(items) {
-        return items[Math.floor(Math.random() * items.length)];
-      }
-
-      function cardLabel(card) {
-        return lang === "zh" ? card[1] : card[0];
-      }
-
       function cardKeywords(cardName) {
-        return ritualCardKeywords(cardName, { language: lang });
+        const card = reflectionDeck.find((item) => [
+          item.imageNameZh,
+          item.imageNameEn,
+          item.imageAltZh,
+          item.imageAltEn
+        ].includes(cardName));
+        if (!card) return [];
+        const category = lang === "zh"
+          ? { state: "状态", relation: "关系", movement: "动势" }[card.category]
+          : { state: "State", relation: "Relation", movement: "Movement" }[card.category];
+        const meaning = lang === "zh" ? card.coreMeaningZh : card.coreMeaningEn;
+        return [category, meaning].filter(Boolean);
       }
 
       function renderSymbolSpread(cards = []) {
@@ -751,7 +763,7 @@
 
       function updateRitualCardLabels() {
         els.ritualCards.forEach((cardButton) => {
-          const card = tarotDeck[Number(cardButton.dataset.cardIndex)];
+          const card = reflectionDeck[Number(cardButton.dataset.cardIndex)];
           if (!card) return;
           const position = Number(cardButton.dataset.cardIndex) + 1;
           cardButton.setAttribute("aria-label", lang === "zh" ? `选择第 ${position} 张牌` : `Choose card ${position}`);
@@ -762,11 +774,9 @@
       function buildRitualDeck() {
         if (!els.ritualDeck) return;
         els.ritualDeck.innerHTML = "";
-        const visibleIndexes = ritualVisibleIndexes(tarotDeck.length, 15);
-        visibleIndexes.forEach((deckIndex, visibleIndex) => {
-          const card = tarotDeck[deckIndex];
+        reflectionDeck.forEach((card, deckIndex) => {
           const cardButton = document.createElement("button");
-          const layout = ritualCardLayout(visibleIndex, visibleIndexes.length);
+          const layout = ritualCardLayout(deckIndex, reflectionDeck.length);
           cardButton.className = "ritual-card";
           cardButton.type = "button";
           cardButton.disabled = true;
@@ -868,7 +878,8 @@
         });
       }
 
-      function waitForCardChoice(positionLabel = "", excludedIndexes = []) {
+      function waitForCardChoice(position = { key: "single", category: null, label: "" }, excludedIndexes = []) {
+        const positionLabel = position.label || "";
         if (positionLabel) {
           currentRitualStatusKey = "ritualChooseCard";
           els.ritualStatus.textContent = `${t("ritualChoosePosition")}${positionLabel}`;
@@ -900,10 +911,11 @@
           };
           const choose = (event) => {
             selectedCard = event.currentTarget;
-            const selected = tarotDeck[Number(selectedCard.dataset.cardIndex)];
+            const index = Number(selectedCard.dataset.cardIndex);
+            const selected = reflectionCardForSelection({ index, position });
             const selectedFace = selectedCard.querySelector(".ritual-card-face");
-            if (selected && selectedFace && !selectedFace.style.backgroundImage) {
-              selectedFace.style.backgroundImage = `url("./assets/cards/${selected[2]}")`;
+            if (selected && selectedFace) {
+              selectedFace.style.backgroundImage = `url("${selected.imageSrc}")`;
             }
             els.ritualCards.forEach((card) => {
               card.removeEventListener("click", choose);
@@ -921,7 +933,7 @@
           const confirmChoice = () => {
             if (!selectedCard) return;
             const index = Number(selectedCard.dataset.cardIndex);
-            const selected = tarotDeck[index];
+            const selected = reflectionDeck[index];
             if (!selected) {
               clearListeners();
               reject(new Error("Missing selected card"));
@@ -930,7 +942,7 @@
             clearListeners();
             els.ritualPreviewActions.hidden = true;
             selectedCard.disabled = true;
-            resolve({ card: selected, index });
+            resolve({ index });
           };
           const reselect = () => {
             selectedCard = null;
@@ -990,7 +1002,7 @@
           els.ritualStage.classList.add("is-spread");
           await ritualDelay(1000);
           for (const position of positions) {
-            const selection = await waitForCardChoice(positions.length > 1 ? position.label : "", excludedIndexes);
+            const selection = await waitForCardChoice(position, excludedIndexes);
             excludedIndexes.push(selection.index);
             selectedCards.push({ ...selection, position });
             resetCardChoice();
@@ -2147,7 +2159,6 @@
           els.exportPdf.disabled = true;
           els.room.setAttribute("aria-busy", "true");
           lastAction = "";
-          lastRecord = null;
 
           if (mode === "tarot") {
             if (!ritualResult?.cards?.length) throw new Error("Card selection missing");
@@ -2156,33 +2167,28 @@
             const clarificationContext = pendingClarificationContext;
             els.tarotSymbol.hidden = false;
             els.guaSymbol.hidden = true;
-            els.cardImage.src = primaryCard.imageSrc;
-            els.cardImage.alt = primaryCard.imageAlt;
+            showReflectionCardImage(primaryCard);
             els.answerKicker.textContent = `${t("modeTarot")} · ${spreadDisplayName(ritualResult.spreadType)} · ${primaryCard.imageAlt}`;
             updateSymbolSummary({ sourceMode: "tarot", name: els.cardImage.alt, question, cards: selectedCards });
-            const full = await streamReading({
-              mode: "reading",
-              tier: "basic",
-              entry: "tarot",
-              cardName: primaryCard.name,
-              orientation: primaryCard.orientation,
-              spreadType: ritualResult.spreadType,
-              cards: selectedCards.map(({ name, label, position, orientation }) => ({ name, label, position, orientation })),
-              intent: lang === "zh" ? "看清" : "clarity",
+            const request = buildReflectionReadingRequest({
+              cards: selectedCards,
               question,
-              round: 1,
+              language: lang,
+              entry: "tarot",
               sessionHistory: clarificationHistoryText(clarificationContext),
-              language: lang
-            }, renderAction);
-            const readingParts = renderTarotReading(full);
+            });
+            const full = await streamReading(request, renderAction);
+            const readingParts = completeReflectionReading(full, selectedCards, lang);
+            renderReflectionReading(readingParts);
             const report = {
-              summary: readingParts.judgment || lastAction,
-              tarotText: readingParts.tension || readingParts.coreQuestion,
-              actionText: lastAction,
-              dontText: readingParts.avoid,
-              watchText: readingParts.watch,
+              summary: readingParts.reflection,
+              tarotText: readingParts.hidden,
+              guaText: "",
+              dualText: readingParts.verify,
+              actionText: readingParts.action,
               questionText: question,
-              sourceMode: "tarot"
+              sourceMode: "tarot",
+              deckVersion: primaryCard.deckVersion
             };
             renderStructuredReport(report);
             renderClarificationLink(clarificationContext);
@@ -2197,6 +2203,8 @@
               imageSrc: els.cardImage.getAttribute("src"),
               imageAlt: els.cardImage.alt,
               spreadType: ritualResult.spreadType,
+              deckVersion: primaryCard.deckVersion,
+              meaningVersion: primaryCard.meaningVersion,
               cards: selectedCards,
               ...(clarificationContext ? { clarificationOf: clarificationContext } : {})
             });
@@ -2245,8 +2253,7 @@
             const gua = guaFromTime();
             els.tarotSymbol.hidden = false;
             els.guaSymbol.hidden = false;
-            els.cardImage.src = primaryCard.imageSrc;
-            els.cardImage.alt = primaryCard.imageAlt;
+            showReflectionCardImage(primaryCard);
             renderGua(gua.binary);
             els.answerKicker.textContent = `${t("modeDual")} · ${primaryCard.imageAlt} / ${lang === "zh" ? gua.name : gua.en}`;
             updateSymbolSummary({ sourceMode: "dual", name: els.cardImage.alt, question, cards: selectedCards });
@@ -2401,6 +2408,17 @@
         return parts;
       }
 
+      function renderReflectionReading(parts) {
+        showTarotReading({
+          cardMessage: parts.reflection,
+          stuckText: parts.hidden,
+          judgment: parts.verify
+        });
+        lastAction = parts.action;
+        els.action.textContent = parts.action;
+        return parts;
+      }
+
       function showDualReading(tarotParts, gua, meihuaAction) {
         hideTarotReading();
         lastAction = meihuaAction || lastAction;
@@ -2497,9 +2515,7 @@
       function shareSymbolLabel(record = lastRecord) {
         if (record?.mode === "meihua" && record.gua) return guaDescription(record.gua);
         const card = primaryCardFromRecordCards(record?.cards);
-        const name = cleanText(card?.imageAlt || card?.name || normalizedTitleText(record) || record?.title || els.symbolNameLabel.textContent, "");
-        const deckCard = tarotDeck.find((item) => item[0] === name || item[1] === name);
-        return deckCard ? cardLabel(deckCard) : name;
+        return cleanText(card?.name || card?.imageAlt || normalizedTitleText(record) || record?.title || els.symbolNameLabel.textContent, "");
       }
 
       function shareResultData({ includeQuestion = false } = {}) {
@@ -2513,6 +2529,7 @@
         const watchText = cleanText(context.watchText || els.actionWatch.textContent, "");
         const reviewNote = cleanText(record.reviewNote, "");
         const question = includeQuestion ? cleanText(record.question || lastQuestion, "") : "";
+        const primaryCard = primaryCardFromRecordCards(record?.cards);
         return {
           brand: "AskAura",
           title: cleanText(resultHeadingText(record) || els.answerKicker.textContent || t("answerTitle"), ""),
@@ -2523,7 +2540,11 @@
           dontText,
           watchText,
           reviewNote,
-          question
+          question,
+          imageSrc: cleanText(primaryCard?.imageSrc || record.imageSrc || els.cardImage?.getAttribute("src"), ""),
+          imageAlt: cleanText(primaryCard?.imageAlt || record.imageAlt || els.cardImage?.alt, ""),
+          observationId: record.id || "",
+          createdAt: record.createdAt || ""
         };
       }
 
@@ -2852,141 +2873,12 @@
         return result;
       }
 
-      function svgTextWidth(text) {
-        return Array.from(cleanText(text, "")).reduce((width, char) => {
-          if (/\s/.test(char)) return width + 0.35;
-          if (/[\u4e00-\u9fff\u3040-\u30ff\uff00-\uffef]/.test(char)) return width + 1;
-          if (/[A-Z0-9]/.test(char)) return width + 0.68;
-          return width + 0.56;
-        }, 0);
-      }
-
-      function fitSvgText(text, maxUnits, forceEllipsis = false) {
-        const chars = Array.from(cleanText(text, ""));
-        let output = "";
-        for (const char of chars) {
-          if (svgTextWidth(output + char + (forceEllipsis ? "…" : "")) > maxUnits) break;
-          output += char;
-        }
-        return output.trimEnd() + (forceEllipsis || output.length < chars.length ? "…" : "");
-      }
-
-      function wrapSvgText(text, maxUnits = 22, maxLines = 3) {
-        const source = cleanText(text, "");
-        if (!source) return [];
-        const lines = [];
-        let current = "";
-        let truncated = false;
-        for (const char of Array.from(source)) {
-          if (current && svgTextWidth(current + char) > maxUnits) {
-            lines.push(current.trimEnd());
-            current = char.trimStart();
-            if (lines.length === maxLines) {
-              truncated = true;
-              break;
-            }
-          } else {
-            current += char;
-          }
-        }
-        if (lines.length < maxLines && current) lines.push(current.trimEnd());
-        if (lines.length > maxLines) lines.length = maxLines;
-        if (svgTextWidth(lines.at(-1) || "") > maxUnits) lines[lines.length - 1] = fitSvgText(lines.at(-1), maxUnits);
-        if (truncated || lines.join("").length < source.length) lines[lines.length - 1] = fitSvgText(lines.at(-1), maxUnits, true);
-        return lines;
-      }
-
       function escapeSvg(value) {
         return cleanText(value, "")
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;");
-      }
-
-      function shareCardSvg(data) {
-        const title = data.question ? wrapSvgText(data.question, 29, 2) : [lang === "zh" ? "本次结果摘要" : "Result summary"];
-        const symbol = fitSvgText(data.symbol, 22);
-        const summary = wrapSvgText(data.summary, 24, 3);
-        const action = wrapSvgText(data.doText || data.action, 27, 2);
-        const dont = wrapSvgText(data.dontText, 27, 2);
-        const watch = wrapSvgText(data.watchText, 27, 2);
-        const titleBody = title.map((line, index) =>
-          `<text x="86" y="${220 + index * 38}" class="title-text serif-text">${escapeSvg(line)}</text>`
-        ).join("");
-        const summaryBody = summary.map((line, index) =>
-          `<text x="86" y="${366 + index * 38}" class="main-text">${escapeSvg(line)}</text>`
-        ).join("");
-        const section = (label, lines, y) => {
-          if (!lines.length) return "";
-          const body = lines.map((line, index) =>
-            `<text x="100" y="${y + 58 + index * 32}" class="section-text">${escapeSvg(line)}</text>`
-          ).join("");
-          return `<rect x="70" y="${y}" width="760" height="118" rx="6" fill="#f0ede5" fill-opacity=".022" stroke="#f0ede5" stroke-opacity=".085"/>
-          <rect x="70" y="${y}" width="3" height="118" fill="#9c7a4a" fill-opacity=".72"/>
-          <text x="100" y="${y + 30}" class="label-text">${escapeSvg(label)}</text>
-          ${body}`;
-        };
-        let sectionY = 548;
-        const sections = [
-          section(lang === "zh" ? "今天可以做" : "Next action", action, sectionY),
-          dont.length ? section(lang === "zh" ? "先不做" : "Leave aside", dont, sectionY += 142) : "",
-          watch.length ? section(lang === "zh" ? "接下来观察" : "Watch next", watch, sectionY += 142) : ""
-        ].join("");
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
-          <defs>
-            <style>
-              .card-text { font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif; letter-spacing: 0; }
-              .serif-text { font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif; }
-              .brand-text { font-size: 30px; fill: #f0ede5; font-weight: 600; letter-spacing: .12em; }
-              .small-text { font-size: 18px; fill: #837f76; }
-              .label-text { font-size: 18px; fill: #cbb486; }
-              .title-text { font-size: 32px; fill: #f0ede5; font-weight: 500; }
-              .main-text { font-size: 27px; fill: #f0ede5; }
-              .section-text { font-size: 24px; fill: #f0ede5; }
-            </style>
-            <linearGradient id="night" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#030407"/>
-              <stop offset=".52" stop-color="#060912"/>
-              <stop offset="1" stop-color="#020307"/>
-            </linearGradient>
-            <radialGradient id="cool" cx="14%" cy="26%" r="58%">
-              <stop offset="0" stop-color="#3e81b0" stop-opacity=".18"/>
-              <stop offset=".56" stop-color="#3e81b0" stop-opacity=".05"/>
-              <stop offset="1" stop-color="#3e81b0" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="bronzeGlow" cx="82%" cy="18%" r="68%">
-              <stop offset="0" stop-color="#cbb486" stop-opacity=".18"/>
-              <stop offset=".58" stop-color="#9c7a4a" stop-opacity=".06"/>
-              <stop offset="1" stop-color="#9c7a4a" stop-opacity="0"/>
-            </radialGradient>
-            <pattern id="grid" width="92" height="92" patternUnits="userSpaceOnUse">
-              <path d="M92 0H0V92" fill="none" stroke="#f0ede5" stroke-opacity=".035" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <g class="card-text">
-          <rect width="900" height="1200" fill="url(#night)"/>
-          <rect width="900" height="1200" fill="url(#grid)" opacity=".72"/>
-          <rect width="900" height="1200" fill="url(#cool)"/>
-          <rect width="900" height="1200" fill="url(#bronzeGlow)"/>
-          <circle cx="768" cy="190" r="132" fill="none" stroke="#cbb486" stroke-opacity=".11"/>
-          <circle cx="768" cy="190" r="186" fill="none" stroke="#f0ede5" stroke-opacity=".045"/>
-          <rect x="44" y="44" width="812" height="1112" rx="6" fill="#121520" fill-opacity=".72" stroke="#f0ede5" stroke-opacity=".085"/>
-          <rect x="66" y="66" width="768" height="1068" rx="4" fill="#f0ede5" fill-opacity=".012" stroke="#f0ede5" stroke-opacity=".04"/>
-          <line x1="86" y1="150" x2="814" y2="150" stroke="#f0ede5" stroke-opacity=".10"/>
-          <text x="86" y="112" class="brand-text serif-text">象问 AskAura</text>
-          <text x="814" y="112" text-anchor="end" class="small-text">${escapeSvg(lang === "zh" ? "结果摘要" : "Result summary")}</text>
-          <text x="86" y="184" class="label-text">${escapeSvg(data.question ? (lang === "zh" ? "本次问题" : "Question") : (lang === "zh" ? "本次整理" : "Reflection"))}</text>
-          ${titleBody}
-          ${symbol ? `<text x="86" y="292" class="small-text">${escapeSvg(lang === "zh" ? `象征线索：${symbol}` : `Signal: ${symbol}`)}</text>` : ""}
-          <text x="86" y="326" class="label-text">${escapeSvg(lang === "zh" ? "当前主线" : "Current thread")}</text>
-          ${summaryBody}
-          ${sections || section(lang === "zh" ? "今天可以做" : "Next action", wrapSvgText(lang === "zh" ? "先保存这次结果，回到现实里做一个小动作。" : "Save this result, then take one small action.", 27, 2), 548)}
-          <line x1="86" y1="1054" x2="814" y2="1054" stroke="#f0ede5" stroke-opacity=".09"/>
-          <text x="86" y="1104" class="small-text">象问 AskAura</text>
-          <text x="814" y="1104" text-anchor="end" class="small-text">${escapeSvg(lang === "zh" ? "仅供自我整理" : "For self-reflection")}</text>
-          </g>
-        </svg>`;
       }
 
       function downloadBlob(blob, filename) {
@@ -3000,41 +2892,18 @@
         URL.revokeObjectURL(url);
       }
 
-      function svgToPngBlob(svg, width = 900, height = 1200) {
-        return new Promise((resolve, reject) => {
-          const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-          const url = URL.createObjectURL(svgBlob);
-          const image = new Image();
-          image.onload = () => {
-            try {
-              const canvas = document.createElement("canvas");
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(image, 0, 0, width, height);
-              canvas.toBlob((blob) => {
-                URL.revokeObjectURL(url);
-                blob ? resolve(blob) : reject(new Error("PNG export failed"));
-              }, "image/png");
-            } catch (error) {
-              URL.revokeObjectURL(url);
-              reject(error);
-            }
-          };
-          image.onerror = () => {
-            URL.revokeObjectURL(url);
-            reject(new Error("Share image render failed"));
-          };
-          image.src = url;
-        });
-      }
-
       async function downloadShareImage() {
         const data = shareResultData({ includeQuestion: els.shareIncludeQuestion.checked });
-        const svg = shareCardSvg(data);
+        try {
+          data.imageDataUrl = await imageSourceToDataUrl(data.imageSrc);
+        } catch (error) {
+          console.warn("Share artwork could not be embedded", error);
+          data.imageDataUrl = "";
+        }
+        const svg = buildObservationShareSvg(data, { language: lang });
         const filename = `askaura-share-${Date.now()}`;
         try {
-          const png = await svgToPngBlob(svg);
+          const png = await renderSharePngBlob(svg, 1080, 1440);
           downloadBlob(png, `${filename}.png`);
         } catch (error) {
           console.warn("PNG share image failed, falling back to SVG", error);

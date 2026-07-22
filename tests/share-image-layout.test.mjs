@@ -1,29 +1,32 @@
 import assert from "node:assert/strict";
-import vm from "node:vm";
-import { appModule } from "./helpers/app-source.mjs";
+import { readFileSync } from "node:fs";
 
-const source = appModule.slice(appModule.indexOf("function svgTextWidth"), appModule.indexOf("function downloadBlob"));
-const context = {
-  lang: "zh",
-  cleanText(value, fallback = "") {
-    return String(value ?? fallback).replace(/\s+/g, " ").trim();
-  }
-};
+const moduleSource = readFileSync(new URL("../assets/app/share-image.js", import.meta.url), "utf8");
+const {
+  buildObservationShareSvg,
+  svgTextWidth,
+  wrapSvgText,
+} = await import(`data:text/javascript;base64,${Buffer.from(moduleSource).toString("base64")}`);
 
-vm.runInNewContext(`${source}; globalThis.wrapSvgText = wrapSvgText; globalThis.svgTextWidth = svgTextWidth; globalThis.shareCardSvg = shareCardSvg;`, context);
-
-const lines = context.wrapSvgText("\u4e00".repeat(90), 21, 4);
-const svg = context.shareCardSvg({
-  symbol: "\u6076\u9b54",
-  question: "\u540c\u4e8b\u751f\u75c5\uff0c\u6211\u8be5\u600e\u4e48\u5173\u5fc3\u624d\u4e0d\u8fc7\u754c\uff1f",
-  summary: "\u8fd9\u6b21\u7ed3\u679c\u63d0\u9192\u4f60\uff0c\u4fdd\u6301\u9002\u5ea6\u8ddd\u79bb\uff0c\u4e13\u6ce8\u81ea\u5df1\u7684\u804c\u8d23\uff0c\u4e0d\u66ff\u4ed6\u4eba\u627f\u62c5\u3002",
-  doText: "\u7559\u610f\u540c\u4e8b\u662f\u5426\u9700\u8981\u4e00\u676f\u6e29\u6c34\u6216\u7b80\u5355\u5e2e\u5fd9\u3002"
-});
+const lines = wrapSvgText("一".repeat(90), 21, 4);
+const svg = buildObservationShareSvg({
+  observationId: "askaura-12345678",
+  createdAt: "2026-07-22T10:00:00.000Z",
+  symbol: "一根正在慢慢松开的绳结",
+  question: "同事生病，我该怎么关心才不过界？",
+  summary: "这次结果提醒你，保持适度距离，专注自己的职责，不替他人承担。",
+  doText: "留意同事是否需要一杯温水或简单帮助。",
+  imageDataUrl: "data:image/webp;base64,UklGRg==",
+}, { language: "zh" });
 
 assert.ok(lines.length <= 4, "share summary respects max line count");
-assert.ok(lines.every((line) => context.svgTextWidth(line) <= 21), "share summary lines fit the card width");
-assert.ok(lines.at(-1).endsWith("\u2026"), "overlong share summary is visibly shortened");
-assert.match(svg, /#030407/, "share card uses the dark AskAura surface");
-assert.doesNotMatch(svg, /askaura\.vercel\.app|The Devil/, "share card footer avoids deployment URL and raw card names");
+assert.ok(lines.every((line) => svgTextWidth(line) <= 21), "share summary lines fit the card width");
+assert.ok(lines.at(-1).endsWith("…"), "overlong share summary is visibly shortened");
+assert.match(svg, /width="1080" height="1440"/, "share card exports at portrait social resolution");
+assert.match(svg, /OBSERVATION RECORD/, "share card uses the observation record identity");
+assert.match(svg, /data:image\/webp;base64/, "share card embeds the selected card artwork");
+assert.match(svg, /NEXT ACTION/, "share card keeps one concrete action prominent");
+assert.match(svg, /#C85A50/, "share card keeps the restrained registration node accent");
+assert.doesNotMatch(svg, /askaura\.vercel\.app|The Devil/, "share card footer avoids deployment URL and raw legacy card names");
 
 console.log("share image layout tests passed");

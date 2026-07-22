@@ -1,16 +1,31 @@
 # AskAura
 
-AskAura is a static web app for tarot-inspired and Meihua-style reflective readings. It is migrated from the old RiLL / cijing project, but this repository must deploy to AskAura-owned infrastructure only.
+AskAura（象问）是一款 AI 反思产品：卡牌负责提供观察隐喻，卦象负责补充结构视角，系统最终帮助用户确认一个可验证的洞见和一个可执行的小行动。它不预测未来，也不替用户下结论。
+
+本项目由旧 RiLL / cijing 项目独立迁移而来，只能部署到 AskAura 自有基础设施。
 
 ## Current Status
 
-- Frontend: static `index.html`, `styles.css`, and native JS modules.
+- Frontend: static `index.html`, `styles.css`, `theme-observation.css`, and native JS modules under `assets/app/`.
 - Admin: `admin.html`.
 - Backend: Supabase Edge Functions under `supabase/functions`.
 - Supabase URL: `https://oeqekrlodqxjlakdjqpu.supabase.co`.
 - Runtime provider: DeepSeek, verified through function smoke.
 - Active data names: `askaura_reflection_records`, `askaura_daily_anchors`, `askaura_runtime_config`.
 - Old cijing Supabase ref `icvegpfnpkyrebtojoca` is a legacy reference, not a deployment target.
+
+## Project Map
+
+- `index.html`: public product shell; keep behavior in modules rather than adding large inline scripts.
+- `assets/app/`: product logic, views, storage, sync, reading and share modules.
+- `assets/cards/reflection-v1/`: current reflection artwork and category fallbacks.
+- `assets/styles/`: reflection deck and result/share presentation layers.
+- `admin.html` / `admin.css`: operations console.
+- `supabase/`: migrations and Edge Functions.
+- `tests/`: local contracts and regression checks.
+- `legacy/`: read-only rollback snapshot; do not extend it with new product work.
+- `docs/ask-aura-implementation-plans/00-index.md`: implementation status source of truth.
+- `docs/design/reflection-deck-v1/`: current card-art direction and Image 2 prompts.
 
 ## Local Development
 
