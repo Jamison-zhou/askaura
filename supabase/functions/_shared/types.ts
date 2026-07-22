@@ -3,7 +3,7 @@
 export type Orientation = "upright" | "reversed";
 export type Language = "zh" | "en";
 
-export type ReadingMode = "reading" | "advice" | "anchor" | "meihua-reading" | "clarify" | "followup" | "weekly-summary";
+export type ReadingMode = "reading" | "advice" | "anchor" | "meihua-reading" | "dual-reading" | "clarify" | "followup" | "weekly-summary";
 
 export interface LLMRuntimeOptions {
   provider?: "kimi" | "xiaomi" | "deepseek";
@@ -75,6 +75,16 @@ export interface MeihuaReadingRequest {
   language: Language;
 }
 
+export interface DualReadingRequest {
+  mode: "dual-reading";
+  entry: "dual";
+  question: string;
+  cards: SpreadCard[];
+  guaName: string;
+  intent: string;
+  language: Language;
+}
+
 export interface ClarifyRequest {
   mode: "clarify";
   question: string;
@@ -108,7 +118,7 @@ export interface WeeklySummaryRequest {
 }
 
 export type AnyReadingRequest = (
-  ReadingRequest | AdviceRequest | AnchorRequest | MeihuaReadingRequest | ClarifyRequest | FollowupRequest | WeeklySummaryRequest
+  ReadingRequest | AdviceRequest | AnchorRequest | MeihuaReadingRequest | DualReadingRequest | ClarifyRequest | FollowupRequest | WeeklySummaryRequest
 ) & {
   llm?: LLMRuntimeOptions;
   tier?: ModelTier;

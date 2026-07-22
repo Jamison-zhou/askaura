@@ -168,6 +168,14 @@ const roundtripRecord = normalizeHistoryRecord({
   anchor: { color: "blue", object: "cup", moment: "night" },
   followups: [{ id: "f1", question: "FQ", answer: "FA", sourceResultId: "roundtrip", createdAt: "2026-06-04T00:05:00.000Z" }],
   clarificationOf: { sourceResultId: "source", originalQuestion: "OQ", previousCard: "The Moon", resultSummary: "Summary" },
+  lifecycleState: "active",
+  selectedInsight: "Keep the boundary clear",
+  actionTheme: "boundary",
+  echoDueAt: "2026-06-11T00:00:00.000Z",
+  echoStatus: "changed",
+  echoNote: "",
+  temporaryExpiresAt: "2026-06-18T00:00:00.000Z",
+  sourceVersion: "v1",
   language: "en",
   createdAt: "2026-06-04T00:00:00.000Z",
   updatedAt: "2026-06-04T00:10:00.000Z"
@@ -184,6 +192,13 @@ assert.equal(row.gua.seed, "42");
 assert.equal(row.anchor.object, "cup");
 assert.equal(row.followups[0].answer, "FA");
 assert.equal(row.clarification_of.previousCard, "The Moon");
+assert.equal(row.lifecycle_state, "active");
+assert.equal(row.selected_insight, "Keep the boundary clear");
+assert.equal(row.action_theme, "boundary");
+assert.equal(row.echo_due_at, "2026-06-11T00:00:00.000Z");
+assert.equal(row.echo_status, "changed");
+assert.equal(row.temporary_expires_at, "2026-06-18T00:00:00.000Z");
+assert.equal(row.source_version, "v1");
 assert.equal(row.language, "en");
 
 const fromRow = historyRecordFromRow(row);
@@ -197,6 +212,13 @@ assert.equal(fromRow.gua.castMethod, "number");
 assert.equal(fromRow.anchor.moment, "night");
 assert.equal(fromRow.followups[0].sourceResultId, "roundtrip");
 assert.equal(fromRow.clarificationOf.sourceResultId, "source");
+assert.equal(fromRow.lifecycleState, "active");
+assert.equal(fromRow.selectedInsight, "Keep the boundary clear");
+assert.equal(fromRow.actionTheme, "boundary");
+assert.equal(fromRow.echoDueAt, "2026-06-11T00:00:00.000Z");
+assert.equal(fromRow.echoStatus, "changed");
+assert.equal(fromRow.temporaryExpiresAt, "2026-06-18T00:00:00.000Z");
+assert.equal(fromRow.sourceVersion, "v1");
 assert.equal(fromRow.language, "en");
 assert.equal(fromRow.updatedAt, "2026-06-04T00:10:00.000Z");
 

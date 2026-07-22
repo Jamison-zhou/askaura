@@ -4,6 +4,7 @@ import {
   HISTORY_LIMIT,
   clearDailyAnchors,
   clearHistory,
+  cleanupExpiredTemporaryRecords,
   createStorage,
   loadDailyAnchor,
   loadHistory,
@@ -175,6 +176,35 @@ const invalidStatus = saveHistoryRecord(createStorage(memoryStorage()), {
   createdAt: "2026-05-22T08:00:00.000Z",
 });
 assert.equal(invalidStatus[0].actionStatus, "");
+
+const lifecycleStore = createStorage(memoryStorage());
+saveHistoryRecord(lifecycleStore, {
+  id: "expired-temporary",
+  mode: "tarot",
+  title: "Expired temporary observation",
+  answer: "Temporary",
+  lifecycleState: "temporary",
+  temporaryExpiresAt: "2026-05-21T00:00:00.000Z",
+  sourceVersion: "v1",
+  createdAt: "2026-05-14T00:00:00.000Z",
+});
+saveHistoryRecord(lifecycleStore, {
+  id: "saved-observation",
+  mode: "dual",
+  title: "Saved observation",
+  answer: "Keep",
+  lifecycleState: "saved",
+  selectedInsight: "Hold the boundary",
+  sourceVersion: "v1",
+  createdAt: "2026-05-20T00:00:00.000Z",
+});
+const lifecycleRetained = cleanupExpiredTemporaryRecords(
+  lifecycleStore,
+  new Date("2026-05-22T00:00:00.000Z"),
+);
+assert.deepEqual(lifecycleRetained.map((item) => item.id), ["saved-observation"]);
+assert.equal(lifecycleRetained[0].lifecycleState, "saved");
+assert.equal(lifecycleRetained[0].selectedInsight, "Hold the boundary");
 
 const clarificationStore = createStorage(memoryStorage());
 const clarificationRecords = saveHistoryRecord(clarificationStore, {

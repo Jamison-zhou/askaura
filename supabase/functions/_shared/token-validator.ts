@@ -14,6 +14,7 @@ const REQUIRED_TOKENS: Record<ReadingMode, string[]> = {
     "ANCHOR_TAKEAWAY",
   ],
   "meihua-reading": ["GUA_SIGNAL", "GUA_TREND", "ACTION", "AVOID", "WATCH"],
+  "dual-reading": ["SUMMARY", "TAROT_EVIDENCE", "GUA_EVIDENCE", "ACTION", "AVOID", "WATCH"],
   clarify: ["CLARIFIED_QUESTION", "CLARIFY_NOTE"],
   followup: [],
   "weekly-summary": ["THEME", "STUCK_POINT", "NEXT_ACTION"],

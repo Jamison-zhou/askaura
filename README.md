@@ -28,6 +28,22 @@ http://127.0.0.1:5174/index.html
 
 ## Tests
 
+项目运行时固定为 Node.js 24。可使用 Codex 本机运行时执行完整测试基线：
+
+```powershell
+$node = "C:\Users\17751\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe"
+Get-ChildItem tests -Filter "*.test.mjs" | Sort-Object Name | ForEach-Object {
+  if ($_.Name -eq "index-syntax.test.mjs") {
+    & $node --experimental-vm-modules $_.FullName
+  } else {
+    & $node $_.FullName
+  }
+  if ($LASTEXITCODE -ne 0) { throw "Test failed: $($_.Name)" }
+}
+```
+
+也可按文件逐项执行：
+
 ```powershell
 node --experimental-vm-modules tests/index-syntax.test.mjs
 node tests/askaura-migration-static.test.mjs

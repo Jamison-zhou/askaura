@@ -1486,7 +1486,7 @@ textarea:disabled {
   border: 1px solid rgba(166, 166, 156, 0.30);
   background:
     linear-gradient(180deg, rgba(240, 237, 229, 0.045), rgba(5, 7, 13, 0.03) 44%, rgba(240, 237, 229, 0.018)),
-    url("./assets/cards/backs/askaura-frosted-mirror-back.png?v=20260602-cardback-contrast") center / cover no-repeat,
+    url("./assets/cards/backs/askaura-observation-gate-back.webp?v=20260717-flat") center / cover no-repeat,
     linear-gradient(180deg, rgba(22, 26, 36, 0.99), rgba(8, 10, 16, 0.995));
   box-shadow:
     inset 0 0 0 1px rgba(240, 237, 229, 0.055),
@@ -2888,6 +2888,7 @@ textarea:disabled {
 .lightbox-close,
 .utility-close {
   position: absolute;
+  z-index: 2;
   right: 14px;
   top: 12px;
   width: 32px;
@@ -4592,5 +4593,327 @@ body::after {
 
   .primary {
     min-height: 48px;
+  }
+}
+/* System convergence: result confirmation and journey structure */
+html[data-system-version="v1"] #action-status,
+html[data-system-version="v1"] #review-box,
+html[data-system-version="v1"] #save-btn {
+  display: none !important;
+}
+
+html[data-system-version="v1"] .side-rail > .theme-switcher,
+html[data-system-version="v1"] .side-rail > .language,
+html[data-system-version="v1"] .mobile-theme-switcher {
+  display: none;
+}
+
+.settings-view {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.home-new,
+.home-resume,
+.home-echo,
+.home-returning,
+.observation-entry,
+.result-summary,
+.result-evidence,
+.journey-map,
+.journey-list,
+.settings-view,
+.failure-actions,
+.support-state,
+.professional-boundary-state {
+  position: relative;
+}
+
+.settings-view section {
+  display: grid;
+  gap: 9px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+
+.settings-view h2,
+.settings-view h3,
+.settings-view p {
+  margin: 0;
+}
+
+.settings-options,
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-options button,
+.settings-actions button {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid var(--obs-line, var(--control-border, rgba(240, 237, 229, 0.14)));
+  border-radius: 9px;
+  background: var(--obs-surface-soft, var(--control-bg, rgba(240, 237, 229, 0.032)));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+  font: inherit;
+}
+
+.settings-options button:hover:not(:disabled),
+.settings-actions button:hover:not(:disabled) {
+  border-color: var(--obs-line-strong, var(--control-border-active, rgba(156, 122, 74, 0.34)));
+  background: var(--obs-surface-hover, rgba(240, 237, 229, 0.07));
+}
+
+.settings-options button:disabled,
+.settings-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.settings-options button[aria-pressed="true"] {
+  border-color: rgba(200, 90, 80, 0.62);
+  background: var(--obs-accent-soft, rgba(200, 90, 80, 0.11));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+}
+
+.settings-view label:has([data-settings-analytics]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-view [data-settings-analytics] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #c85a50;
+}
+
+.account-access > summary {
+  cursor: pointer;
+  padding: 12px 0;
+  color: var(--muted, rgba(240, 237, 229, 0.66));
+}
+
+.result-workflow {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 16px;
+  background: rgba(5, 10, 16, 0.4);
+}
+
+.result-confirmation,
+.failure-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.result-confirmation label {
+  display: grid;
+  gap: 7px;
+}
+
+.result-confirmation textarea,
+.result-confirmation input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--obs-line, var(--control-border, rgba(240, 237, 229, 0.14)));
+  border-radius: 10px;
+  background: var(--obs-surface-soft, var(--control-bg, rgba(240, 237, 229, 0.032)));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+  font: inherit;
+}
+
+.result-confirmation textarea {
+  min-height: 84px;
+  padding: 14px 16px;
+  resize: vertical;
+}
+
+.result-confirmation input {
+  min-height: 42px;
+  padding: 9px 12px;
+}
+
+.result-confirmation textarea:focus,
+.result-confirmation input:focus {
+  border-color: var(--obs-line-strong, var(--control-border-active, rgba(156, 122, 74, 0.34)));
+  outline: none;
+}
+
+.result-workflow-label,
+.result-confirmation label > span {
+  color: var(--muted, rgba(240, 237, 229, 0.64));
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.result-confirmation-actions,
+.failure-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.result-confirmation > button,
+.result-confirmation-actions button,
+.failure-actions button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid var(--obs-line, var(--control-border, rgba(240, 237, 229, 0.14)));
+  border-radius: 9px;
+  background: var(--obs-surface-soft, var(--control-bg, rgba(240, 237, 229, 0.032)));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+  font: inherit;
+}
+
+.result-confirmation > button:hover:not(:disabled),
+.result-confirmation-actions button:hover:not(:disabled),
+.failure-actions button:hover:not(:disabled) {
+  border-color: var(--obs-line-strong, var(--control-border-active, rgba(156, 122, 74, 0.34)));
+  background: var(--obs-surface-hover, rgba(240, 237, 229, 0.07));
+}
+
+.result-confirmation > button:disabled,
+.result-confirmation-actions button:disabled,
+.failure-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.result-evidence {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  border-radius: 14px;
+}
+
+.result-evidence > summary {
+  cursor: pointer;
+  color: var(--muted, rgba(240, 237, 229, 0.66));
+}
+
+.result-evidence-text {
+  white-space: pre-wrap;
+  line-height: 1.75;
+}
+
+.journey-workspace {
+  display: grid;
+  gap: 18px;
+  padding: 8px 4px 24px;
+}
+
+.journey-heading h2,
+.journey-list h3,
+.journey-themes h3 {
+  margin: 0;
+}
+
+.journey-heading p,
+.journey-empty {
+  color: var(--muted, rgba(240, 237, 229, 0.58));
+}
+
+.journey-map {
+  min-height: 150px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.journey-map svg {
+  display: block;
+  width: 100%;
+  height: 180px;
+}
+
+.journey-route {
+  fill: none;
+  stroke: rgba(156, 134, 105, 0.55);
+  stroke-width: 2;
+}
+
+.journey-node {
+  fill: #9a8669;
+  stroke: rgba(240, 237, 229, 0.75);
+  stroke-width: 2;
+}
+
+.journey-node.is-active { fill: #c85a50; }
+.journey-node.is-closed { opacity: 0.48; }
+
+.journey-list,
+.journey-themes {
+  display: grid;
+  gap: 10px;
+}
+
+.journey-record {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.journey-record p {
+  margin: 5px 0 0;
+  color: var(--muted, rgba(240, 237, 229, 0.62));
+}
+
+.journey-record-actions,
+.journey-echo-prompt,
+.journey-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.journey-record-actions button,
+.journey-echo-prompt button {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--obs-line, var(--control-border, rgba(240, 237, 229, 0.14)));
+  border-radius: 9px;
+  background: var(--obs-surface-soft, var(--control-bg, rgba(240, 237, 229, 0.032)));
+  color: var(--obs-ink, var(--ink, #f0ede5));
+  font: inherit;
+}
+
+.journey-record-actions button:hover,
+.journey-echo-prompt button:hover {
+  border-color: var(--obs-line-strong, var(--control-border-active, rgba(156, 122, 74, 0.34)));
+  background: var(--obs-surface-hover, rgba(240, 237, 229, 0.07));
+}
+
+.journey-echo-prompt {
+  padding: 14px;
+  border: 1px solid rgba(200, 90, 80, 0.35);
+  border-radius: 14px;
+}
+
+.journey-echo-prompt strong {
+  flex: 1 0 100%;
+}
+
+.journey-themes > span {
+  padding: 7px 10px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  border-radius: 999px;
+}
+
+@media (max-width: 620px) {
+  .result-confirmation-actions,
+  .failure-actions,
+  .journey-record {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-record-actions {
+    justify-content: flex-start;
   }
 }

@@ -1,9 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { appModule } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const source = html.slice(html.indexOf("function svgTextWidth"), html.indexOf("function downloadBlob"));
+const source = appModule.slice(appModule.indexOf("function svgTextWidth"), appModule.indexOf("function downloadBlob"));
 const context = {
   lang: "zh",
   cleanText(value, fallback = "") {

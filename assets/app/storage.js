@@ -8,6 +8,7 @@ import {
   normalizeHistory,
   normalizeHistoryRecord
 } from "./history-store.js";
+import { isTemporaryExpired } from "./observation-lifecycle.js";
 
 export { HISTORY_LIMIT };
 
@@ -69,6 +70,13 @@ export function clearHistory(store = createStorage()) {
   store.set(HISTORY_KEY, []);
 }
 
+export function cleanupExpiredTemporaryRecords(store = createStorage(), now = new Date()) {
+  const records = loadHistory(store);
+  const retained = records.filter((record) => !isTemporaryExpired(record, now));
+  if (retained.length !== records.length) store.set(HISTORY_KEY, retained);
+  return retained;
+}
+
 export function loadDailyAnchor(store = createStorage(), dateKey = todayKey()) {
   const anchors = store.has?.(DAILY_ANCHOR_KEY)
     ? store.get(DAILY_ANCHOR_KEY, {})
@@ -88,4 +96,10 @@ export function saveDailyAnchor(store = createStorage(), dateKey = todayKey(), r
 
 export function clearDailyAnchors(store = createStorage()) {
   store.set(DAILY_ANCHOR_KEY, {});
+}
+
+export function clearLocalRecords(store = createStorage()) {
+  clearHistory(store);
+  clearDailyAnchors(store);
+  return { status: "cleared-local" };
 }

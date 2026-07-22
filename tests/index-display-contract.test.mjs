@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { appHtml, appModule, appSource } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const scriptMatch = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+const html = appSource;
 
-assert.ok(scriptMatch, "index module script exists");
+assert.match(appHtml, /<script type="module" src="\.\/assets\/app\/main\.js"><\/script>/, "external app module exists");
 assert.match(html, /class="result-layout"/, "result page uses the result layout wrapper");
 assert.match(html, /class="result-symbol-panel"/, "result page has a symbol panel wrapper");
 assert.match(html, /class="result-main-panel"/, "result page has a main result panel wrapper");
@@ -14,6 +14,9 @@ assert.match(html, /nextStepHeading/, "action board heading uses the next step t
 assert.match(html, /is-dual-report/, "dual report rendering has a panel-level class hook");
 assert.match(html, /sourceMode === "dual"/, "dual report class is driven by sourceMode");
 assert.match(html, /id="mode-card-grid"/, "front-end renders a mode card selector");
+assert.match(html, /id="adaptive-home"/, "front-end has the adaptive home mount");
+assert.match(html, /deriveHomeState/, "adaptive home is derived from observation lifecycle state");
+assert.match(html, /renderAdaptiveHome/, "adaptive home is part of the boot and reset flow");
 assert.match(html, /data-mode-card="tarot"/, "mode card selector includes tarot mode");
 assert.match(html, /data-mode-card="meihua"/, "mode card selector includes meihua mode");
 assert.match(html, /data-mode-card="dual"/, "mode card selector includes dual mode");
@@ -84,7 +87,7 @@ const context = {
   "companionTrailText",
   "copySuccessText",
 ].forEach((name) => {
-  const source = extractFunctionSource(scriptMatch[1], name);
+  const source = extractFunctionSource(appModule, name);
   vm.runInNewContext(`${source}; this.${name} = ${name};`, context);
 });
 

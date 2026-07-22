@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AskAura Admin</title>
     <link rel="stylesheet" href="./admin-styles.css" />
+    <link rel="stylesheet" href="./theme-observation.css?v=20260710-5" />
     <script>
       window.ASKAURA_SUPABASE_URL = "https://oeqekrlodqxjlakdjqpu.supabase.co";
       window.ASKAURA_SUPABASE_ANON_KEY = "sb_publishable_SVgn7d5cRkkXI7Ns9WSJEQ_-xYXPLMX";
@@ -189,15 +190,11 @@
               <div class="three-cols">
                 <label>
                   Provider
-                  <select name="llm.provider">
-                    <option value="deepseek">deepseek</option>
-                    <option value="xiaomi">xiaomi</option>
-                    <option value="kimi">kimi</option>
-                  </select>
+                  <input value="deepseek（服务端固定）" disabled data-route-status="provider" />
                 </label>
                 <label>
                   默认模型
-                  <input name="llm.model" />
+                  <input value="deepseek-v4-flash（只读）" disabled data-route-status="basicModel" />
                 </label>
                 <label>
                   Base URL
@@ -242,7 +239,7 @@
               <div class="three-cols">
                 <label>
                   Basic Model
-                  <input name="models.basic.model" />
+                  <input value="deepseek-v4-flash（只读）" disabled data-route-status="basicModel" />
                 </label>
                 <label>
                   Basic Max Tokens
@@ -259,7 +256,7 @@
               <div class="three-cols">
                 <label>
                   Pro Model
-                  <input name="models.pro.model" />
+                  <input value="deepseek-v4-pro（只读）" disabled data-route-status="proModel" />
                 </label>
                 <label>
                   Pro Max Tokens
@@ -327,8 +324,11 @@
               </div>
               <div class="three-cols">
                 <label>
-                  Experiment Key
-                  <input name="ops.experimentKey" maxlength="80" />
+                  System Convergence V1
+                  <select name="ops.systemConvergenceV1Enabled">
+                    <option value="false">disabled</option>
+                    <option value="true">enabled</option>
+                  </select>
                 </label>
                 <label>
                   Rollback Note
@@ -342,8 +342,9 @@
               <p class="note">这些开关用于暂停质量日志或安全扫描，不会删除用户记录。实验字段暂时只保留，不主动启用。</p>
               <div class="quality-dashboard">
                 <div>
-                  <strong>最近 100 次</strong>
+                  <strong>服务健康 · 最近 100 次</strong>
                   <p id="quality-summary">尚未读取质量摘要。</p>
+                  <p>展示使用量、失败率、延迟区间、安全扫描与 Prompt 版本；不记录原问题或完整答案。</p>
                 </div>
                 <button type="button" id="quality-refresh-btn">刷新质量摘要</button>
               </div>
@@ -486,6 +487,7 @@
           qualityLoggingEnabled: true,
           contentSafetyScanEnabled: true,
           experimentKey: "",
+          systemConvergenceV1Enabled: false,
           rollbackNote: ""
         },
         translations: {
@@ -615,6 +617,13 @@
         return config;
       }
 
+      function applyRouteStatus(routeStatus = {}) {
+        document.querySelectorAll("[data-route-status]").forEach((field) => {
+          const key = field.dataset.routeStatus;
+          if (routeStatus[key] !== undefined) field.value = String(routeStatus[key]);
+        });
+      }
+
       async function adminRequest(action, payload = {}, token = sessionStorage.getItem(ADMIN_SESSION_KEY)) {
         const response = await fetch(CONFIG_API_URL, {
           method: "POST",
@@ -632,6 +641,7 @@
       async function save(config) {
         const data = await adminRequest("save", { config });
         fillForm(merge(clone(defaults), data.config || config));
+        applyRouteStatus(data.routeStatus);
         const savedAt = new Date().toLocaleTimeString();
         statusEl.textContent = "已保存 " + savedAt;
         toolbarStatus.textContent = "已保存到远端配置 " + savedAt;
@@ -688,6 +698,7 @@
           const data = await adminRequest("login", { username, password }, "");
           unlockAdmin(data.token);
           fillForm(merge(clone(defaults), data.config || {}));
+          applyRouteStatus(data.routeStatus);
           statusEl.textContent = "已登录";
           toolbarStatus.textContent = "远端配置已加载，修改后需要点击保存配置";
         } catch (error) {
@@ -756,6 +767,7 @@
           .then((data) => {
             unlockAdmin();
             fillForm(merge(clone(defaults), data.config || {}));
+            applyRouteStatus(data.routeStatus);
             statusEl.textContent = "已登录";
             toolbarStatus.textContent = "远端配置已加载，修改后需要点击保存配置";
           })

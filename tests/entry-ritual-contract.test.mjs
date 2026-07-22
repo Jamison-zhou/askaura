@@ -1,14 +1,29 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { appHtml, appModule } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appHtml;
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
-const scriptMatch = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+const i18n = readFileSync(new URL("../assets/app/i18n.js", import.meta.url), "utf8");
 
-assert.ok(scriptMatch, "index module script exists");
+assert.match(html, /<script type="module" src="\.\/assets\/app\/main\.js"><\/script>/, "external app module exists");
 assert.ok(!html.includes("AskAura / Symbolic interpretation"), "home screen does not keep a low-value top eyebrow");
 
-const script = scriptMatch[1];
+const script = appModule;
+
+const questionIndex = html.indexOf('id="question-input"');
+const recommendationIndex = html.indexOf('id="mode-recommendation"');
+const modeOverrideIndex = html.indexOf('id="mode-card-grid"');
+const advancedIndex = html.indexOf('class="question-secondary"');
+const ritualActionIndex = html.indexOf('id="cast-btn"');
+assert.ok(
+  questionIndex < recommendationIndex && recommendationIndex < modeOverrideIndex && modeOverrideIndex < advancedIndex && advancedIndex < ritualActionIndex,
+  "entry order is question, recommendation, override, advanced settings, then ritual action",
+);
+assert.doesNotMatch(html, /data-history-filter="daily"|data-mode-card="daily"|data-mode="daily"/, "daily mode is not a visible entry");
+assert.match(i18n, /modeRecommendationDual:[\s\S]*不代表更准确/, "dual recommendation explains the two-lens route");
+assert.match(appModule, /intent: lang === "zh" \? "看清" : "clarity"/, "active requests use the correct UTF-8 intent");
+assert.doesNotMatch(appModule, /鐪嬫竻/, "corrupted intent copy is removed");
 
 assert.match(css, /:root \{[\s\S]*--light-cool:/, "low-light redesign tokens exist");
 assert.match(html, /styles\.css\?v=20260605-low-light-redesign-2/, "low-light redesign busts the stylesheet cache");
@@ -19,7 +34,7 @@ assert.match(html, /styles\.css\?v=20260605-low-light-redesign-2/, "low-light re
   'class="surface-noise"',
   'class="side-rail"',
   'class="hero-ritual"',
-  'class="work-panel compose-panel"',
+  'class="work-panel compose-panel observation-entry"',
   'data-i18n="heroCopy">问一件事，看两种象。',
   'data-i18n="questionLabel">你现在最想看清哪件事？',
 ].forEach((needle) => {

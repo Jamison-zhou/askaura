@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { appSource } from "./helpers/app-source.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -74,7 +75,7 @@ assert.match(adminConfig, /missing_tokens,safety_flags,latency_ms,model,entry,cr
 assert.doesNotMatch(adminConfig, /\bquestion\b|\banswer\b|full_text|followup_question/i, "quality summary does not expose private text fields");
 
 const adminHtml = read("admin.html");
-const indexHtml = read("index.html");
+const indexHtml = appSource;
 assert.match(adminHtml, /Ops Quality/, "admin page exposes ops panel");
 assert.match(adminHtml, /name="ops\.promptVersion"/, "admin page exposes prompt version");
 assert.match(adminHtml, /name="ops\.qualityLoggingEnabled"/, "admin page exposes quality logging switch");

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" role="img" aria-labelledby="title desc">
+  <title id="title">象问 AskAura — 夜航刻印</title>
+  <desc id="desc">以航线、月面坐标和断续刻印字骨构成的独立叙事游戏标题字。</desc>
+  <defs>
+    <linearGradient id="ivory" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff9eb"/>
+      <stop offset="0.54" stop-color="#d8cbb4"/>
+      <stop offset="1" stop-color="#817665"/>
+    </linearGradient>
+    <filter id="ember" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <mask id="horizon-cut">
+      <rect width="720" height="200" fill="white"/>
+      <path d="M192 91H486V101H192Z" fill="black"/>
+      <path d="M273 18 285 18 260 158 248 158ZM411 18 423 18 398 158 386 158Z" fill="black"/>
+    </mask>
+    <path id="xiang" d="M12 16 32 4H88L72 25H26M20 31H90V70H20ZM20 44H90M20 57H90M56 71 72 83 61 94 70 106 59 121 44 128M49 79 20 95M55 92 22 114M68 86 95 104M64 101 103 126"/>
+    <path id="wen" d="M13 20V126M31 11H103V126H83M13 7 29 17M39 52H77V92H39Z"/>
+    <path id="latin" d="M0 12 4 0 8 12M2 7H6M18 1H10V6H18V12H10M22 0V12M22 6 29 0M22 6 29 12M33 12 37 0 41 12M35 7H39M45 0V9L47 12H51L53 9V0M57 12V0H65L67 2V5L65 7H57M63 7 68 12M72 12 76 0 80 12M74 7H78"/>
+  </defs>
+
+  <g transform="translate(18 15)">
+    <path d="M20 9H144L164 29V153L144 173H20L0 153V29Z" fill="none" stroke="#766c5e" stroke-width="1.2"/>
+    <path d="M29 20H135L153 38V144L135 162H29L11 144V38Z" fill="none" stroke="#b7aa94" stroke-width="2"/>
+    <path d="M29 91H135M82 20V162" stroke="#655e55" stroke-width="1" stroke-dasharray="3 7"/>
+    <circle cx="82" cy="91" r="43" fill="none" stroke="#a99c86" stroke-width="1.5"/>
+    <path d="M82 49A42 42 0 0 1 82 133C100 118 108 104 108 91S100 64 82 49Z" fill="url(#ivory)" opacity=".9"/>
+    <path d="M78 45 87 41 89 139 78 142Z" fill="#080b10"/>
+    <path d="M83 51V133" stroke="#cf5a50" stroke-width="2" filter="url(#ember)"/>
+    <path d="M9 55H20M144 127H155" stroke="#cf5a50" stroke-width="4"/>
+    <circle cx="29" cy="38" r="2.5" fill="#c7b99f"/>
+    <circle cx="135" cy="144" r="2.5" fill="#c7b99f"/>
+  </g>
+
+  <g mask="url(#horizon-cut)" fill="none" stroke="url(#ivory)" stroke-width="8" stroke-linecap="square" stroke-linejoin="miter">
+    <use href="#xiang" transform="translate(210 30)"/>
+    <use href="#wen" transform="translate(354 30)"/>
+  </g>
+  <path d="M191 96H488" stroke="#c95950" stroke-width="2"/>
+  <path d="M196 88 205 96 196 104M474 88 483 96 474 104" fill="none" stroke="#d1c3aa" stroke-width="2"/>
+  <circle cx="338" cy="96" r="5" fill="#d35c52" filter="url(#ember)"/>
+
+  <path d="M506 25H692M506 166H692" stroke="#5e584f"/>
+  <path d="M506 25V52M692 139V166" stroke="#aa9e8c" stroke-width="2"/>
+  <path d="M530 56 548 38 566 56 548 74ZM579 56 597 38 615 56 597 74ZM628 56 646 38 664 56 646 74Z" fill="none" stroke="#817869" stroke-width="1.5"/>
+  <path d="M538 121H660M552 132H646" stroke="#8f8474" stroke-width="2"/>
+  <path d="M590 112 599 103 608 112 599 121Z" fill="#ce5b51"/>
+  <g transform="translate(213 160) scale(2.15)" fill="none" stroke="#a99c87" stroke-width="1.05" stroke-linecap="square" stroke-linejoin="miter">
+    <use href="#latin"/>
+  </g>
+  <path d="M213 191H460" stroke="#665f55"/>
+  <path d="M213 186V196M460 186V196" stroke="#9a8f7d"/>
+</svg>

@@ -41,6 +41,7 @@ Use this policy when deciding what is still open:
 | Phase 9A ops quality | Complete | Privacy-safe quality metadata, quality events, Admin Ops controls, and rollback controls are done. |
 | Phase 9B/9C ops expansion | Future planning | Prompt CMS, copy CMS, A/B tests, and richer dashboards need a fresh spec before implementation. |
 | Engineering refactor route | Complete | Reading Client, Result Renderer, Followup, History Store, Ritual Engine, and Meihua Engine slices are done. |
+| System Convergence V1 | Implementation complete; release gated | Code, migration, local tests, desktop/mobile browser acceptance, and rollback verification completed on 2026-07-17. Default cutover remains disabled until authenticated preview smoke is run with dedicated credentials. |
 | Later roadmap | Future planning | Community, paid packaging, and advanced product ideas are not active implementation tasks until separately scoped. |
 | Pre-release smoke checklist | Active document | Use this as the release-readiness checklist before preview or production validation. |
 
@@ -66,6 +67,30 @@ These documents are completion records unless this index is updated to reopen th
 16. [Refactor Slice: Meihua Engine](./18-refactor-meihua-engine.md)
 
 ## Active Or Blocked Work
+
+### System Convergence V1
+
+**Status:** Implementation complete; authenticated preview release gate pending.
+
+**Product specification:** [AskAura System Convergence V1 Product Spec](../askaura-system-convergence-v1-spec.md)
+
+**Implementation plan:** [AskAura System Convergence V1 Implementation Plan](../superpowers/plans/2026-07-17-askaura-system-convergence-v1.md)
+
+**Confirmed product direction:**
+
+- Long-term action and journey are the product core; symbolic ritual is the game-like entry.
+- The complete release includes adaptive home, question-first observation, confirmed insight/action, optional echo, journey workspace, privacy controls, three observation modes, mobile completion, and a lean operations console.
+- Internal construction is staged and independently verified, but users receive one coordinated cutover rather than a sequence of partial redesigns.
+- Existing records remain available as legacy archives and are not automatically converted into user themes or profile claims.
+- The established double-boundary, path, night-water, low-saturation red-node and card-back brand world is locked for this phase.
+
+**Hard boundaries:**
+
+- Do not restore Daily as a public mode.
+- Do not add streaks, coins, levels, complex unlock rewards, or forced reminders.
+- Do not move core observation, action, or echo behind payment.
+- Do not expose raw questions, full answers, action text, or echo notes in product analytics.
+- Keep System Convergence V1 disabled by default until authenticated preview smoke passes with dedicated AskAura credentials. Local migration contracts, rollback, all 45 local tests, and desktop/mobile browser acceptance passed on 2026-07-17.
 
 ### Pre-Release Smoke Checklist
 
@@ -144,7 +169,7 @@ Before implementing any one of these, write a dedicated spec and implementation 
 ## Current Repo Facts
 
 - Repo: `D:\CursorAgentChats\askaura`
-- Frontend: pure static `index.html` + `styles.css`
+- Frontend: static `index.html` + `styles.css` + native modules under `assets/app/`; application logic no longer lives inline in `index.html`.
 - Admin: `admin.html`
 - Storage: `assets/app/storage.js`
 - Sync: `assets/app/sync.js`

@@ -20,6 +20,7 @@ import type {
   AnchorRequest,
   AnyReadingRequest,
   ClarifyRequest,
+  DualReadingRequest,
   FollowupRequest,
   MeihuaReadingRequest,
   ReadingMode,
@@ -34,11 +35,13 @@ import { buildClarifyPrompt } from "../_shared/prompts/clarify.ts";
 import { buildFollowupPrompt } from "../_shared/prompts/followup.ts";
 import { buildWeeklySummaryPrompt } from "../_shared/prompts/weekly-summary.ts";
 import { buildMeihuaPrompt } from "../_shared/prompts/meihua.ts";
+import { buildDualPrompt } from "../_shared/prompts/dual.ts";
 import { validateTokens } from "../_shared/token-validator.ts";
 import { loadRuntimeConfig } from "../_shared/runtime-config.ts";
 import { resolveModelRoute } from "../_shared/model-router.ts";
 import { recordUsageEvent, resolveEntitlement } from "../_shared/entitlements.ts";
 import { recordQualityEvent, scanContentSafety } from "../_shared/quality.ts";
+import { routeQuestionSafety } from "../_shared/safety-router.ts";
 
 function isBoundedString(value: unknown, maxLength: number): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.length <= maxLength;
@@ -58,7 +61,7 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
   if (!b || typeof b !== "object") return false;
   const o = b as Record<string, unknown>;
   if (typeof o.mode !== "string") return false;
-  if (!["reading", "advice", "anchor", "meihua-reading", "clarify", "followup", "weekly-summary"].includes(o.mode)) return false;
+  if (!["reading", "advice", "anchor", "meihua-reading", "dual-reading", "clarify", "followup", "weekly-summary"].includes(o.mode)) return false;
   if (o.language !== "zh" && o.language !== "en") return false;
   if (o.mode === "weekly-summary") {
     return Array.isArray(o.records) && o.records.length >= 3;
@@ -116,6 +119,11 @@ function isReadingRequest(b: unknown): b is AnyReadingRequest {
       return item.position === expectedPositions[index] && item.category === item.position;
     });
   }
+  if (o.mode === "dual-reading") {
+    return typeof o.question === "string" && o.question.trim().length > 0 &&
+      typeof o.guaName === "string" && o.guaName.length > 0 &&
+      Array.isArray(o.cards) && o.cards.length > 0;
+  }
   if (typeof o.cardName !== "string" || !o.cardName) return false;
   if (o.orientation !== "upright" && o.orientation !== "reversed") return false;
   return true;
@@ -131,6 +139,8 @@ function buildUserPrompt(req: AnyReadingRequest): string {
       return buildAnchorPrompt(req as AnchorRequest);
     case "meihua-reading":
       return buildMeihuaPrompt(req as MeihuaReadingRequest);
+    case "dual-reading":
+      return buildDualPrompt(req as DualReadingRequest);
     case "clarify":
       return buildClarifyPrompt(req as ClarifyRequest);
     case "followup":
@@ -169,11 +179,24 @@ Deno.serve(async (req: Request) => {
 
   if (!isReadingRequest(body)) {
     return jsonResponse(
-      { error: "Invalid request shape (expected reading/advice/anchor/meihua-reading/clarify/followup/weekly-summary)" },
+      { error: "Invalid request shape (expected reading/advice/anchor/meihua-reading/dual-reading/clarify/followup/weekly-summary)" },
       400,
     );
   }
   const reqBody = body;
+
+  const questionForSafety = reqBody.mode === "weekly-summary" || reqBody.mode === "anchor"
+    ? ""
+    : reqBody.mode === "followup"
+    ? reqBody.followupQuestion
+    : reqBody.question;
+  const safetyRoute = routeQuestionSafety(questionForSafety);
+  if (safetyRoute.route === "support") {
+    return jsonResponse({ error: "immediate_support", reason: safetyRoute.reason }, 422);
+  }
+  if (safetyRoute.route === "professional-boundary") {
+    return jsonResponse({ error: "professional_boundary", reason: safetyRoute.reason }, 422);
+  }
 
   const env = new DenoEnv();
   const requestStartedAt = Date.now();

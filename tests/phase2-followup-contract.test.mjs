@@ -3,9 +3,10 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { appSource } from "./helpers/app-source.mjs";
 
 const types = readFileSync(new URL("../supabase/functions/_shared/types.ts", import.meta.url), "utf8");
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appSource;
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const reading = readFileSync(new URL("../supabase/functions/reading/index.ts", import.meta.url), "utf8");
 const validator = readFileSync(new URL("../supabase/functions/_shared/token-validator.ts", import.meta.url), "utf8");

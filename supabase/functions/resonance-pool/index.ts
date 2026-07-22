@@ -6,6 +6,7 @@ type PublicSubmission = {
   mode: string;
   theme: string;
   action: string;
+  echoStatus: string;
   symbol: string;
   category: string;
   language: string;
@@ -41,12 +42,6 @@ function clampNumber(value: unknown, fallback: number, min: number, max: number)
   return Math.min(max, Math.max(min, Math.floor(parsed)));
 }
 
-function parseToken(text: unknown, key: string): string {
-  const source = typeof text === "string" ? text : "";
-  const pattern = new RegExp(`\\[${key}\\]([\\s\\S]*?)(?=\\n\\[[A-Z_]+\\]|$)`, "i");
-  return cleanText(source.match(pattern)?.[1], 700);
-}
-
 async function sha256Hex(text: string): Promise<string> {
   const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(hash)].map((item) => item.toString(16).padStart(2, "0")).join("");
@@ -74,40 +69,11 @@ async function fetchUser(baseUrl: string, anonKey: string, authHeader: string | 
   return typeof user?.id === "string" ? { id: user.id } : null;
 }
 
-function primarySymbol(record: Record<string, unknown>): string {
-  const cards = Array.isArray(record.cards) ? record.cards : [];
-  const primaryCard = normalizeBody(cards[0]);
-  const gua = normalizeBody(record.gua);
-  return cleanText(primaryCard.name, 80)
-    || cleanText(gua.name, 80)
-    || cleanText(record.image_alt, 80)
-    || cleanText(record.title, 80);
-}
-
-function categoryFromMode(mode: unknown): string {
-  switch (cleanMode(mode)) {
-    case "daily":
-      return "daily";
-    case "tarot":
-      return "tarot";
-    case "meihua":
-      return "meihua";
-    default:
-      return "general";
-  }
-}
-
 function redactSubmissionPayload(record: Record<string, unknown>) {
   return {
-    theme: cleanText(
-      parseToken(record.answer, "JUDGMENT")
-        || parseToken(record.answer, "CORE_QUESTION")
-        || cleanText(record.action, 220),
-      220,
-    ),
-    action: cleanText(parseToken(record.answer, "ACTION") || cleanText(record.action, 180), 180),
-    symbol: cleanText(primarySymbol(record), 80),
-    category: categoryFromMode(record.mode),
+    theme: cleanText(record.action_theme, 220),
+    action: cleanText(record.action, 180),
+    echoStatus: cleanText(record.echo_status, 24),
   };
 }
 
@@ -121,6 +87,7 @@ function toPublicSubmission(
     mode: cleanMode(row.mode),
     theme: cleanText(row.theme, 220),
     action: cleanText(row.action, 180),
+    echoStatus: cleanText(row.echo_status, 24),
     symbol: cleanText(row.symbol, 80),
     category: cleanText(row.category, 40) || "general",
     language: cleanText(row.language, 8) || "zh",
@@ -202,8 +169,8 @@ async function submitResonance(
   if (!record) return jsonResponse({ error: "Record not found" }, 404);
 
   const payload = redactSubmissionPayload(record);
-  if (!payload.theme || !payload.action) {
-    return jsonResponse({ error: "Record not ready for resonance" }, 400);
+  if (cleanText(record.lifecycle_state, 24) === "temporary" || !payload.theme || !payload.action || !payload.echoStatus) {
+    return jsonResponse({ error: "echo_required" }, 409);
   }
 
   const now = new Date().toISOString();
@@ -219,8 +186,7 @@ async function submitResonance(
       mode: cleanMode(record.mode),
       theme: payload.theme,
       action: payload.action,
-      symbol: payload.symbol,
-      category: payload.category,
+      echo_status: payload.echoStatus,
       language: cleanText(record.language, 8) || "zh",
       source_created_at: cleanText(record.created_at, 80) || null,
       revoked_at: null,
@@ -303,7 +269,7 @@ async function listResonance(
   const category = cleanText(body.category, 40);
   const limit = clampNumber(body.limit, 20, 1, 50);
   const params = new URLSearchParams({
-    select: "id,mode,theme,action,symbol,category,language,source_created_at,created_at",
+    select: "id,mode,theme,action,echo_status,symbol,category,language,source_created_at,created_at",
     revoked_at: "is.null",
     language: `eq.${language}`,
     order: "created_at.desc",

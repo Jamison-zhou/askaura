@@ -62,6 +62,14 @@ export function normalizeHistoryRecord(record) {
     clarificationOf: plainObject(record.clarificationOf),
     gua: plainObject(record.gua),
     anchor: record.anchor && typeof record.anchor === "object" ? record.anchor : null,
+    lifecycleState: normalizeLifecycleState(record.lifecycleState),
+    selectedInsight: stringValue(record.selectedInsight),
+    actionTheme: stringValue(record.actionTheme),
+    echoDueAt: stringValue(record.echoDueAt),
+    echoStatus: normalizeEchoStatus(record.echoStatus),
+    echoNote: stringValue(record.echoNote),
+    temporaryExpiresAt: stringValue(record.temporaryExpiresAt),
+    sourceVersion: stringValue(record.sourceVersion) || "legacy",
     createdAt,
     updatedAt: stringValue(record.updatedAt) || createdAt,
   };
@@ -87,6 +95,14 @@ export function historyRecordToRow(record) {
     anchor: record.anchor || null,
     followups: Array.isArray(record.followups) ? record.followups : [],
     clarification_of: record.clarificationOf || null,
+    lifecycle_state: record.lifecycleState || "legacy",
+    selected_insight: record.selectedInsight || "",
+    action_theme: record.actionTheme || "",
+    echo_due_at: record.echoDueAt || null,
+    echo_status: record.echoStatus || "",
+    echo_note: record.echoNote || "",
+    temporary_expires_at: record.temporaryExpiresAt || null,
+    source_version: record.sourceVersion || "legacy",
     language: record.language || "zh",
     created_at: record.createdAt,
     updated_at: record.updatedAt || record.createdAt,
@@ -116,6 +132,14 @@ export function historyRecordFromRow(row) {
     anchor: row.anchor || null,
     followups: Array.isArray(row.followups) ? row.followups : [],
     clarificationOf: row.clarification_of || null,
+    lifecycleState: row.lifecycle_state || "legacy",
+    selectedInsight: row.selected_insight || "",
+    actionTheme: row.action_theme || "",
+    echoDueAt: row.echo_due_at || "",
+    echoStatus: row.echo_status || "",
+    echoNote: row.echo_note || "",
+    temporaryExpiresAt: row.temporary_expires_at || "",
+    sourceVersion: row.source_version || "legacy",
     language: row.language || "zh",
     createdAt: row.created_at,
     updatedAt: row.updated_at || row.created_at,
@@ -203,6 +227,14 @@ function normalizeSpreadType(value) {
   return ["single", "reflection_triad", "three_current_resistance_next", "relationship_tension", "choice_a_b_reminder"].includes(value)
     ? value
     : "single";
+}
+
+function normalizeLifecycleState(value) {
+  return ["temporary", "saved", "active", "paused", "closed", "legacy"].includes(value) ? value : "legacy";
+}
+
+function normalizeEchoStatus(value) {
+  return ["", "changed", "unchanged", "not_done", "passed"].includes(value) ? value : "";
 }
 
 function stringValue(value) {

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { appSource } from "./helpers/app-source.mjs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const html = appSource;
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const storage = readFileSync(new URL("../assets/app/storage.js", import.meta.url), "utf8");
 const sync = readFileSync(new URL("../assets/app/sync.js", import.meta.url), "utf8");
@@ -46,7 +47,8 @@ assert.match(html, /isReviewDue\(record\) && !record\.reviewNote \? t\("reviewLa
 assert.match(html, /els\.reviewSave\.addEventListener\("click", saveReviewNote\);/, "review save button persists the note");
 assert.doesNotMatch(html, /Notification|PushManager|serviceWorker\.register/, "three-day review does not add push reminders");
 assert.match(html, /id="history-filters"/, "history drawer has mode filters");
-assert.equal((html.match(/data-history-filter=/g) || []).length, 5, "history drawer exposes all, tarot, meihua, dual, and daily filters");
+assert.equal((html.match(/data-history-filter=/g) || []).length, 4, "history drawer keeps the four useful observation filters");
+assert.doesNotMatch(html, /data-history-filter="daily"/, "daily anchors no longer occupy a history filter");
 assert.match(html, /function groupHistoryByDate\(records\)/, "history records are grouped by date");
 assert.match(html, /function toggleHistoryFavorite\(id\)/, "history has a favorite toggle");
 assert.match(html, /saveHistoryRecord\(recordStore, updated\);[\s\S]*syncAfterSave\(updated\);[\s\S]*renderHistoryList\(\);/, "favorite toggle persists locally, syncs, and refreshes history");

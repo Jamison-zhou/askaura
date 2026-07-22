@@ -116,9 +116,19 @@ function cleanConfig(input: unknown): RuntimeConfig {
       qualityLoggingEnabled: typeof ops.qualityLoggingEnabled === "boolean" ? ops.qualityLoggingEnabled : undefined,
       contentSafetyScanEnabled: typeof ops.contentSafetyScanEnabled === "boolean" ? ops.contentSafetyScanEnabled : undefined,
       experimentKey: cleanShortText(ops.experimentKey, 80),
+      systemConvergenceV1Enabled: typeof ops.systemConvergenceV1Enabled === "boolean" ? ops.systemConvergenceV1Enabled : undefined,
       rollbackNote: cleanShortText(ops.rollbackNote, 240),
     },
     translations,
+  };
+}
+
+function effectiveRouteStatus() {
+  return {
+    provider: "deepseek",
+    basicModel: "deepseek-v4-flash",
+    proModel: "deepseek-v4-pro",
+    proEnabled: false,
   };
 }
 
@@ -246,14 +256,14 @@ Deno.serve(async (request: Request) => {
     if (username !== adminUser || candidateHash !== passwordHash) {
       return jsonResponse({ error: "Invalid credentials" }, 401);
     }
-    return jsonResponse({ token: await signToken(sessionSecret, username), config: publicRuntimeConfig(await loadRuntimeConfig(env)) });
+    return jsonResponse({ token: await signToken(sessionSecret, username), config: publicRuntimeConfig(await loadRuntimeConfig(env)), routeStatus: effectiveRouteStatus() });
   }
 
   const token = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
   if (!await verifyToken(sessionSecret, token)) return jsonResponse({ error: "Unauthorized" }, 401);
 
   if (body.action === "get") {
-    return jsonResponse({ config: publicRuntimeConfig(await loadRuntimeConfig(env)) });
+    return jsonResponse({ config: publicRuntimeConfig(await loadRuntimeConfig(env)), routeStatus: effectiveRouteStatus() });
   }
 
   if (body.action === "quality-summary") {
@@ -262,7 +272,7 @@ Deno.serve(async (request: Request) => {
 
   if (body.action === "save") {
     await saveConfig(env, cleanConfig(body.config));
-    return jsonResponse({ ok: true, config: publicRuntimeConfig(await loadRuntimeConfig(env)) });
+    return jsonResponse({ ok: true, config: publicRuntimeConfig(await loadRuntimeConfig(env)), routeStatus: effectiveRouteStatus() });
   }
 
   return jsonResponse({ error: "Unknown action" }, 400);

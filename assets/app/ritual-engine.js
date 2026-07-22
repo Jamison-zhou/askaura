@@ -69,6 +69,14 @@ export function ritualCardLayout(index, deckLength = REFLECTION_DECK.length) {
   };
 }
 
+export function ritualVisibleIndexes(deckLength = TAROT_DECK.length, visibleCount = 15) {
+  const total = Math.max(0, Number(deckLength) || 0);
+  const count = Math.min(total, Math.max(1, Number(visibleCount) || 1));
+  if (count === total) return Array.from({ length: total }, (_, index) => index);
+  const step = (total - 1) / (count - 1);
+  return Array.from({ length: count }, (_, index) => Math.round(index * step));
+}
+
 export function recordCardFromSelection(selection, {
   language = "zh",
   singleLabel = "单牌",
