@@ -1,12 +1,16 @@
 @font-face {
   font-family: "AskAura ZhiSong";
   src: url("./assets/fonts/LXGWNeoZhiSongScreen-subset.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: "AskAura Plex SC";
   src: url("./assets/fonts/IBMPlexSansSC-Regular-subset.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -14,12 +18,15 @@
   font-family: "AskAura Plex SC";
   src: url("./assets/fonts/IBMPlexSansSC-Medium-subset.woff2") format("woff2");
   font-weight: 500;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: "AskAura Plex Condensed";
   src: url("./assets/fonts/IBMPlexSansCondensed-Regular-subset.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -45,8 +52,9 @@
   --obs-radius: 18px;
   --obs-radius-lg: 28px;
   --obs-shadow: 0 32px 90px rgba(0, 5, 12, 0.36);
-  --obs-font-display: "AskAura ZhiSong", "STSong", "Songti SC", serif;
-  --obs-font-ui: "AskAura Plex SC", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  /* Dynamic Chinese copy must use a complete font before the local brand subsets. */
+  --obs-font-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --obs-font-ui: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
   --obs-font-data: "AskAura Plex Condensed", "Arial Narrow", sans-serif;
 
   /* Existing components inherit the new system without changing their DOM contract. */
@@ -79,9 +87,9 @@
   --control-text: var(--obs-muted);
   --control-text-active: var(--obs-ink);
   --font-display: var(--obs-font-display);
-  --font-body: var(--obs-font-display);
+  --font-body: var(--obs-font-ui);
   --font-ui: var(--obs-font-ui);
-  --font-cn: var(--obs-font-display);
+  --font-cn: var(--obs-font-ui);
   --font-en: "AskAura Plex Condensed", "Arial Narrow", sans-serif;
 }
 
@@ -92,7 +100,7 @@ body {
 }
 
 body {
-  font-family: var(--obs-font-display);
+  font-family: var(--obs-font-ui);
 }
 
 .app-boot-state {
@@ -938,10 +946,16 @@ a:focus-visible {
   font-weight: 500;
 }
 
+.symbol-summary-head strong {
+  font-family: var(--obs-font-display);
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
 .answer-title {
   font-size: clamp(42px, 4.2vw, 72px);
   line-height: 1.1;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.035em;
 }
 
 .result-summary,

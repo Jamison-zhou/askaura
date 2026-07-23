@@ -63,6 +63,22 @@ const themeCss = readFileSync(themeUrl, "utf8");
 
 assert.match(themeCss, /:root\[data-theme="light"\]/, "theme includes the light palette");
 assert.match(themeCss, /:root\[data-theme="mono"\]/, "theme includes the monochrome palette");
+assert.match(
+  themeCss,
+  /--obs-font-display:\s*"Noto Serif SC",\s*"Songti SC",\s*"STSong",\s*"SimSun",\s*serif;/,
+  "dynamic display copy uses a complete Chinese font before any local subset",
+);
+assert.match(
+  themeCss,
+  /--obs-font-ui:\s*"Microsoft YaHei UI",\s*"Microsoft YaHei",\s*"PingFang SC",\s*"Noto Sans CJK SC",\s*sans-serif;/,
+  "dynamic interface copy uses one complete platform font stack",
+);
+assert.match(themeCss, /--font-body:\s*var\(--obs-font-ui\);/, "body copy uses the complete UI font stack");
+assert.match(
+  themeCss,
+  /\.symbol-summary-head strong \{[\s\S]*?font-family:\s*var\(--obs-font-display\);[\s\S]*?line-height:\s*1\.45;/,
+  "dynamic card names use one complete display family and a stable line box",
+);
 
 assert.ok(
   existsSync(new URL("../assets/backgrounds/askaura-observation-home.webp", import.meta.url)),

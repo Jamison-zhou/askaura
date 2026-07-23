@@ -25,7 +25,7 @@
         buildObservationShareSvg,
         imageSourceToDataUrl,
         svgToPngBlob as renderSharePngBlob
-      } from "./share-image.js?v=20260722-observation-share-v2";
+      } from "./share-image.js?v=20260723-share-wrap-v1";
       import { deriveCompanionSnapshot } from "./companion.js";
       import { createReadingClient } from "./reading-client.js";
       import { createProductEventClient } from "./product-events.js";

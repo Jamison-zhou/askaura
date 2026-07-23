@@ -75,10 +75,12 @@ function observationDate(value, language) {
 
 export function buildObservationShareSvg(data = {}, { language = "zh" } = {}) {
   const isZh = language === "zh";
-  const symbol = fitSvgText(data.symbol || (isZh ? "未命名观察" : "Untitled observation"), 9);
-  const summary = wrapSvgText(data.summary, 17, 7);
+  // The right column is 409px wide. Keep a small safety margin for fallback
+  // CJK fonts and SVG letter-spacing when the image is rasterized to canvas.
+  const symbol = fitSvgText(data.symbol || (isZh ? "未命名观察" : "Untitled observation"), 8);
+  const summary = wrapSvgText(data.summary, 13, 7);
   const action = wrapSvgText(data.doText || data.action, 27, 4);
-  const question = data.question ? wrapSvgText(data.question, 20, 3) : [];
+  const question = data.question ? wrapSvgText(data.question, 18, 3) : [];
   const code = observationCode(data.observationId);
   const date = observationDate(data.createdAt, language);
   const imageHref = normalizeText(data.imageDataUrl);

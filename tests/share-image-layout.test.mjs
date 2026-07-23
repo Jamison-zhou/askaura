@@ -9,12 +9,13 @@ const {
 } = await import(`data:text/javascript;base64,${Buffer.from(moduleSource).toString("base64")}`);
 
 const lines = wrapSvgText("一".repeat(90), 21, 4);
+const reportedSummary = "你在正面推进中反复受阻，但仍在尝试同一入口。";
 const svg = buildObservationShareSvg({
   observationId: "askaura-12345678",
   createdAt: "2026-07-22T10:00:00.000Z",
   symbol: "一根正在慢慢松开的绳结",
   question: "同事生病，我该怎么关心才不过界？",
-  summary: "这次结果提醒你，保持适度距离，专注自己的职责，不替他人承担。",
+  summary: reportedSummary,
   doText: "留意同事是否需要一杯温水或简单帮助。",
   imageDataUrl: "data:image/webp;base64,UklGRg==",
 }, { language: "zh" });
@@ -22,6 +23,9 @@ const svg = buildObservationShareSvg({
 assert.ok(lines.length <= 4, "share summary respects max line count");
 assert.ok(lines.every((line) => svgTextWidth(line) <= 21), "share summary lines fit the card width");
 assert.ok(lines.at(-1).endsWith("…"), "overlong share summary is visibly shortened");
+const summaryLines = [...svg.matchAll(/class="summary">([^<]+)<\/text>/g)].map((match) => match[1]);
+assert.deepEqual(summaryLines, ["你在正面推进中反复受阻，但", "仍在尝试同一入口。"], "reported summary wraps inside the right column");
+assert.ok(summaryLines.every((line) => svgTextWidth(line) <= 13), "right-column summary lines stay within the 409px text measure");
 assert.match(svg, /width="1080" height="1440"/, "share card exports at portrait social resolution");
 assert.match(svg, /OBSERVATION RECORD/, "share card uses the observation record identity");
 assert.match(svg, /data:image\/webp;base64/, "share card embeds the selected card artwork");
